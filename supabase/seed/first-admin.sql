@@ -1,5 +1,5 @@
 -- =============================================================================
--- Bootstrapping the first admin
+-- Sohbah Academy — Bootstrapping the first admin
 --
 -- `teachers_admin_insert` requires an existing admin to insert a teacher row,
 -- which makes the first one a chicken-and-egg problem. It has to be created once
@@ -10,26 +10,30 @@
 -- /dashboard shows the "not linked to a teacher yet" notice.
 -- =============================================================================
 
--- Step 1 — create the auth user in the dashboard, not here:
+-- Step 1 — create the auth user in the Supabase dashboard, not here:
 --   Authentication → Users → Add user → "Create new user"
 --   Tick "Auto Confirm User" so no email round trip is needed.
--- Copy the resulting user UUID.
+--   Copy the resulting user UUID.
 
--- Step 2 — create the matching teacher row and link it.
--- Replace both placeholders before running.
-insert into public.teachers (auth_user_id, name, gender_category, role)
-values (
-  '00000000-0000-0000-0000-000000000000',  -- the auth user UUID from step 1
-  'اسم المشرف',                             -- display name, shown in the dashboard
+-- Step 2 — create the matching teacher row and link it to Sohbah.
+-- Replace the UUID and display name before running.
+insert into public.teachers (auth_user_id, name, gender_category, role, academy_id)
+select
+  '00000000-0000-0000-0000-000000000000',  -- paste the auth user UUID from step 1
+  'اسم المشرف',                             -- display name shown in the dashboard
   'female',                                -- 'male' | 'female'
-  'admin'
-);
+  'admin',
+  a.id
+from public.academies a
+where a.slug = 'sohbah';
 
--- Step 3 — verify the app will see it. `current_teacher_id()` reads auth.uid(),
--- which is null in the SQL editor, so check the join directly instead.
-select t.id, t.name, t.role, t.is_active, u.email
-  from public.teachers t
-  join auth.users u on u.id = t.auth_user_id
+-- Step 3 — verify the app will see it.
+-- `current_teacher_id()` reads auth.uid(), which is null in the SQL editor,
+-- so check the join directly instead.
+select t.id, t.name, t.role, t.is_active, u.email, a.slug as academy
+  from public.teachers  t
+  join auth.users       u on u.id = t.auth_user_id
+  join public.academies a on a.id = t.academy_id
  where t.role = 'admin';
 
 -- =============================================================================
@@ -68,27 +72,28 @@ select t.id, t.name, t.role, t.is_active, u.email
 -- =============================================================================
 -- Adding further teachers
 -- Once an admin exists, do this from the app or as that admin — the RLS policy
--- allows it. Create the auth user first (step 1), then:
+-- allows it. Create the auth user first (step 1 above), then:
 --
---   insert into public.teachers (auth_user_id, name, gender_category, role)
---   values ('<uuid>', 'اسم المعلمة', 'female', 'teacher');
+--   insert into public.teachers (auth_user_id, name, gender_category, role, academy_id)
+--   select '<uuid>', 'اسم المعلمة', 'female', 'teacher', id
+--     from public.academies where slug = 'sohbah';
 --
 -- Deactivate rather than delete, so attendance history stays intact:
 --   update public.teachers set is_active = false where id = '<teacher-id>';
 -- =============================================================================
 
 -- =============================================================================
--- Optional — a circle to test /circle/[slug] against before creating one in the
--- UI. Milestone A needed this; with /dashboard/new in place it is only useful
--- for seeding a fresh environment.
+-- Optional — a circle to test /circle/[slug] before creating one in the UI.
 -- =============================================================================
 
 -- insert into public.circles (teacher_id, name, type, gender_category,
---                            session_link, timezone, start_time, days_of_week,
---                            registration_slug)
+--                             session_link, timezone, start_time, days_of_week,
+--                             registration_slug, academy_id)
 -- select t.id, 'حلقة التصحيح', 'tasheeh', 'female',
 --        'https://meet.google.com/xxx-xxxx-xxx',
---        'Asia/Riyadh', '17:00', '{0,1,2,3,4}', 'tasheeh-evening'
---   from public.teachers t
+--        'Asia/Riyadh', '17:00', '{0,1,2,3,4}', 'tasheeh-evening',
+--        a.id
+--   from public.teachers  t
+--   join public.academies a on a.slug = 'sohbah'
 --  where t.role = 'admin'
 --  limit 1;
