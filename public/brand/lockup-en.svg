@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 120" width="460" height="120" role="img" aria-label="Itqan Academy">
+  <defs>
+    <linearGradient id="itqan" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#45A57F"/>
+      <stop offset="1" stop-color="#1A5842"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(8 22) scale(0.14844)">
+    <path d="M247.51 40.49 Q256 32 264.49 40.49 L314.54 90.54 Q321.61 97.61 331.61 97.61 L402.39 97.61 Q414.39 97.61 414.39 109.61 L414.39 180.39 Q414.39 190.39 421.46 197.46 L471.51 247.51 Q480 256 471.51 264.49 L421.46 314.54 Q414.39 321.61 414.39 331.61 L414.39 402.39 Q414.39 414.39 402.39 414.39 L331.61 414.39 Q321.61 414.39 314.54 421.46 L264.49 471.51 Q256 480 247.51 471.51 L197.46 421.46 Q190.39 414.39 180.39 414.39 L109.61 414.39 Q97.61 414.39 97.61 402.39 L97.61 331.61 Q97.61 321.61 90.54 314.54 L40.49 264.49 Q32 256 40.49 247.51 L90.54 197.46 Q97.61 190.39 97.61 180.39 L97.61 109.61 Q97.61 97.61 109.61 97.61 L180.39 97.61 Q190.39 97.61 197.46 90.54 Z M256 212 A44 44 0 1 0 256 300 A44 44 0 1 0 256 212 Z" fill-rule="evenodd" fill="url(#itqan)"/>
+  </g>
+  <text x="104" y="62" text-anchor="start" direction="ltr"
+        font-family="Cairo, 'Segoe UI', system-ui, sans-serif" font-size="30" font-weight="700" fill="#12382C">Itqan Academy</text>
+  <text x="104" y="88" text-anchor="start" direction="ltr"
+        font-family="Cairo, 'Segoe UI', system-ui, sans-serif" font-size="16" fill="#5A6E66">Quran circles management platform</text>
+</svg>

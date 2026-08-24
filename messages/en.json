@@ -1,0 +1,494 @@
+{
+  "app": {
+    "name": "Sohbah Academy",
+    "tagline": "Quran circles management platform",
+    "description": "Student registration, recitation queue, and attendance tracking in one place."
+  },
+  "academy": {
+    "sohbah": {
+      "name": "Sohbah Online Recitation",
+      "tagline": "Comprehensive educational platform",
+      "adminRole": "Sohbah Admin"
+    },
+    "select": "Select Academy",
+    "switchAcademy": "Switch Academy"
+  },
+  "language": {
+    "label": "Language",
+    "ar": "العربية",
+    "en": "English",
+    "switchTo": "Switch to Arabic"
+  },
+  "nav": {
+    "home": "Home",
+    "register": "Register a student",
+    "login": "Teacher login",
+    "dashboard": "Teacher dashboard",
+    "admin": "Admin dashboard",
+    "reports": "Attendance reports"
+  },
+  "home": {
+    "title": "Sohbah Academy",
+    "subtitle": "Quran circles management platform",
+    "doors": {
+      "students": {
+        "tag": "Students",
+        "title": "Join a circle",
+        "body": "Register once with your name and your father's name. After that you join any circle by searching for your name – no account, no password.",
+        "cta": "Register as a student",
+        "note": "Already registered? Open your circle's link instead."
+      },
+      "teachers": {
+        "tag": "Teachers and supervisors",
+        "title": "Run your circles",
+        "body": "Sign in to see today's circles, mark attendance, drive the recitation queue, and share your circle's link.",
+        "cta": "Teacher sign in",
+        "note": "Accounts are created by an administrator."
+      }
+    },
+    "newStudent": {
+      "title": "New student?",
+      "body": "Register once with your name and your father's name. After that you join any circle by searching for your name.",
+      "cta": "Register"
+    },
+    "returningStudent": {
+      "title": "Already registered?",
+      "body": "Open your circle's link and search for your name to join today's queue. No need to register again.",
+      "note": "Your teacher shares the circle link with you."
+    },
+    "teacher": {
+      "title": "Teacher or supervisor?",
+      "cta": "Sign in"
+    }
+  },
+  "register": {
+    "title": "Register a new student",
+    "subtitle": "You only register once. After that you join any circle by searching for your name.",
+    "fields": {
+      "name": "Name",
+      "fatherName": "Father's name",
+      "fatherNameHint": "Used to tell you apart from similar names.",
+      "gender": "Section",
+      "male": "Male students",
+      "female": "Female students",
+      "phone": "WhatsApp number",
+      "phoneHint": "Only used to reach you if needed.",
+      "optional": "optional"
+    },
+    "submit": "Register",
+    "submitting": "Registering…",
+    "success": {
+      "title": "Registered",
+      "body": "Welcome, {name}. Your name is now saved permanently.",
+      "backToCircle": "Back to the circle",
+      "nextStep": "Open your circle's link and search for your name to join the queue."
+    },
+    "duplicate": {
+      "title": "A matching name is already registered",
+      "body": "If this is you, do not register again – go back to your circle's link and search for your name.",
+      "confirm": "This is not me, continue",
+      "hint": "Registering twice splits your attendance across two records."
+    },
+    "errors": {
+      "nameRequired": "Name is required.",
+      "fatherRequired": "Father's name is required.",
+      "genderRequired": "Choose a section.",
+      "tooLong": "That is too long.",
+      "generic": "Registration could not be completed. Please try again.",
+      "notConfigured": "The database is not connected yet."
+    }
+  },
+  "circle": {
+    "title": "Circle",
+    "notFoundPage": {
+      "title": "Circle not found"
+    },
+    "type": {
+      "tasheeh": "Recitation correction",
+      "tajweed": "Tajweed",
+      "free_recitation": "Free recitation"
+    },
+    "startsAt": "Starts at {time}",
+    "openSession": "Open the session",
+    "openSessionHint": "You are on the list. Enter the session when it is your turn.",
+    "notToday": "This circle is not scheduled to meet today.",
+    "search": {
+      "label": "Search for your name",
+      "placeholder": "Type the first two letters of your name",
+      "hint": "At least two letters. Results show the father's name to tell similar names apart.",
+      "searching": "Searching…",
+      "fatherLabel": "Father: {name}",
+      "join": "Join",
+      "joining": "Joining…"
+    },
+    "notFound": {
+      "title": "We could not find your name",
+      "body": "If this is your first time, register once and then come back to this page.",
+      "cta": "Register"
+    },
+    "joined": {
+      "title": "You are on the list, {name}",
+      "position": "You are number {position} in the queue."
+    },
+    "queue": {
+      "title": "Queue ({count})",
+      "empty": "Nobody has joined yet. Be the first.",
+      "you": "(you)"
+    },
+    "status": {
+      "waiting": "Waiting",
+      "reciting": "Reciting now",
+      "done": "Done"
+    },
+    "errors": {
+      "generic": "That did not work. Please try again.",
+      "genderMismatch": "You cannot join a circle from a different section."
+    }
+  },
+  "auth": {
+    "title": "Teacher sign in",
+    "subtitle": "For teachers and supervisors only. Students never sign in.",
+    "fields": {
+      "email": "Email",
+      "password": "Password"
+    },
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "studentsNote": "Students join their circle from the link their teacher shares – no account needed.",
+    "signedInAs": "Signed in as",
+    "signOutAndSwitch": "Sign out and use another account",
+    "notLinked": {
+      "title": "This account is not linked to a teacher yet",
+      "body": "You signed in successfully, but no teacher record points at this account. An administrator has to link it before you can manage circles."
+    },
+    "inactive": {
+      "title": "This teacher account is deactivated",
+      "body": "Your teacher record exists but has been switched off. Ask an administrator to reactivate it."
+    },
+    "errors": {
+      "emailRequired": "Email is required.",
+      "passwordRequired": "Password is required.",
+      "invalidCredentials": "Incorrect email or password.",
+      "generic": "Sign in could not be completed. Please try again.",
+      "notConfigured": "The database is not connected yet."
+    }
+  },
+  "dashboard": {
+    "title": "Teacher dashboard",
+    "subtitle": "Your circles, today's queue, and attendance.",
+    "newCircle": "New circle",
+    "signOut": "Sign out",
+    "backToDashboard": "Back to the dashboard",
+    "adminArea": "Admin area",
+    "manageSession": "Manage the session",
+    "openCircle": "Open",
+    "joinedCount": "{count} joined",
+    "role": {
+      "teacher": "Teacher",
+      "admin": "Administrator"
+    },
+    "gender": {
+      "male": "Male students",
+      "female": "Female students"
+    },
+    "today": {
+      "title": "Meeting today",
+      "empty": "None of your circles meet today."
+    },
+    "other": {
+      "title": "Your other circles",
+      "empty": "No other circles yet."
+    },
+    "daysShort": {
+      "0": "Sun",
+      "1": "Mon",
+      "2": "Tue",
+      "3": "Wed",
+      "4": "Thu",
+      "5": "Fri",
+      "6": "Sat"
+    },
+    "new": {
+      "title": "New circle",
+      "subtitle": "The circle repeats on the days you choose, and its link is permanent – share it once.",
+      "back": "Back to the dashboard",
+      "fields": {
+        "name": "Teacher name",
+        "type": "Circle type",
+        "gender": "Section",
+        "genderHint": "Only students of this section can join, and that is enforced in the database itself.",
+        "sessionLink": "Session link",
+        "sessionLinkHint": "Google Meet, Zoom, or Telegram. Students open it from the circle page.",
+        "days": "Days",
+        "startTime": "Start time",
+        "duration": "Duration in minutes",
+        "timezone": "Timezone",
+        "timezoneHint": "The session date is calculated in this timezone, so early-morning circles are recorded on the right day.",
+        "slug": "Circle link",
+        "slugHint": "This permanent link is generated automatically. Copy it to share with your students."
+      },
+      "submit": "Create the circle",
+      "submitting": "Creating…",
+      "errors": {
+        "nameRequired": "Circle name is required.",
+        "tooLong": "That is too long.",
+        "typeRequired": "Choose a circle type.",
+        "genderRequired": "Choose a section.",
+        "linkRequired": "Session link is required.",
+        "linkInvalid": "Enter a full link starting with http:// or https://",
+        "timezoneRequired": "Choose a timezone.",
+        "timezoneInvalid": "The database does not recognise that timezone.",
+        "startTimeInvalid": "Enter a valid start time.",
+        "durationInvalid": "Duration must be between 5 and 480 minutes.",
+        "daysRequired": "Choose at least one day.",
+        "slugRequired": "Circle link is required.",
+        "slugLength": "The link must be between 3 and 60 characters.",
+        "slugInvalid": "Use lowercase letters, numbers and hyphens only.",
+        "slugTaken": "That link is already in use. Choose another.",
+        "forbidden": "You are not allowed to create circles.",
+        "generic": "The circle could not be created. Please try again.",
+        "notConfigured": "The database is not connected yet."
+      }
+    }
+  },
+  "session": {
+    "title": "Circle session",
+    "notToday": "This circle is not scheduled to meet today. You are looking at today's records.",
+    "queue": {
+      "title": "Today's queue",
+      "hint": "Updates live as students join. Reorder with the arrows.",
+      "empty": "Nobody has joined yet."
+    },
+    "summary": {
+      "joined": "joined",
+      "present": "present",
+      "absent": "absent",
+      "pending": "unmarked"
+    },
+    "attendance": {
+      "label": "Attendance",
+      "present": "Present",
+      "absent": "Absent"
+    },
+    "recitation": {
+      "label": "Recitation"
+    },
+    "reorder": {
+      "up": "Move up",
+      "down": "Move down"
+    },
+    "errors": {
+      "generic": "That did not work. Please try again."
+    }
+  },
+  "admin": {
+    "title": "Admin dashboard",
+    "subtitle": "Every circle, every teacher, and the attendance report.",
+    "openReports": "Attendance report",
+    "myCircles": "My circles",
+    "stats": {
+      "circles": "active circles",
+      "teachers": "active teachers",
+      "students": "registered students"
+    },
+    "backToAdmin": "Back to admin",
+    "accessDenied": "You do not have permission to access this page.",
+    "adminRequired": "You need administrator privileges.",
+    "reportsCard": {
+      "title": "Attendance reports",
+      "subtitle": "View detailed attendance analytics"
+    },
+    "dashboardCard": {
+      "title": "My dashboard",
+      "subtitle": "Back to the teacher dashboard"
+    },
+    "circles": {
+      "title": "All circles",
+      "empty": "No circles have been created yet.",
+      "inactive": "Inactive",
+      "teacherLabel": "Teacher: {name}",
+      "report": "Report for this circle",
+      "manage": "Manage circles",
+      "manageSubtitle": "Create, edit, and delete halaqas",
+      "new": "New circle",
+      "noCircles": "No circles yet.",
+      "createFirst": "Create the first circle",
+      "teacher": "Teacher",
+      "unknown": "Unknown",
+      "edit": "Edit",
+      "session": "Session",
+      "delete": "Delete",
+      "editTitle": "Edit circle",
+      "editSubtitle": "Update circle settings",
+      "deleteTitle": "Delete circle",
+      "deleteSubtitle": "This action cannot be undone",
+      "deleteWarningTitle": "Warning: permanent deletion",
+      "deleteWarningBody": "You are about to delete this circle and all related data.",
+      "deleteBody": "Delete \"{name}\"? {count} attendance records will also be removed. The registration link will stop working.",
+      "deleteImpact": {
+        "circle": "The circle will be deleted",
+        "attendance": "{count} attendance records will be deleted",
+        "link": "The registration link will stop working",
+        "students": "Students will not be deleted"
+      },
+      "confirmDelete": "Confirm deletion",
+      "confirmDeleteHint": "Type the circle name <strong>{name}</strong> to confirm:",
+      "confirmPlaceholder": "Type \"{name}\" to confirm",
+      "backToCircles": "Back to circles",
+      "details": "Circle details",
+      "type": "Type",
+      "gender": "Section",
+      "slug": "Registration link",
+      "status": "Status",
+      "active": "Active",
+      "statusActive": "Active",
+      "statusInactive": "Inactive",
+      "name": "Name",
+      "circleName": "Circle name",
+      "assignedTeacher": "Assigned teacher",
+      "sessionLink": "Session link",
+      "sessionLinkHint": "Google Meet, Zoom, or any video conference link",
+      "daysOfWeek": "Days",
+      "startTime": "Start time",
+      "duration": "Duration (minutes)",
+      "saveChanges": "Save changes",
+      "saving": "Saving…",
+      "saved": "Changes saved!",
+      "cancel": "Cancel",
+      "deleting": "Deleting…",
+      "deleteConfirmButton": "Yes, delete \"{name}\"",
+      "errors": {
+        "nameMismatch": "The name does not match. Type the exact name to confirm.",
+        "unauthorized": "You are not authorized to do this.",
+        "notFound": "Academy not found.",
+        "failed": "Could not delete. Please try again."
+      }
+    },
+    "students": {
+      "title": "Manage students",
+      "subtitle": "View, edit, and delete student records",
+      "found": "{count} students",
+      "searchLabel": "Search by name",
+      "searchPlaceholder": "Search students…",
+      "genderLabel": "Section",
+      "all": "All",
+      "male": "Male students",
+      "female": "Female students",
+      "filter": "Filter",
+      "name": "Name",
+      "fatherName": "Father's name",
+      "gender": "Section",
+      "phone": "Phone",
+      "registered": "Registered",
+      "actions": "Actions",
+      "edit": "Edit",
+      "delete": "Delete",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {current} of {total}",
+      "noStudents": "No students found.",
+      "editTitle": "Edit student",
+      "editSubtitle": "Update student information",
+      "backToStudents": "Back to students",
+      "studentName": "Student name",
+      "phoneNumber": "Phone number",
+      "optional": "Optional",
+      "saveChanges": "Save changes",
+      "saving": "Saving…",
+      "saved": "Changes saved!",
+      "cancel": "Cancel",
+      "deleteTitle": "Delete student",
+      "deleteSubtitle": "This action cannot be undone",
+      "deleteWarningTitle": "Warning: permanent deletion",
+      "deleteWarningBody": "You are about to delete this student and all attendance records.",
+      "deleteBody": "Delete \"{name}\"? {count} attendance records will also be removed.",
+      "studentDetails": "Student details",
+      "deleteImpact": {
+        "student": "The student record will be deleted",
+        "attendance": "{count} attendance records will be deleted",
+        "rejoin": "The student will need to register again to rejoin",
+        "history": "All attendance history will be lost"
+      },
+      "confirmDelete": "Confirm deletion",
+      "confirmDeleteHint": "Type the student name <strong>{name}</strong> to confirm:",
+      "confirmPlaceholder": "Type \"{name}\" to confirm",
+      "deleting": "Deleting…",
+      "deleteConfirmButton": "Yes, delete \"{name}\"",
+      "errors": {
+        "nameMismatch": "The name does not match. Type the exact name to confirm.",
+        "unauthorized": "You are not authorized to do this.",
+        "notFound": "Academy not found.",
+        "failed": "Could not delete. Please try again."
+      }
+    },
+    "teachers": {
+      "title": "Teachers and supervisors",
+      "note": "Accounts are created in Supabase and linked by hand – see supabase/seed/first-admin.sql.",
+      "active": "Active",
+      "inactive": "Deactivated"
+    },
+    "circleEdit": {
+      "title": "Edit circle",
+      "subtitle": "Update the circle settings or deactivate it for good.",
+      "open": "Edit",
+      "delete": "Delete circle"
+    }
+  },
+  "reports": {
+    "title": "Attendance report",
+    "subtitle": "Ranking over any date range. Only records marked present count as attendance.",
+    "back": "Back to the admin dashboard",
+    "appliedRange": "Range: {from} to {to}",
+    "unmarkedWarning": "{count} records were never marked by a teacher. They are excluded from the attendance count.",
+    "ranges": {
+      "today": "Today",
+      "week": "Last 7 days",
+      "month": "This month",
+      "year": "This year",
+      "custom": "Custom range"
+    },
+    "filters": {
+      "range": "Period",
+      "from": "From",
+      "to": "To",
+      "customHint": "Used when the period is set to a custom range.",
+      "gender": "Section",
+      "circle": "Circle",
+      "teacher": "Teacher",
+      "all": "All",
+      "apply": "Show the report"
+    },
+    "columns": {
+      "present": "present",
+      "absent": "absent",
+      "unmarked": "unmarked",
+      "joined": "joined"
+    },
+    "results": {
+      "title": "Students ({count})",
+      "empty": "No attendance records in this range.",
+      "legend": "The three numbers are present, absent, and unmarked, in that order."
+    }
+  },
+  "setup": {
+    "title": "Database not connected",
+    "body": "Add your Supabase project credentials, then restart the dev server."
+  },
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "search": "Search",
+    "back": "Back",
+    "required": "required",
+    "optional": "optional",
+    "copyLink": "Copy link",
+    "copied": "Copied"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "notFound": "Page not found.",
+    "notFoundBody": "That link is incorrect or no longer available.",
+    "backHome": "Back to home"
+  }
+}

@@ -1,0 +1,220 @@
+"use client";
+
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
+import { useTranslations } from "next-intl";
+import { CopyLinkButton } from "@/components/copy-link-button";
+import { createCircle } from "./actions";
+import { initialNewCircleState, type NewCircleState } from "./state";
+
+const CIRCLE_TYPES = ["tasheeh", "tajweed", "free_recitation"] as const;
+/** 0 = Sunday … 6 = Saturday, matching PostgreSQL's `dow`. */
+const DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
+const DEFAULT_DAYS = [0, 1, 2, 3, 4];
+
+function SubmitButton() {
+  const t = useTranslations("dashboard.new");
+  const { pending } = useFormStatus();
+
+  return (
+    <button type="submit" className="btn-primary w-full" disabled={pending}>
+      {pending ? t("submitting") : t("submit")}
+    </button>
+  );
+}
+
+type CircleFormProps = {
+  defaultTimezone: string;
+  registrationSlug: string;
+  locale: string;
+  academySlug: string;
+};
+
+export function CircleForm({
+  defaultTimezone,
+  registrationSlug,
+  locale,
+  academySlug,
+}: CircleFormProps) {
+  const t = useTranslations("dashboard.new");
+  const tCircle = useTranslations("circle");
+  const tDashboard = useTranslations("dashboard");
+
+  const createCircleWithSlug = createCircle.bind(null, registrationSlug);
+  const [state, formAction] = useActionState<NewCircleState, FormData>(
+    createCircleWithSlug,
+    initialNewCircleState,
+  );
+
+  const values = state.status === "idle" ? null : state.values;
+  const fieldErrors = state.status === "invalid" ? state.fieldErrors : {};
+  const selectedDays = values?.days ?? DEFAULT_DAYS;
+  const circlePath = `/${locale}/circle/${registrationSlug}`;
+
+  function fieldError(key: keyof typeof fieldErrors) {
+    const error = fieldErrors[key];
+    if (!error) return null;
+    return <p className="mt-1.5 text-sm text-absent">{t(`errors.${error}`)}</p>;
+  }
+
+  return (
+    <form action={formAction} className="card flex flex-col gap-5" noValidate>
+      <input type="hidden" name="duration" value="60" />
+      <input type="hidden" name="timezone" value={defaultTimezone} />
+      <input type="hidden" name="academySlug" value={academySlug} />
+
+      <div>
+        <label className="field-label" htmlFor="name">
+          {t("fields.name")}
+        </label>
+        <input
+          id="name"
+          name="name"
+          className="input"
+          defaultValue={values?.name}
+          autoComplete="name"
+          aria-invalid={Boolean(fieldErrors.name)}
+        />
+        {fieldError("name")}
+      </div>
+
+      <div>
+        <label className="field-label" htmlFor="type">
+          {t("fields.type")}
+        </label>
+        <select
+          id="type"
+          name="type"
+          className="input"
+          defaultValue={values?.type ?? "tasheeh"}
+        >
+          {CIRCLE_TYPES.map((type) => (
+            <option key={type} value={type}>
+              {tCircle(`type.${type}`)}
+            </option>
+          ))}
+        </select>
+        {fieldError("type")}
+      </div>
+
+      <fieldset>
+        <legend className="field-label">{t("fields.gender")}</legend>
+        <div className="flex gap-3">
+          {(["male", "female"] as const).map((option) => (
+            <label
+              key={option}
+              className="flex flex-1 cursor-pointer items-center justify-center gap-2
+                         rounded-xl border border-border-subtle bg-surface px-4 py-3
+                         text-base font-medium has-checked:border-brand-600
+                         has-checked:bg-brand-50 has-checked:text-brand-800
+                         dark:has-checked:bg-brand-900 dark:has-checked:text-brand-100"
+            >
+              <input
+                type="radio"
+                name="gender"
+                value={option}
+                defaultChecked={(values?.gender ?? "female") === option}
+                className="accent-brand-600"
+              />
+              {tDashboard(`gender.${option}`)}
+            </label>
+          ))}
+        </div>
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          {t("fields.genderHint")}
+        </p>
+        {fieldError("gender")}
+      </fieldset>
+
+      <div>
+        <label className="field-label" htmlFor="sessionLink">
+          {t("fields.sessionLink")}
+        </label>
+        <input
+          id="sessionLink"
+          name="sessionLink"
+          type="text"
+          dir="ltr"
+          inputMode="url"
+          placeholder="meet.google.com/... or https://meet.google.com/..."
+          className="input text-start"
+          defaultValue={values?.sessionLink}
+          autoComplete="off"
+          aria-invalid={Boolean(fieldErrors.sessionLink)}
+        />
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          {t("fields.sessionLinkHint")}
+        </p>
+        {fieldError("sessionLink")}
+      </div>
+
+      <fieldset>
+        <legend className="field-label">{t("fields.days")}</legend>
+        <div className="flex flex-wrap gap-2">
+          {DAYS.map((day) => (
+            <label
+              key={day}
+              className="flex cursor-pointer items-center gap-2 rounded-xl border
+                         border-border-subtle bg-surface px-3 py-2 text-sm font-medium
+                         has-checked:border-brand-600 has-checked:bg-brand-50
+                         has-checked:text-brand-800 dark:has-checked:bg-brand-900
+                         dark:has-checked:text-brand-100"
+            >
+              <input
+                type="checkbox"
+                name="days"
+                value={day}
+                defaultChecked={selectedDays.includes(day)}
+                className="accent-brand-600"
+              />
+              {tDashboard(`daysShort.${day}`)}
+            </label>
+          ))}
+        </div>
+        {fieldError("days")}
+      </fieldset>
+
+      <div>
+        <label className="field-label" htmlFor="startTime">
+          {t("fields.startTime")}
+        </label>
+        <input
+          id="startTime"
+          name="startTime"
+          type="time"
+          dir="ltr"
+          className="input text-start"
+          defaultValue={values?.startTime ?? "17:00"}
+          aria-invalid={Boolean(fieldErrors.startTime)}
+        />
+        {fieldError("startTime")}
+      </div>
+
+      <div>
+        <label className="field-label" htmlFor="circleLink">
+          {t("fields.slug")}
+        </label>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input
+            id="circleLink"
+            dir="ltr"
+            className="input min-w-0 flex-1 text-start"
+            value={circlePath}
+            readOnly
+            aria-readonly="true"
+          />
+          <CopyLinkButton path={circlePath} />
+        </div>
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          {t("fields.slugHint")}
+        </p>
+      </div>
+
+      {state.status === "failed" && (
+        <p className="text-sm text-absent">{t(`errors.${state.reason}`)}</p>
+      )}
+
+      <SubmitButton />
+    </form>
+  );
+}

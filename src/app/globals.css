@@ -1,0 +1,191 @@
+@import "tailwindcss";
+
+/* -----------------------------------------------------------------------------
+   Itqan Academy — design tokens.  See docs/BRAND.md for the rationale.
+
+   Layout must never assume a direction: use logical utilities (ms-/me-/ps-/pe-,
+   text-start/text-end, border-s/border-e) so Arabic RTL and English LTR both
+   work from the same markup.
+----------------------------------------------------------------------------- */
+
+:root {
+  --background: #f6f9f7;
+  --surface: #ffffff;
+  --surface-muted: #edf2ef;
+  --foreground: #0e1f19;
+  --muted-foreground: #5a6e66;
+  --border: #dbe5e0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #08130f;
+    --surface: #0f1e18;
+    --surface-muted: #152720;
+    --foreground: #e6efea;
+    --muted-foreground: #93a9a0;
+    --border: #21352c;
+  }
+}
+
+@theme inline {
+  --font-sans: var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-amiri), var(--font-cairo), ui-serif, serif;
+
+  /* Surfaces adapt to the colour scheme */
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border-subtle: var(--border);
+}
+
+/* `static` keeps every palette variable in the stylesheet even when no utility
+   references it. Components such as <BrandMark> read these with var() from
+   inline SVG attributes, and Tailwind's default tree-shaking would otherwise
+   drop the ones no class happens to use. */
+@theme static {
+  /* Sidr green — primary. Named after the lote tree; the colour of the
+     manuscript tradition this platform serves. */
+  --color-brand-50: #edf7f2;
+  --color-brand-100: #d3ece0;
+  --color-brand-200: #a8d9c2;
+  --color-brand-300: #75c0a0;
+  --color-brand-400: #45a57f;
+  --color-brand-500: #2a8a66;
+  --color-brand-600: #1e6e51;
+  --color-brand-700: #1a5842;
+  --color-brand-800: #164636;
+  --color-brand-900: #12382c;
+  --color-brand-950: #0a231b;
+
+  /* Dhahab gold — accent only: the student whose turn it is, and nothing else.
+     Scarcity is what makes it read as "now". */
+  --color-accent-100: #f7edd6;
+  --color-accent-200: #efdbac;
+  --color-accent-300: #e3c37c;
+  --color-accent-400: #d6ab53;
+  --color-accent-500: #c4913a;
+  --color-accent-600: #a2742d;
+  --color-accent-700: #7e5a24;
+
+  /* Status */
+  --color-present: #2a8a66;
+  --color-absent: #c0453b;
+  --color-reciting: #c4913a;
+}
+
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+
+  ::selection {
+    background-color: var(--color-brand-200);
+    color: var(--color-brand-950);
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-border-subtle bg-surface p-5 shadow-sm;
+  }
+
+  /* Tailwind v4 cannot @apply another component class, so the shared button
+     styles are repeated rather than composed from a `.btn` base. */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
+           text-base font-semibold transition-colors
+           focus-visible:outline-2 focus-visible:outline-offset-2
+           focus-visible:outline-brand-600 disabled:opacity-50
+           bg-brand-600 text-white hover:bg-brand-700;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
+           text-base font-semibold transition-colors
+           focus-visible:outline-2 focus-visible:outline-offset-2
+           focus-visible:outline-brand-600 disabled:opacity-50
+           border border-border-subtle bg-surface text-foreground hover:bg-surface-muted;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-sm font-medium text-foreground;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-border-subtle bg-surface px-4 py-3
+           text-base text-foreground placeholder:text-muted-foreground
+           focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-200;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
+           text-xs font-semibold;
+  }
+
+  .badge-waiting {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
+           text-xs font-semibold bg-surface-muted text-muted-foreground;
+  }
+
+  .badge-reciting {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
+           text-xs font-semibold bg-accent-100 text-accent-700;
+  }
+
+  .badge-done {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
+           text-xs font-semibold bg-surface-muted text-muted-foreground;
+  }
+
+  /* Circle page — smooth section enter/exit when joining the queue */
+  .motion-section {
+    overflow: hidden;
+    max-height: 1200px;
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+      max-height 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+      margin-block 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .motion-section-hidden {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-10px);
+    margin-block: 0 !important;
+    pointer-events: none;
+  }
+
+  .motion-queue-item {
+    animation: queue-item-in 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  @keyframes queue-item-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .motion-section,
+    .motion-queue-item {
+      animation: none;
+      transition: none;
+    }
+
+    .motion-section-hidden {
+      display: none;
+    }
+  }
+}
