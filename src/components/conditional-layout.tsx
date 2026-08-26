@@ -12,10 +12,12 @@ type ConditionalLayoutProps = {
 export function ConditionalLayout({ header, footer, children }: ConditionalLayoutProps) {
   const pathname = usePathname()
   
-  // Check if we're in an academy route
-  // Patterns: /itqan/*, /sohbah/*, /ar/itqan/*, /en/sohbah/*, etc.
-  // Academy slugs are: itqan, sohbah (from database)
-  const isAcademyRoute = pathname.includes('/itqan') || pathname.includes('/sohbah')
+  // Check if we're in an academy route.
+  // A locale-prefixed path looks like /en/sohbah/... and a bare path like
+  // /sohbah/... — in both cases the academy slug sits at segment index 1 or 2.
+  // We detect it by checking whether any path segment matches 'sohbah'.
+  const segments = pathname.split('/').filter(Boolean)
+  const isAcademyRoute = segments.includes('sohbah')
   
   // If in academy route, don't render header/footer (academy layout handles it)
   if (isAcademyRoute) {

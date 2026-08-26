@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import type { LoginFieldErrors, LoginState } from "./state";
@@ -55,9 +56,10 @@ export async function signIn(
 
   // Every cached segment was rendered without a session cookie.
   revalidatePath("/", "layout");
-  
-  // Redirect to academy-specific dashboard
-  const redirectPath = next ?? `/${academySlug}/dashboard`;
+
+  // Redirect to the academy-specific dashboard, with locale prefix.
+  const locale = await getLocale();
+  const redirectPath = next ?? `/${locale}/${academySlug}/dashboard`;
   redirect(redirectPath);
 }
 
@@ -67,6 +69,7 @@ export async function signOut(academySlug: string) {
     await supabase.auth.signOut();
   }
 
+  const locale = await getLocale();
   revalidatePath("/", "layout");
-  redirect(`/${academySlug}/login`);
+  redirect(`/${locale}/${academySlug}/login`);
 }

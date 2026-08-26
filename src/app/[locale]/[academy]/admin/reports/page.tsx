@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BackLink } from "@/components/back-link";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { getTeacherDisplayLabel } from "@/lib/academy-display";
+import { getAcademyContext } from "@/lib/academy-context";
 import type {
   AttendanceReportRow,
   Circle,
@@ -51,6 +52,8 @@ export default async function ReportsPage({
 
   await requireAdminSession(`/${academySlug}/admin/reports`);
 
+  const academy = await getAcademyContext(academySlug);
+
   const query = await searchParams;
   const range = resolveRange(query);
 
@@ -69,6 +72,7 @@ export default async function ReportsPage({
       p_gender: gender,
       p_circle_id: circleId,
       p_teacher_id: teacherId,
+      p_academy_id: academy?.id ?? null,
     }),
     supabase.from("circles").select("*").order("name"),
     supabase.from("teachers").select("*").order("name"),

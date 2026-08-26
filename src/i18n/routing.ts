@@ -1,13 +1,14 @@
 import { defineRouting } from "next-intl/routing";
 
 /**
- * Arabic is the default and lives at the unprefixed root (`/register`).
- * English is served under `/en` (`/en/register`).
+ * Every URL carries the locale prefix: /ar/sohbah, /en/sohbah.
+ * This keeps routing unambiguous — without it Next.js cannot distinguish
+ * /sohbah (locale segment?) from /ar/sohbah ([locale]/[academy]).
  */
 export const routing = defineRouting({
   locales: ["ar", "en"],
   defaultLocale: "ar",
-  localePrefix: "as-needed",
+  localePrefix: "always",
 });
 
 export type Locale = (typeof routing.locales)[number];

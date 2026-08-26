@@ -40,7 +40,7 @@ export default async function LoginPage({
   // Nothing to do here for someone who can already work.
   const session = await getTeacherSession();
   if (isActiveTeacher(session)) {
-    redirect(`/${academySlug}/dashboard`);
+    redirect(`/${locale}/${academySlug}/dashboard`);
   }
 
   return (

@@ -7,6 +7,7 @@ export default async function Home({ params }: HomeProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  // Sohbah is the only academy — redirect directly.
-  redirect("/sohbah");
+  // Sohbah is the only academy. Build the full path explicitly so
+  // there is no ambiguity with next-intl's locale prefix handling.
+  redirect(`/${locale}/sohbah`);
 }

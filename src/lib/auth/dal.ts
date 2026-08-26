@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
-import { redirect } from "@/i18n/navigation";
 import type { Teacher } from "@/lib/database.types";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
@@ -76,10 +76,8 @@ export async function requireTeacherSession(
 
   const locale = await getLocale();
   // `redirect` throws; returning it is what tells TypeScript so.
-  return redirect({
-    href: next ? { pathname: "/login", query: { next } } : "/login",
-    locale,
-  });
+  const loginPath = `/${locale}/sohbah/login${next ? `?next=${encodeURIComponent(next)}` : ""}`;
+  return redirect(loginPath);
 }
 
 /** A teacher who may actually act: linked to an auth user and not deactivated. */

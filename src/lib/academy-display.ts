@@ -1,4 +1,4 @@
-export const LOCALIZED_ACADEMY_SLUGS = ["itqan", "sohbah"] as const;
+export const LOCALIZED_ACADEMY_SLUGS = ["sohbah"] as const;
 
 export type LocalizedAcademySlug = (typeof LOCALIZED_ACADEMY_SLUGS)[number];
 
@@ -9,16 +9,6 @@ export const ACADEMY_BRANDING: Record<
     adminRole: { ar: string; en: string };
   }
 > = {
-  itqan: {
-    name: {
-      ar: "مقراءة إتقان الإلكترونية",
-      en: "Itqan Online Recitation",
-    },
-    adminRole: {
-      ar: "مشرف إتقان",
-      en: "Itqan Admin",
-    },
-  },
   sohbah: {
     name: {
       ar: "مقراءة صحبة الإلكترونية",
