@@ -1,5 +1,5 @@
 -- =============================================================================
--- Itqan Academy — MVP schema (v2)
+-- Sohbah Academy — MVP schema (v2)
 -- Target: Supabase / PostgreSQL 15+
 --
 -- Changes vs. the v1 draft in the original brief:

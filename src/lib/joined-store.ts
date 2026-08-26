@@ -16,7 +16,7 @@ const listeners = new Set<() => void>();
 
 /** Scoped per circle and per day, so yesterday's answer never leaks into today. */
 export function joinedKey(slug: string, sessionDate: string) {
-  return `itqan:joined:${slug}:${sessionDate}`;
+  return `sohbah:joined:${slug}:${sessionDate}`;
 }
 
 export function getJoined(key: string): Joined | null {

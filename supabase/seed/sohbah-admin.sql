@@ -86,7 +86,5 @@ returning id, name, role;
 -- 
 -- * The academy_id ties this teacher to Sohbah only
 -- * They will only see Sohbah circles, students, and teachers
--- * They can create new Sohbah circles but not Itqan circles
--- * If you need an admin who can access BOTH academies, you would need
---   to implement a "super admin" concept, which is beyond the current scope
+-- * They can create new Sohbah circles only
 -- =============================================================================
