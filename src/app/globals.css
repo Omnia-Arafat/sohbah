@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* -----------------------------------------------------------------------------
-   Itqan Academy — design tokens.  See docs/BRAND.md for the rationale.
+   Sohbah Academy — design tokens.
 
    Layout must never assume a direction: use logical utilities (ms-/me-/ps-/pe-,
    text-start/text-end, border-s/border-e) so Arabic RTL and English LTR both

@@ -1,13 +1,13 @@
 {
-  "name": "أكاديمية إتقان",
-  "short_name": "إتقان",
-  "description": "منصة إدارة حلقات القرآن الكريم",
+  "name": "مقراءة صحبة الإلكترونية",
+  "short_name": "صحبة",
+  "description": "برنامج تعليمي متكامل لحفظ القرآن الكريم",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f6f9f7",
-  "theme_color": "#1e6e51",
+  "background_color": "#ffffff",
+  "theme_color": "#4A5568",
   "icons": [
     {
       "src": "/icon-192.png",
