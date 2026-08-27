@@ -112,7 +112,7 @@ export default async function TeacherSessionPage({ params }: SessionPageProps) {
             >
               {tCircle("openSession")}
             </a>
-            <CopyLinkButton path={`/${academySlug}/circle/${circle.registration_slug}`} />
+            <CopyLinkButton path={`/${locale}/${academySlug}/circle/${circle.registration_slug}`} />
           </div>
 
           {info && !info.meets_today && (

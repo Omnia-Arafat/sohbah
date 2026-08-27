@@ -98,7 +98,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                   >
                     {t("manageSession")}
                   </Link>
-                  <CopyLinkButton path={`/${academySlug}/circle/${circle.registration_slug}`} />
+                  <CopyLinkButton path={`/${locale}/${academySlug}/circle/${circle.registration_slug}`} />
                 </div>
               </li>
             ))}
