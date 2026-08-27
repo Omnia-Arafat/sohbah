@@ -46,6 +46,14 @@ export async function generateMetadata({
     description: t("description"),
     applicationName: t("name"),
     manifest: "/manifest.webmanifest",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: t("name"),
+    },
+    formatDetection: {
+      telephone: false,
+    },
     openGraph: {
       title: t("name"),
       description: t("description"),
@@ -70,6 +78,11 @@ export default async function LocaleLayout({
       dir={localeDirection[locale as Locale]}
       className={`${cairo.variable} ${amiri.variable} h-full antialiased`}
     >
+      <head>
+        <meta name="theme-color" content="#4A5568" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+      </head>
       <body className="flex min-h-full flex-col font-sans">
         <NextIntlClientProvider>
           {children}
