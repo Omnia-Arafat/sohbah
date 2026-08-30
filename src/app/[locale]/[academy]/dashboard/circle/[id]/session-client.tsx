@@ -242,28 +242,34 @@ export function SessionClient({
                   <p className="truncate font-semibold">{entry.name}</p>
                 </div>
 
-                <div className="flex shrink-0 flex-col gap-1">
+                {/* One bordered pill rather than two loose buttons: the pair
+                    reads as a single "move this row" control. */}
+                <div
+                  className="flex shrink-0 flex-col overflow-hidden rounded-xl
+                             border border-border-subtle bg-surface shadow-sm"
+                >
                   <button
                     type="button"
                     onClick={() => move(entry, -1)}
                     disabled={index === 0 || busy !== null}
                     aria-label={t("reorder.up")}
-                    className="rounded-lg border border-border-subtle px-2 py-0.5
-                               text-sm transition-colors hover:bg-surface-muted
-                               disabled:opacity-40"
+                    title={t("reorder.up")}
+                    className={REORDER_BUTTON}
                   >
-                    ↑
+                    <ChevronIcon className="transition-transform duration-150 group-hover:-translate-y-0.5" />
                   </button>
+
+                  <span aria-hidden="true" className="h-px bg-border-subtle" />
+
                   <button
                     type="button"
                     onClick={() => move(entry, 1)}
                     disabled={index === queue.length - 1 || busy !== null}
                     aria-label={t("reorder.down")}
-                    className="rounded-lg border border-border-subtle px-2 py-0.5
-                               text-sm transition-colors hover:bg-surface-muted
-                               disabled:opacity-40"
+                    title={t("reorder.down")}
+                    className={REORDER_BUTTON}
                   >
-                    ↓
+                    <ChevronIcon className="rotate-180 transition-transform duration-150 group-hover:translate-y-0.5" />
                   </button>
                 </div>
 
@@ -273,9 +279,12 @@ export function SessionClient({
                   disabled={busy !== null}
                   aria-label={t("remove.label")}
                   title={t("remove.label")}
-                  className="shrink-0 self-center rounded-lg border border-border-subtle
-                             p-2 text-absent transition-colors hover:bg-absent
-                             hover:text-white disabled:opacity-40"
+                  className="flex h-9 w-9 shrink-0 self-center items-center justify-center
+                             rounded-xl border border-border-subtle bg-surface text-absent
+                             shadow-sm transition-colors duration-150 hover:border-absent
+                             hover:bg-absent hover:text-white focus-visible:outline-2
+                             focus-visible:outline-offset-2 focus-visible:outline-absent
+                             disabled:pointer-events-none disabled:opacity-25"
                 >
                   <TrashIcon />
                 </button>
@@ -336,6 +345,36 @@ export function SessionClient({
         </ol>
       )}
     </div>
+  );
+}
+
+/**
+ * Sized for a thumb (36×32) — reordering happens on a phone mid-session, and
+ * the old text arrows were a ~14px tap target.
+ */
+const REORDER_BUTTON =
+  "group flex h-8 w-9 items-center justify-center text-muted-foreground " +
+  "transition-colors duration-150 hover:bg-brand-50 hover:text-brand-700 " +
+  "active:bg-brand-100 focus-visible:outline-2 focus-visible:-outline-offset-2 " +
+  "focus-visible:outline-brand-600 disabled:pointer-events-none " +
+  "disabled:opacity-25 dark:hover:bg-brand-900 dark:hover:text-brand-100 " +
+  "dark:active:bg-brand-800";
+
+/** Points up by default; the down button rotates it 180°. */
+function ChevronIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={`h-4 w-4 ${className}`}
+      aria-hidden="true"
+    >
+      <path d="M6 14l6-6 6 6" />
+    </svg>
   );
 }
 
