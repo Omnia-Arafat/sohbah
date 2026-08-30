@@ -6,6 +6,7 @@ import { TeacherAccountNotice } from "@/components/teacher-account-notice";
 import { Link } from "@/i18n/navigation";
 import { isActiveTeacher, requireTeacherSession } from "@/lib/auth/dal";
 import type { Circle } from "@/lib/database.types";
+import { formatTime } from "@/lib/format-time";
 import { createClient } from "@/lib/supabase/server";
 
 type DashboardPageProps = { params: Promise<{ locale: string; academy: string }> };
@@ -84,7 +85,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                     </p>
                     <h3 className="truncate text-lg font-semibold">{circle.name}</h3>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {tCircle("startsAt", { time: circle.start_time.slice(0, 5) })}
+                      {tCircle("startsAt", { time: formatTime(circle.start_time, locale) })}
                     </p>
                   </div>
                   <span className="badge-done shrink-0">
@@ -125,7 +126,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                   </p>
                   <h3 className="truncate font-semibold">{circle.name}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {tCircle("startsAt", { time: circle.start_time.slice(0, 5) })}
+                    {tCircle("startsAt", { time: formatTime(circle.start_time, locale) })}
                     {" · "}
                     {circle.days_of_week
                       .slice()

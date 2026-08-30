@@ -6,6 +6,7 @@ import { TeacherAccountNotice } from "@/components/teacher-account-notice";
 import { BackLink } from "@/components/back-link";
 import { isActiveTeacher, requireTeacherSession } from "@/lib/auth/dal";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { formatTime } from "@/lib/format-time";
 import { createClient } from "@/lib/supabase/server";
 import { SessionClient } from "./session-client";
 
@@ -98,7 +99,7 @@ export default async function TeacherSessionPage({ params }: SessionPageProps) {
             {circle.name}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {tCircle("startsAt", { time: circle.start_time.slice(0, 5) })}
+            {tCircle("startsAt", { time: formatTime(circle.start_time, locale) })}
             {" · "}
             <span dir="ltr">{circle.timezone}</span>
           </p>

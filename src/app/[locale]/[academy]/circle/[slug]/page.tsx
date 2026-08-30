@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SetupNotice } from "@/components/setup-notice";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { formatTime } from "@/lib/format-time";
 import { createClient } from "@/lib/supabase/server";
 import { CircleClient } from "./circle-client";
 
@@ -66,7 +67,7 @@ export default async function CirclePage({ params }: CirclePageProps) {
           {circle.name}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {t("startsAt", { time: circle.start_time.slice(0, 5) })}
+          {t("startsAt", { time: formatTime(circle.start_time, locale) })}
         </p>
 
         {!circle.meets_today && (

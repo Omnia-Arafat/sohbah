@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { BackLink } from "@/components/back-link";
 import { requireTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
+import { formatTime } from "@/lib/format-time";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
 import { createClient } from "@/lib/supabase/server";
 import { getAcademyBySlug } from "@/lib/academy-dal";
@@ -127,7 +128,7 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
                       {tCircles("teacherLabel", { name: circle.teacher?.name || tCircles("unknown") })}
                     </p>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {t("circle.startsAt", { time: circle.start_time.slice(0, 5) })} ·{" "}
+                      {t("circle.startsAt", { time: formatTime(circle.start_time, locale) })} ·{" "}
                       {circle.days_of_week
                         .slice()
                         .sort((a, b) => a - b)
