@@ -10,11 +10,23 @@ import { getAcademyBySlug } from "@/lib/academy-dal";
 const CIRCLE_TYPES: CircleType[] = ["tasheeh", "tajweed", "free_recitation"];
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
-type UpdateCircleState =
+type CircleFormValues = {
+  name: string;
+  type: string;
+  gender_category: string;
+  teacher_id: string;
+  session_link: string;
+  start_time: string;
+  duration_minutes: number;
+  days_of_week: number[];
+  status: string;
+};
+
+export type UpdateCircleState =
   | { status: "idle" }
   | { status: "success"; message: string }
   | { status: "error"; message: string }
-  | { status: "invalid"; values: any; fieldErrors: Record<string, string> };
+  | { status: "invalid"; values: CircleFormValues; fieldErrors: Record<string, string> };
 
 export async function updateCircle(
   _previous: UpdateCircleState,
@@ -22,8 +34,9 @@ export async function updateCircle(
 ): Promise<UpdateCircleState> {
   const circleId = formData.get("circleId")?.toString();
   const academySlug = formData.get("academySlug")?.toString();
+  const locale = formData.get("locale")?.toString();
   
-  if (!circleId || !academySlug) {
+  if (!circleId || !academySlug || !locale) {
     return { status: "error", message: "Missing required parameters" };
   }
 
@@ -45,7 +58,9 @@ export async function updateCircle(
   const gender = formData.get("gender")?.toString() || "";
   const teacher_id = formData.get("teacher_id")?.toString() || "";
   const sessionLink = formData.get("sessionLink")?.toString().trim() || "";
-  const startTime = formData.get("startTime")?.toString() || "";
+  // A native time input normally submits HH:MM, but normalize defensively in
+  // case a browser sends the seconds included in PostgreSQL's `time` value.
+  const startTime = (formData.get("startTime")?.toString() || "").slice(0, 5);
   const duration = formData.get("duration")?.toString() || "";
   const status = formData.get("status")?.toString() || "active";
   const days = formData
@@ -119,7 +134,7 @@ export async function updateCircle(
   // Update in database
   const supabase = await createClient();
   
-  const { error } = await supabase
+  const { data: updatedCircle, error } = await supabase
     .from("circles")
     .update({
       name,
@@ -133,15 +148,17 @@ export async function updateCircle(
       is_active: status === "active",
     })
     .eq("id", circleId)
-    .eq("academy_id", academy.id);
+    .eq("academy_id", academy.id)
+    .select("id")
+    .maybeSingle();
 
-  if (error) {
+  if (error || !updatedCircle) {
     console.error("Failed to update circle:", error);
     return { status: "error", message: "Failed to save changes" };
   }
 
-  revalidatePath(`/${academySlug}/admin/circles`);
-  revalidatePath(`/${academySlug}/admin/circles/${circleId}/edit`);
+  revalidatePath(`/${locale}/${academySlug}/admin/circles`);
+  revalidatePath(`/${locale}/${academySlug}/admin/circles/${circleId}/edit`);
   
   return { status: "success", message: "Changes saved successfully" };
 }

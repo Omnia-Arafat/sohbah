@@ -6,11 +6,18 @@ import { createClient } from "@/lib/supabase/server";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import type { GenderCategory } from "@/lib/database.types";
 
-type UpdateStudentState =
+type StudentFormValues = {
+  name: string;
+  father_name: string;
+  phone: string | null;
+  gender_category: string;
+};
+
+export type UpdateStudentState =
   | { status: "idle" }
   | { status: "success"; message: string }
   | { status: "error"; message: string }
-  | { status: "invalid"; values: any; fieldErrors: Record<string, string> };
+  | { status: "invalid"; values: StudentFormValues; fieldErrors: Record<string, string> };
 
 export async function updateStudent(
   _previous: UpdateStudentState,
@@ -18,8 +25,9 @@ export async function updateStudent(
 ): Promise<UpdateStudentState> {
   const studentId = formData.get("studentId")?.toString();
   const academySlug = formData.get("academySlug")?.toString();
+  const locale = formData.get("locale")?.toString();
 
-  if (!studentId || !academySlug) {
+  if (!studentId || !academySlug || !locale) {
     return { status: "error", message: "Missing required parameters" };
   }
 
@@ -65,7 +73,7 @@ export async function updateStudent(
   // Update in database
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const { data: updatedStudent, error } = await supabase
     .from("students")
     .update({
       name,
@@ -74,15 +82,17 @@ export async function updateStudent(
       gender_category: gender as GenderCategory,
     })
     .eq("id", studentId)
-    .eq("academy_id", academy.id);
+    .eq("academy_id", academy.id)
+    .select("id")
+    .maybeSingle();
 
-  if (error) {
+  if (error || !updatedStudent) {
     console.error("Failed to update student:", error);
     return { status: "error", message: "Failed to save changes" };
   }
 
-  revalidatePath(`/${academySlug}/admin/students`);
-  revalidatePath(`/${academySlug}/admin/students/${studentId}/edit`);
+  revalidatePath(`/${locale}/${academySlug}/admin/students`);
+  revalidatePath(`/${locale}/${academySlug}/admin/students/${studentId}/edit`);
 
   return { status: "success", message: "Changes saved successfully" };
 }

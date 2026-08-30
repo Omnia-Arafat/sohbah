@@ -5,7 +5,7 @@ import { useFormStatus } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { getTeacherDisplayLabel } from "@/lib/academy-display";
-import { updateCircle } from "./actions";
+import { updateCircle, type UpdateCircleState } from "./actions";
 
 const CIRCLE_TYPES = ["tasheeh", "tajweed", "free_recitation"] as const;
 const DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
@@ -52,10 +52,19 @@ export function EditCircleForm({ circle, teachers, academySlug }: EditCircleForm
   const t = useTranslations("admin.circles");
   const tCircle = useTranslations("circle");
   const tDashboard = useTranslations("dashboard");
-  const [state, formAction] = useActionState(updateCircle, { status: "idle" });
+  const [state, formAction] = useActionState<UpdateCircleState, FormData>(
+    updateCircle,
+    { status: "idle" },
+  );
 
-  const values = state.status === "idle" ? circle : (state as any).values || circle;
-  const fieldErrors = state.status === "invalid" ? (state as any).fieldErrors : {};
+  const values = state.status === "invalid" ? state.values : circle;
+  const fieldErrors = state.status === "invalid" ? state.fieldErrors : {};
+  const selectedStatus =
+    state.status === "invalid"
+      ? state.values.status
+      : circle.is_active
+        ? "active"
+        : "inactive";
 
   function fieldError(key: string) {
     const error = fieldErrors[key];
@@ -67,6 +76,7 @@ export function EditCircleForm({ circle, teachers, academySlug }: EditCircleForm
     <form action={formAction} className="card flex flex-col gap-5" noValidate>
       <input type="hidden" name="circleId" value={circle.id} />
       <input type="hidden" name="academySlug" value={academySlug} />
+      <input type="hidden" name="locale" value={locale} />
 
       <div>
         <label className="field-label" htmlFor="name">
@@ -207,7 +217,9 @@ export function EditCircleForm({ circle, teachers, academySlug }: EditCircleForm
           type="time"
           dir="ltr"
           className="input text-start"
-          defaultValue={values.start_time}
+          // PostgreSQL returns `time` values with seconds, while browser time
+          // inputs submit HH:MM. Keep the edit form on that shared format.
+          defaultValue={String(values.start_time).slice(0, 5)}
           required
           aria-invalid={Boolean(fieldErrors.startTime)}
         />
@@ -240,7 +252,7 @@ export function EditCircleForm({ circle, teachers, academySlug }: EditCircleForm
           id="status"
           name="status"
           className="input"
-          defaultValue={values.is_active !== undefined ? (values.is_active ? "active" : "inactive") : (values.status ?? "active")}
+          defaultValue={selectedStatus}
         >
           <option value="active">{t("statusActive")}</option>
           <option value="inactive">{t("statusInactive")}</option>
@@ -249,7 +261,7 @@ export function EditCircleForm({ circle, teachers, academySlug }: EditCircleForm
       </div>
 
       {state.status === "error" && (
-        <p className="text-sm text-absent">{(state as any).message}</p>
+        <p className="text-sm text-absent">{state.message}</p>
       )}
 
       {state.status === "success" && (

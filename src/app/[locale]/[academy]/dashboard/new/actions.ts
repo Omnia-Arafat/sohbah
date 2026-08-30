@@ -109,34 +109,38 @@ export async function createCircle(
   const sessionLink = normalizeSessionLink(values.sessionLink);
 
   const supabase = await createClient();
-  const { error } = await supabase.from("circles").insert({
-    teacher_id: session.teacher.id,
-    academy_id: academy.id,
-    name: values.name,
-    type: values.type as CircleType,
-    gender_category: values.gender as GenderCategory,
-    session_link: sessionLink,
-    timezone: values.timezone,
-    start_time: values.startTime,
-    duration_minutes: Number(values.duration),
-    days_of_week: values.days.slice().sort((a, b) => a - b),
-    registration_slug: registrationSlug,
-  });
+  const { data: createdCircle, error } = await supabase
+    .from("circles")
+    .insert({
+      teacher_id: session.teacher.id,
+      academy_id: academy.id,
+      name: values.name,
+      type: values.type as CircleType,
+      gender_category: values.gender as GenderCategory,
+      session_link: sessionLink,
+      timezone: values.timezone,
+      start_time: values.startTime,
+      duration_minutes: Number(values.duration),
+      days_of_week: values.days.slice().sort((a, b) => a - b),
+      registration_slug: registrationSlug,
+    })
+    .select("registration_slug")
+    .single();
 
-  if (error) {
+  if (error || createdCircle?.registration_slug !== registrationSlug) {
     console.error("circle insert failed", error);
     const reason =
-      error.code === "23505"
+      error?.code === "23505"
         ? "slugTaken"
-        : error.code === "22023"
+        : error?.code === "22023"
           ? "timezoneInvalid"
-          : error.code === "42501"
+          : error?.code === "42501"
             ? "forbidden"
             : "generic";
     return { status: "failed", values, reason };
   }
 
   const locale = await getLocale();
-  revalidatePath(`/${academySlug}/dashboard`);
+  revalidatePath(`/${locale}/${academySlug}/dashboard`);
   return redirect({ href: `/${academySlug}/dashboard`, locale });
 }

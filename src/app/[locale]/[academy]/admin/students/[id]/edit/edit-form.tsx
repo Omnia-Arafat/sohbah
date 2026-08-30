@@ -2,9 +2,9 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { updateStudent } from "./actions";
+import { updateStudent, type UpdateStudentState } from "./actions";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -31,16 +31,18 @@ type EditStudentFormProps = {
 };
 
 export function EditStudentForm({ student, academySlug }: EditStudentFormProps) {
+  const locale = useLocale();
   const t = useTranslations("admin.students");
   const tDashboard = useTranslations("dashboard");
-  const [state, formAction] = useActionState(updateStudent, { status: "idle" });
+  const [state, formAction] = useActionState<UpdateStudentState, FormData>(
+    updateStudent,
+    { status: "idle" },
+  );
 
   const values =
-    state.status === "idle"
-      ? student
-      : (state as any).values || student;
+    state.status === "invalid" ? state.values : student;
   const fieldErrors =
-    state.status === "invalid" ? (state as any).fieldErrors : {};
+    state.status === "invalid" ? state.fieldErrors : {};
 
   function fieldError(key: string) {
     const error = fieldErrors[key];
@@ -52,6 +54,7 @@ export function EditStudentForm({ student, academySlug }: EditStudentFormProps) 
     <form action={formAction} className="card flex flex-col gap-5" noValidate>
       <input type="hidden" name="studentId" value={student.id} />
       <input type="hidden" name="academySlug" value={academySlug} />
+      <input type="hidden" name="locale" value={locale} />
 
       <div>
         <label className="field-label" htmlFor="name">
@@ -128,7 +131,7 @@ export function EditStudentForm({ student, academySlug }: EditStudentFormProps) 
       </fieldset>
 
       {state.status === "error" && (
-        <p className="text-sm text-absent">{(state as any).message}</p>
+        <p className="text-sm text-absent">{state.message}</p>
       )}
 
       {state.status === "success" && (

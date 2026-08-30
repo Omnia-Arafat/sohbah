@@ -36,7 +36,7 @@ export function EditCircleForm({ circle, locale }: { circle: Circle; locale: str
   const fieldErrors = state.status === "invalid" ? state.fieldErrors : {};
   const selectedDays = values?.days ?? circle.days_of_week;
   const isActive = values?.isActive ?? circle.is_active;
-  const circlePath = `/${locale}/circle/${circle.registration_slug}`;
+  const circlePath = `/${locale}/sohbah/circle/${circle.registration_slug}`;
   const deleteCircleAction = async () => {
     await deleteCircle(circle.id);
   };

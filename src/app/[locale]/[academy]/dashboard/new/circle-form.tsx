@@ -3,7 +3,6 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { useTranslations } from "next-intl";
-import { CopyLinkButton } from "@/components/copy-link-button";
 import { createCircle } from "./actions";
 import { initialNewCircleState, type NewCircleState } from "./state";
 
@@ -26,14 +25,12 @@ function SubmitButton() {
 type CircleFormProps = {
   defaultTimezone: string;
   registrationSlug: string;
-  locale: string;
   academySlug: string;
 };
 
 export function CircleForm({
   defaultTimezone,
   registrationSlug,
-  locale,
   academySlug,
 }: CircleFormProps) {
   const t = useTranslations("dashboard.new");
@@ -49,7 +46,6 @@ export function CircleForm({
   const values = state.status === "idle" ? null : state.values;
   const fieldErrors = state.status === "invalid" ? state.fieldErrors : {};
   const selectedDays = values?.days ?? DEFAULT_DAYS;
-  const circlePath = `/${locale}/circle/${registrationSlug}`;
 
   function fieldError(key: keyof typeof fieldErrors) {
     const error = fieldErrors[key];
@@ -188,26 +184,6 @@ export function CircleForm({
           aria-invalid={Boolean(fieldErrors.startTime)}
         />
         {fieldError("startTime")}
-      </div>
-
-      <div>
-        <label className="field-label" htmlFor="circleLink">
-          {t("fields.slug")}
-        </label>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <input
-            id="circleLink"
-            dir="ltr"
-            className="input min-w-0 flex-1 text-start"
-            value={circlePath}
-            readOnly
-            aria-readonly="true"
-          />
-          <CopyLinkButton path={circlePath} />
-        </div>
-        <p className="mt-1.5 text-sm text-muted-foreground">
-          {t("fields.slugHint")}
-        </p>
       </div>
 
       {state.status === "failed" && (

@@ -158,7 +158,7 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
                     </svg>
                     {tCircles("session")}
                   </Link>
-                  <CopyLinkButton path={`/circle/${circle.registration_slug}`} />
+                  <CopyLinkButton path={`/${locale}/${academySlug}/circle/${circle.registration_slug}`} />
                   <Link
                     href={`/${academySlug}/admin/circles/${circle.id}/delete`}
                     className="btn-secondary flex items-center gap-1.5 px-3 py-2 text-sm text-absent hover:bg-red-50 hover:border-red-300 dark:hover:bg-red-950"

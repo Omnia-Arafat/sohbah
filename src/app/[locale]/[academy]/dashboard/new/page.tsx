@@ -52,7 +52,6 @@ export default async function NewCirclePage({ params }: NewCirclePageProps) {
       <CircleForm
         defaultTimezone={DEFAULT_TIMEZONE}
         registrationSlug={`halaqa-${randomUUID()}`}
-        locale={locale}
         academySlug={academySlug}
       />
     </div>
