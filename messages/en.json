@@ -277,6 +277,10 @@
       "up": "Move up",
       "down": "Move down"
     },
+    "remove": {
+      "label": "Remove from queue",
+      "confirm": "Remove {name} from today's queue?"
+    },
     "errors": {
       "generic": "That did not work. Please try again."
     }

@@ -133,6 +133,55 @@ export function SessionClient({
     }
   }
 
+  /**
+   * Removing a student deletes their `attendance_records` row for today, which
+   * leaves a hole in `queue_order`; the follow-up `reorder_queue()` closes it.
+   * Nothing stops the student rejoining from the circle link — this clears the
+   * live order, it is not a ban.
+   */
+  async function remove(entry: QueueEntry) {
+    if (!window.confirm(t("remove.confirm", { name: entry.name }))) return;
+
+    const remaining = queue.filter(
+      (row) => row.attendance_id !== entry.attendance_id,
+    );
+
+    setBusy(entry.attendance_id);
+    setError(null);
+    setQueue(
+      remaining.map((row, position) => ({ ...row, queue_order: position + 1 })),
+    );
+
+    const { error: deleteError } = await supabase
+      .from("attendance_records")
+      .delete()
+      .eq("id", entry.attendance_id);
+
+    if (deleteError) {
+      console.error("attendance delete failed", deleteError);
+      setBusy(null);
+      setError("generic");
+      await refreshQueue();
+      return;
+    }
+
+    const { error: reorderError } = await supabase.rpc("reorder_queue", {
+      p_circle_id: circleId,
+      p_session_date: sessionDate,
+      p_student_ids: remaining.map((row) => row.student_id),
+    });
+
+    setBusy(null);
+
+    // The row is already gone, so a failed renumber is cosmetic: refetch and
+    // show the real positions rather than pretending the gap was closed.
+    if (reorderError) {
+      console.error("reorder_queue failed", reorderError);
+      setError("generic");
+      await refreshQueue();
+    }
+  }
+
   const counts = {
     present: queue.filter((row) => row.attendance_status === "present").length,
     absent: queue.filter((row) => row.attendance_status === "absent").length,
@@ -217,6 +266,19 @@ export function SessionClient({
                     ↓
                   </button>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => remove(entry)}
+                  disabled={busy !== null}
+                  aria-label={t("remove.label")}
+                  title={t("remove.label")}
+                  className="shrink-0 self-center rounded-lg border border-border-subtle
+                             p-2 text-absent transition-colors hover:bg-absent
+                             hover:text-white disabled:opacity-40"
+                >
+                  <TrashIcon />
+                </button>
               </div>
 
               <div className="flex flex-col gap-2">
@@ -274,6 +336,26 @@ export function SessionClient({
         </ol>
       )}
     </div>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4"
+      aria-hidden="true"
+    >
+      <path d="M3 6h18" />
+      <path d="M8 6V4h8v2" />
+      <path d="M6 6l1 14h10l1-14" />
+      <path d="M10 11v5M14 11v5" />
+    </svg>
   );
 }
 
