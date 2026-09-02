@@ -24,7 +24,22 @@ function splitLocale(pathname: string): { locale: Locale | null; rest: string } 
   return { locale: null, rest: pathname };
 }
 
+/**
+ * The admin landing page is its own sign-in screen, so a signed-out visitor
+ * has to be allowed to reach it — redirecting them to the teachers' page would
+ * defeat the point of giving out `/admin` as an address. Everything *below*
+ * `/admin` stays protected, and the page itself renders a form rather than any
+ * data until `requireStaffSession()` / `requireAdminSession()` is satisfied.
+ *
+ *   /sohbah/admin          → open (renders the sign-in form)
+ *   /sohbah/admin/teachers → protected
+ */
+function isAdminLanding(pathname: string) {
+  return /^\/[^/]+\/admin\/?$/.test(pathname);
+}
+
 function isProtected(pathname: string) {
+  if (isAdminLanding(pathname)) return false;
   const segments = pathname.split("/").filter(Boolean);
   return segments.some((seg) => PROTECTED_SEGMENTS.includes(seg));
 }

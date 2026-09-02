@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { Amiri, Cairo } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
+import { QueryProvider } from "@/components/query-provider";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { localeDirection, routing, type Locale } from "@/i18n/routing";
 import "../globals.css";
@@ -85,7 +86,7 @@ export default async function LocaleLayout({
       </head>
       <body className="flex min-h-full flex-col font-sans">
         <NextIntlClientProvider>
-          {children}
+          <QueryProvider>{children}</QueryProvider>
         </NextIntlClientProvider>
       </body>
     </html>

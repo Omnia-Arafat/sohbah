@@ -115,6 +115,20 @@
     @apply mb-1.5 block text-sm font-medium text-foreground;
   }
 
+  /* The report's from/to dates matter only for the "custom" range preset, so
+     they stay hidden until it is selected.
+
+     Done with `:has()` rather than a client component because the whole report
+     form is a plain GET form that works without JavaScript, and revealing the
+     fields only after a submit would be worse than always showing them.
+
+     The rule is written to *hide* rather than to *show*: a browser without
+     `:has()` support matches nothing, leaves the fields visible, and the form
+     behaves exactly as it did before. */
+  .range-form:has(#range option[value="custom"]:not(:checked)) .range-custom-only {
+    display: none;
+  }
+
   .input {
     @apply w-full rounded-xl border border-border-subtle bg-surface px-4 py-3
            text-base text-foreground placeholder:text-muted-foreground

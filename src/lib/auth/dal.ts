@@ -95,10 +95,26 @@ export function isAdmin(
 }
 
 /**
- * Guard for the `/admin` area. A signed-in non-admin gets a 404 rather than a
- * "forbidden" page: the admin screens are not something a plain teacher should
- * learn the existence of, and `attendance_report()` returns nothing for them
- * anyway.
+ * Guard for screens that only *read*. Any approved person — معلمة or مشرفة —
+ * may look at the admin area; the controls that change something are gated
+ * separately with `isAdmin()`, and every server action re-checks for itself.
+ *
+ * This is deliberately a single tier for now. When the real per-role
+ * permissions are defined, this is the seam they belong in.
+ *
+ * @param next Path to return to after signing in. Must be locale-free.
+ */
+export async function requireStaffSession(
+  next?: string,
+): Promise<TeacherSession & { teacher: Teacher }> {
+  const session = await requireTeacherSession(next);
+  if (isActiveTeacher(session)) return session;
+  notFound();
+}
+
+/**
+ * Guard for screens and actions that *change* something. A signed-in non-admin
+ * gets a 404 rather than a "forbidden" page.
  *
  * @param next Path to return to after signing in. Must be locale-free.
  */

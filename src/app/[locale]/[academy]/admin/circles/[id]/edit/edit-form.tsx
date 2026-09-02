@@ -66,10 +66,13 @@ export function EditCircleForm({ circle, teachers, academySlug }: EditCircleForm
         ? "active"
         : "inactive";
 
+  /** The action returns message keys, not sentences, so it stays locale-free. */
   function fieldError(key: string) {
     const error = fieldErrors[key];
     if (!error) return null;
-    return <p className="mt-1.5 text-sm text-absent">{error}</p>;
+    return (
+      <p className="mt-1.5 text-sm text-absent">{t(`errors.${error}`)}</p>
+    );
   }
 
   return (
@@ -261,7 +264,7 @@ export function EditCircleForm({ circle, teachers, academySlug }: EditCircleForm
       </div>
 
       {state.status === "error" && (
-        <p className="text-sm text-absent">{state.message}</p>
+        <p className="text-sm text-absent">{t(`errors.${state.message}`)}</p>
       )}
 
       {state.status === "success" && (

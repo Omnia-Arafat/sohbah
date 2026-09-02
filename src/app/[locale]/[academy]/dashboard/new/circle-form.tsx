@@ -24,12 +24,17 @@ function SubmitButton() {
 
 type CircleFormProps = {
   defaultTimezone: string;
+  /** Non-empty only for admins; a plain teacher owns the circles they create. */
+  assignableTeachers: { id: string; label: string }[];
+  defaultTeacherId: string;
   registrationSlug: string;
   academySlug: string;
 };
 
 export function CircleForm({
   defaultTimezone,
+  assignableTeachers,
+  defaultTeacherId,
   registrationSlug,
   academySlug,
 }: CircleFormProps) {
@@ -73,6 +78,34 @@ export function CircleForm({
         />
         {fieldError("name")}
       </div>
+
+      {/*
+        Admins may hand a circle to any active teacher; a plain teacher always
+        owns what they create, so they get a hidden field instead of a picker
+        they could use to assign work to somebody else.
+      */}
+      {assignableTeachers.length > 0 ? (
+        <div>
+          <label className="field-label" htmlFor="teacherId">
+            {t("fields.teacher")}
+          </label>
+          <select
+            id="teacherId"
+            name="teacherId"
+            className="input"
+            defaultValue={values?.teacherId || defaultTeacherId}
+          >
+            {assignableTeachers.map((teacher) => (
+              <option key={teacher.id} value={teacher.id}>
+                {teacher.label}
+              </option>
+            ))}
+          </select>
+          {fieldError("teacherId")}
+        </div>
+      ) : (
+        <input type="hidden" name="teacherId" value={defaultTeacherId} />
+      )}
 
       <div>
         <label className="field-label" htmlFor="type">

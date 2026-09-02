@@ -4,8 +4,11 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SetupNotice } from "@/components/setup-notice";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
 import { BackLink } from "@/components/back-link";
+import { getAcademyBySlug } from "@/lib/academy-dal";
+import { getTeacherDisplayLabel } from "@/lib/academy-display";
 import { isActiveTeacher, requireTeacherSession } from "@/lib/auth/dal";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { createClient } from "@/lib/supabase/server";
 import { DEFAULT_TIMEZONE } from "@/lib/timezones";
 import { CircleForm } from "./circle-form";
 
@@ -37,6 +40,13 @@ export default async function NewCirclePage({ params }: NewCirclePageProps) {
     );
   }
 
+  // Only admins choose an owner; for everyone else the list stays empty and the
+  // form falls back to a hidden field holding their own id.
+  const assignableTeachers = await loadAssignableTeachers(
+    session.teacher.role === "admin" ? academySlug : null,
+    locale,
+  );
+
   return (
     <div className="flex flex-col gap-6">
       <section>
@@ -51,9 +61,37 @@ export default async function NewCirclePage({ params }: NewCirclePageProps) {
 
       <CircleForm
         defaultTimezone={DEFAULT_TIMEZONE}
+        assignableTeachers={assignableTeachers}
+        defaultTeacherId={session.teacher.id}
         registrationSlug={`halaqa-${randomUUID()}`}
         academySlug={academySlug}
       />
     </div>
   );
+}
+
+/** Active teachers in the academy, labelled for the picker. */
+async function loadAssignableTeachers(academySlug: string | null, locale: string) {
+  if (!academySlug || !isSupabaseConfigured()) return [];
+
+  const academy = await getAcademyBySlug(academySlug);
+  if (!academy) return [];
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("teachers")
+    .select("*")
+    .eq("academy_id", academy.id)
+    .eq("is_active", true)
+    .order("name");
+
+  if (error) {
+    console.error("assignable teachers load failed", error);
+    return [];
+  }
+
+  return (data ?? []).map((teacher) => ({
+    id: teacher.id,
+    label: getTeacherDisplayLabel(teacher, academySlug, locale),
+  }));
 }

@@ -1,12 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ChevronUp, ChevronDown, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type {
-  AttendanceStatus,
-  QueueEntry,
-  RecitationStatus,
-} from "@/lib/database.types";
+import type { QueueEntry, RecitationStatus } from "@/lib/database.types";
 import { createClient } from "@/lib/supabase/client";
 
 type SessionClientProps = {
@@ -16,7 +14,6 @@ type SessionClientProps = {
   initialQueue: QueueEntry[];
 };
 
-const ATTENDANCE_OPTIONS: AttendanceStatus[] = ["present", "absent"];
 const RECITATION_OPTIONS: RecitationStatus[] = ["waiting", "reciting", "done"];
 
 export function SessionClient({
@@ -28,41 +25,48 @@ export function SessionClient({
   const t = useTranslations("session");
   const tCircle = useTranslations("circle");
   const supabase = useMemo(() => createClient(), []);
+  const queryClient = useQueryClient();
 
-  const [queue, setQueue] = useState<QueueEntry[]>(initialQueue);
+  const queueKey = useMemo(() => ["circle-queue", slug] as const, [slug]);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const refreshQueue = useCallback(async () => {
+  /**
+   * Seeded from the server render and then left alone. The query defaults
+   * (see `QueryProvider`) switch off every automatic refetch, so this list is
+   * a snapshot: students who join mid-session, and edits made by anyone else,
+   * appear only when the page is refreshed.
+   */
+  const { data: queue = [] } = useQuery({
+    queryKey: queueKey,
+    queryFn: async () => {
+      const { data, error: queueError } = await supabase.rpc("circle_queue", {
+        p_slug: slug,
+      });
+      if (queueError) throw queueError;
+      return (data ?? []) as QueueEntry[];
+    },
+    initialData: initialQueue,
+  });
+
+  /** Writes the authoritative list into the cache after a failed mutation. */
+  const refreshQueue = async () => {
     const { data, error: queueError } = await supabase.rpc("circle_queue", {
       p_slug: slug,
     });
-    if (!queueError && data) setQueue(data);
-  }, [supabase, slug]);
+    if (!queueError && data) {
+      queryClient.setQueryData(queueKey, data as QueueEntry[]);
+    }
+  };
 
-  // The Realtime payload carries no student names, so an event is only a signal
-  // to refetch circle_queue(). This also picks up students joining mid-session.
-  useEffect(() => {
-    const channel = supabase
-      .channel(`teacher-circle:${circleId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "attendance_records",
-          filter: `circle_id=eq.${circleId}`,
-        },
-        () => {
-          void refreshQueue();
-        },
-      )
-      .subscribe();
-
-    return () => {
-      void supabase.removeChannel(channel);
-    };
-  }, [supabase, circleId, refreshQueue]);
+  /** Applies a local edit. The user's own action is reflected immediately. */
+  const setQueue = (
+    update: QueueEntry[] | ((current: QueueEntry[]) => QueueEntry[]),
+  ) => {
+    queryClient.setQueryData<QueueEntry[]>(queueKey, (current = []) =>
+      typeof update === "function" ? update(current) : update,
+    );
+  };
 
   /**
    * Writes go straight to `attendance_records`; the
@@ -70,13 +74,13 @@ export function SessionClient({
    */
   async function updateRow(
     entry: QueueEntry,
-    patch: Partial<Pick<QueueEntry, "attendance_status" | "recitation_status">>,
+    patch: Partial<Pick<QueueEntry, "recitation_status">>,
   ) {
     setBusy(entry.attendance_id);
     setError(null);
 
-    // Applied locally first so a one-click action feels immediate; the Realtime
-    // event that follows replaces this with the authoritative row.
+    // Written to the cache first so a one-click action feels immediate. Nothing
+    // refetches to confirm it — only a failure below pulls the real row back.
     setQueue((current) =>
       current.map((row) =>
         row.attendance_id === entry.attendance_id ? { ...row, ...patch } : row,
@@ -182,31 +186,31 @@ export function SessionClient({
     }
   }
 
+  // Everyone in the queue is present by definition, so the useful split is how
+  // far through the recitations the circle has got.
   const counts = {
-    present: queue.filter((row) => row.attendance_status === "present").length,
-    absent: queue.filter((row) => row.attendance_status === "absent").length,
-    pending: queue.filter((row) => row.attendance_status === "pending").length,
+    waiting: queue.filter((row) => row.recitation_status === "waiting").length,
+    reciting: queue.filter((row) => row.recitation_status === "reciting").length,
+    done: queue.filter((row) => row.recitation_status === "done").length,
   };
 
   return (
     <div className="flex flex-col gap-4">
-      <section className="card flex flex-wrap items-center gap-x-6 gap-y-2">
-        <p className="text-sm">
-          <span className="font-semibold">{queue.length}</span>{" "}
-          <span className="text-muted-foreground">{t("summary.joined")}</span>
-        </p>
-        <p className="text-sm">
-          <span className="font-semibold text-present">{counts.present}</span>{" "}
-          <span className="text-muted-foreground">{t("summary.present")}</span>
-        </p>
-        <p className="text-sm">
-          <span className="font-semibold text-absent">{counts.absent}</span>{" "}
-          <span className="text-muted-foreground">{t("summary.absent")}</span>
-        </p>
-        <p className="text-sm">
-          <span className="font-semibold">{counts.pending}</span>{" "}
-          <span className="text-muted-foreground">{t("summary.pending")}</span>
-        </p>
+      {/* Four equal cells rather than a wrapping row: the numbers stay in the
+          same place as they change, so the teacher can glance instead of read. */}
+      <section className="card grid grid-cols-4 gap-2 p-4 text-center">
+        <SummaryCell value={queue.length} label={t("summary.joined")} />
+        <SummaryCell value={counts.waiting} label={tCircle("status.waiting")} />
+        <SummaryCell
+          value={counts.reciting}
+          label={tCircle("status.reciting")}
+          tone="text-reciting"
+        />
+        <SummaryCell
+          value={counts.done}
+          label={tCircle("status.done")}
+          tone="text-present"
+        />
       </section>
 
       {error && (
@@ -222,123 +226,111 @@ export function SessionClient({
           {queue.map((entry, index) => (
             <li
               key={entry.attendance_id}
-              className={`card flex flex-col gap-3 ${
-                entry.recitation_status === "reciting"
-                  ? "border-accent-400 bg-accent-100/40"
-                  : entry.recitation_status === "done"
-                    ? "border-brand-300 bg-brand-50 dark:border-brand-800 dark:bg-brand-950"
-                  : ""
-              }`}
+              className={`card gap-0 overflow-hidden p-0 transition-colors ${cardToneClass(
+                entry.recitation_status,
+              )}`}
             >
-              <div className="flex items-start gap-3">
-                <span
-                  className="flex h-9 w-9 shrink-0 items-center justify-center
-                             rounded-full bg-surface-muted text-sm font-bold"
-                >
+              {/* Row 1 — identity and controls. The name column is the only
+                  `1fr` track, so long names truncate instead of shoving the
+                  buttons off a narrow screen. */}
+              <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 p-4">
+                <span className={positionBadgeClass(entry.recitation_status)}>
                   {entry.queue_order}
                 </span>
 
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold">{entry.name}</p>
+                <div className="min-w-0">
+                  <p className="truncate font-semibold leading-tight">
+                    {entry.name}
+                  </p>
+                  {entry.father_name && (
+                    <p className="truncate text-xs text-muted-foreground">
+                      {entry.father_name}
+                    </p>
+                  )}
                 </div>
 
-                {/* One bordered pill rather than two loose buttons: the pair
-                    reads as a single "move this row" control. */}
-                <div
-                  className="flex shrink-0 flex-col overflow-hidden rounded-xl
-                             border border-border-subtle bg-surface shadow-sm"
-                >
+                <div className="flex items-center gap-2">
+                  {/* One bordered pill rather than two loose buttons: the pair
+                      reads as a single "move this row" control. */}
+                  <div
+                    className="flex flex-col overflow-hidden rounded-xl
+                               border border-border-subtle bg-surface shadow-sm"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => move(entry, -1)}
+                      disabled={index === 0 || busy !== null}
+                      aria-label={t("reorder.up")}
+                      title={t("reorder.up")}
+                      className={REORDER_BUTTON}
+                    >
+                      <ChevronUp
+                        aria-hidden="true"
+                        className="h-4 w-4 transition-transform duration-150
+                                   group-hover:-translate-y-0.5"
+                      />
+                    </button>
+
+                    <span aria-hidden="true" className="h-px bg-border-subtle" />
+
+                    <button
+                      type="button"
+                      onClick={() => move(entry, 1)}
+                      disabled={index === queue.length - 1 || busy !== null}
+                      aria-label={t("reorder.down")}
+                      title={t("reorder.down")}
+                      className={REORDER_BUTTON}
+                    >
+                      <ChevronDown
+                        aria-hidden="true"
+                        className="h-4 w-4 transition-transform duration-150
+                                   group-hover:translate-y-0.5"
+                      />
+                    </button>
+                  </div>
+
                   <button
                     type="button"
-                    onClick={() => move(entry, -1)}
-                    disabled={index === 0 || busy !== null}
-                    aria-label={t("reorder.up")}
-                    title={t("reorder.up")}
-                    className={REORDER_BUTTON}
+                    onClick={() => remove(entry)}
+                    disabled={busy !== null}
+                    aria-label={t("remove.label")}
+                    title={t("remove.label")}
+                    className="flex h-9 w-9 items-center justify-center rounded-xl
+                               border border-border-subtle bg-surface text-absent
+                               shadow-sm transition-colors duration-150 hover:border-absent
+                               hover:bg-absent hover:text-white focus-visible:outline-2
+                               focus-visible:outline-offset-2 focus-visible:outline-absent
+                               disabled:pointer-events-none disabled:opacity-25"
                   >
-                    <ChevronIcon className="transition-transform duration-150 group-hover:-translate-y-0.5" />
-                  </button>
-
-                  <span aria-hidden="true" className="h-px bg-border-subtle" />
-
-                  <button
-                    type="button"
-                    onClick={() => move(entry, 1)}
-                    disabled={index === queue.length - 1 || busy !== null}
-                    aria-label={t("reorder.down")}
-                    title={t("reorder.down")}
-                    className={REORDER_BUTTON}
-                  >
-                    <ChevronIcon className="rotate-180 transition-transform duration-150 group-hover:translate-y-0.5" />
+                    <Trash2 aria-hidden="true" className="h-4 w-4" />
                   </button>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={() => remove(entry)}
-                  disabled={busy !== null}
-                  aria-label={t("remove.label")}
-                  title={t("remove.label")}
-                  className="flex h-9 w-9 shrink-0 self-center items-center justify-center
-                             rounded-xl border border-border-subtle bg-surface text-absent
-                             shadow-sm transition-colors duration-150 hover:border-absent
-                             hover:bg-absent hover:text-white focus-visible:outline-2
-                             focus-visible:outline-offset-2 focus-visible:outline-absent
-                             disabled:pointer-events-none disabled:opacity-25"
-                >
-                  <TrashIcon />
-                </button>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {t("attendance.label")}
-                  </span>
-                  {ATTENDANCE_OPTIONS.map((status) => (
-                    <button
-                      key={status}
-                      type="button"
-                      onClick={() =>
-                        updateRow(entry, {
-                          // Clicking the active state clears it back to pending,
-                          // so a mis-tap does not need a separate undo control.
-                          attendance_status:
-                            entry.attendance_status === status ? "pending" : status,
-                        })
-                      }
-                      disabled={busy !== null}
-                      aria-pressed={entry.attendance_status === status}
-                      className={statusButtonClass(
-                        entry.attendance_status === status,
-                        status === "present" ? "present" : "absent",
-                      )}
-                    >
-                      {t(`attendance.${status}`)}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {t("recitation.label")}
-                  </span>
-                  {RECITATION_OPTIONS.map((status) => (
-                    <button
-                      key={status}
-                      type="button"
-                      onClick={() => updateRow(entry, { recitation_status: status })}
-                      disabled={busy !== null}
-                      aria-pressed={entry.recitation_status === status}
-                      className={statusButtonClass(
-                        entry.recitation_status === status,
-                        status === "reciting" ? "accent" : "brand",
-                      )}
-                    >
-                      {tCircle(`status.${status}`)}
-                    </button>
-                  ))}
-                </div>
+              {/* Row 2 — recitation as a segmented control. Three equal tracks
+                  give each state the same weight and a full-width tap target,
+                  and the label is dropped: it is the only control left. */}
+              <div
+                role="group"
+                aria-label={t("recitation.label")}
+                className="grid grid-cols-3 gap-1 border-t border-border-subtle
+                           bg-surface-muted/60 p-1"
+              >
+                {RECITATION_OPTIONS.map((status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    onClick={() => updateRow(entry, { recitation_status: status })}
+                    disabled={busy !== null}
+                    aria-pressed={entry.recitation_status === status}
+                    className={segmentClass(
+                      entry.recitation_status === status,
+                      status,
+                    )}
+                  >
+                    {tCircle(`status.${status}`)}
+                  </button>
+                ))}
               </div>
             </li>
           ))}
@@ -360,62 +352,66 @@ const REORDER_BUTTON =
   "disabled:opacity-25 dark:hover:bg-brand-900 dark:hover:text-brand-100 " +
   "dark:active:bg-brand-800";
 
-/** Points up by default; the down button rotates it 180°. */
-function ChevronIcon({ className = "" }: { className?: string }) {
+function SummaryCell({
+  value,
+  label,
+  tone = "text-foreground",
+}: {
+  value: number;
+  label: string;
+  tone?: string;
+}) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={`h-4 w-4 ${className}`}
-      aria-hidden="true"
-    >
-      <path d="M6 14l6-6 6 6" />
-    </svg>
+    <div className="flex flex-col">
+      <span className={`text-2xl font-bold tabular-nums leading-none ${tone}`}>
+        {value}
+      </span>
+      <span className="mt-1 text-xs text-muted-foreground">{label}</span>
+    </div>
   );
 }
 
-function TrashIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-4 w-4"
-      aria-hidden="true"
-    >
-      <path d="M3 6h18" />
-      <path d="M8 6V4h8v2" />
-      <path d="M6 6l1 14h10l1-14" />
-      <path d="M10 11v5M14 11v5" />
-    </svg>
-  );
+/** The card's own tint. Gold is reserved for whoever is reciting right now. */
+function cardToneClass(status: RecitationStatus) {
+  if (status === "reciting") {
+    return "border-accent-400 bg-accent-100/40 shadow-md dark:bg-accent-700/15";
+  }
+  if (status === "done") {
+    return "border-brand-200 bg-brand-50/60 dark:border-brand-800 dark:bg-brand-950/50";
+  }
+  return "";
 }
 
-function statusButtonClass(
-  active: boolean,
-  tone: "present" | "absent" | "accent" | "brand",
-) {
+/** The queue position doubles as the status light, so the badge carries it. */
+function positionBadgeClass(status: RecitationStatus) {
   const base =
-    "rounded-full px-3 py-1.5 text-xs font-semibold transition-colors " +
-    "disabled:opacity-50 border";
+    "flex h-10 w-10 items-center justify-center rounded-full text-base " +
+    "font-bold tabular-nums transition-colors";
+
+  if (status === "reciting") return `${base} bg-accent-500 text-white shadow-sm`;
+  if (status === "done") return `${base} bg-brand-600 text-white`;
+  return `${base} bg-surface-muted text-muted-foreground`;
+}
+
+/** One cell of the recitation segmented control. */
+function segmentClass(active: boolean, status: RecitationStatus) {
+  const base =
+    "rounded-lg px-2 py-2 text-xs font-semibold transition-colors duration-150 " +
+    "focus-visible:outline-2 focus-visible:-outline-offset-2 " +
+    "disabled:pointer-events-none disabled:opacity-50";
 
   if (!active) {
-    return `${base} border-border-subtle bg-surface text-muted-foreground hover:bg-surface-muted`;
+    return (
+      `${base} text-muted-foreground hover:bg-surface hover:text-foreground ` +
+      "focus-visible:outline-brand-600"
+    );
   }
 
-  const tones = {
-    present: "border-present bg-present text-white",
-    absent: "border-absent bg-absent text-white",
-    accent: "border-accent-500 bg-accent-500 text-white",
-    brand: "border-brand-600 bg-brand-600 text-white",
-  } as const;
+  const tones: Record<RecitationStatus, string> = {
+    waiting: "bg-surface text-foreground shadow-sm focus-visible:outline-brand-600",
+    reciting: "bg-accent-500 text-white shadow-sm focus-visible:outline-accent-700",
+    done: "bg-brand-600 text-white shadow-sm focus-visible:outline-brand-600",
+  };
 
-  return `${base} ${tones[tone]}`;
+  return `${base} ${tones[status]}`;
 }

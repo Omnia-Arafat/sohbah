@@ -12,6 +12,8 @@
  */
 export type CircleValues = {
   name: string;
+  /** Who the circle belongs to. Only an admin may set it to somebody else. */
+  teacherId: string;
   type: string;
   gender: string;
   sessionLink: string;

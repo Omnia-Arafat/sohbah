@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 import { BrandMark } from "@/components/brand-mark";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -49,6 +49,7 @@ export default async function AcademyLayout({
   }
 
   const academyName = await getLocalizedAcademyName(academySlug, locale, academy);
+  const tNav = await getTranslations("nav");
   const academyTagline =
     locale === "ar"
       ? academy.description_ar || ""
@@ -58,7 +59,7 @@ export default async function AcademyLayout({
     <>
       <header className="border-b border-border-subtle bg-surface">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-4 px-4 py-3">
-          <Link href={`/${academySlug}`} className="flex items-center gap-3">
+          <Link href={`/${academySlug}`} className="flex min-w-0 items-center gap-3">
             {academy.logo_path ? (
               <div className="relative h-9 w-9 shrink-0">
                 <Image
@@ -71,21 +72,39 @@ export default async function AcademyLayout({
             ) : (
               <BrandMark className="h-9 w-9 shrink-0" />
             )}
-            <span className="flex flex-col leading-tight">
+            <span className="flex min-w-0 flex-col leading-tight">
               <span
-                className="font-display text-lg font-bold dark:text-brand-300"
+                className="font-display text-base font-bold leading-snug dark:text-brand-300 sm:text-lg"
                 style={{ color: academy.primary_color }}
               >
                 {academyName}
               </span>
+              {/* Dropped on phones: with the admin button in the row too, the
+                  tagline was squeezing the academy's own name into an ellipsis. */}
               {academyTagline && (
-                <span className="text-xs text-muted-foreground">
+                <span className="hidden truncate text-xs text-muted-foreground sm:block">
                   {academyTagline}
                 </span>
               )}
             </span>
           </Link>
-          <LanguageToggle />
+          <div className="flex shrink-0 items-center gap-2">
+            {/*
+              The admin entrance, always reachable from the header. `/admin`
+              renders its own sign-in for a signed-out visitor and the dashboard
+              for a signed-in one, so this single link serves both.
+            */}
+            <Link
+              href={`/${academySlug}/admin`}
+              className="inline-flex rounded-xl border border-border-subtle px-3 py-1.5
+                         text-sm font-medium text-muted-foreground transition-colors
+                         hover:border-brand-600 hover:text-brand-700
+                         dark:hover:text-brand-300 whitespace-nowrap"
+            >
+              {tNav("adminSignIn")}
+            </Link>
+            <LanguageToggle />
+          </div>
         </div>
       </header>
 

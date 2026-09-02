@@ -37,19 +37,19 @@ export async function updateCircle(
   const locale = formData.get("locale")?.toString();
   
   if (!circleId || !academySlug || !locale) {
-    return { status: "error", message: "Missing required parameters" };
+    return { status: "error", message: "missingParams" };
   }
 
   // Check authorization
   const session = await getTeacherSession();
   if (!isActiveTeacher(session) || session.teacher.role !== "admin") {
-    return { status: "error", message: "Unauthorized" };
+    return { status: "error", message: "unauthorized" };
   }
 
   // Verify academy
   const academy = await getAcademyBySlug(academySlug);
   if (!academy) {
-    return { status: "error", message: "Academy not found" };
+    return { status: "error", message: "academyNotFound" };
   }
 
   // Read form values
@@ -71,46 +71,46 @@ export async function updateCircle(
   // Validate
   const fieldErrors: Record<string, string> = {};
 
-  if (!name) fieldErrors.name = "Name is required";
-  else if (name.length > 120) fieldErrors.name = "Name is too long";
+  if (!name) fieldErrors.name = "nameRequired";
+  else if (name.length > 120) fieldErrors.name = "tooLong";
 
   if (!CIRCLE_TYPES.includes(type as CircleType)) {
-    fieldErrors.type = "Invalid circle type";
+    fieldErrors.type = "typeRequired";
   }
 
   if (gender !== "male" && gender !== "female") {
-    fieldErrors.gender = "Gender is required";
+    fieldErrors.gender = "genderRequired";
   }
 
   if (!teacher_id) {
-    fieldErrors.teacher_id = "Teacher is required";
+    fieldErrors.teacher_id = "teacherRequired";
   }
 
   if (!sessionLink) {
-    fieldErrors.sessionLink = "Session link is required";
+    fieldErrors.sessionLink = "linkRequired";
   } else {
     const normalizedLink = normalizeSessionLink(sessionLink);
     try {
       const url = new URL(normalizedLink);
       if (url.protocol !== "http:" && url.protocol !== "https:") {
-        fieldErrors.sessionLink = "Invalid URL protocol";
+        fieldErrors.sessionLink = "linkInvalid";
       }
     } catch {
-      fieldErrors.sessionLink = "Invalid URL";
+      fieldErrors.sessionLink = "linkInvalid";
     }
   }
 
   if (!TIME_PATTERN.test(startTime)) {
-    fieldErrors.startTime = "Invalid time format";
+    fieldErrors.startTime = "startTimeInvalid";
   }
 
   const durationNum = Number(duration);
   if (!Number.isInteger(durationNum) || durationNum < 5 || durationNum > 480) {
-    fieldErrors.duration = "Duration must be between 5 and 480 minutes";
+    fieldErrors.duration = "durationInvalid";
   }
 
   if (days.length === 0) {
-    fieldErrors.days = "Select at least one day";
+    fieldErrors.days = "daysRequired";
   }
 
   if (Object.keys(fieldErrors).length > 0) {
@@ -154,11 +154,11 @@ export async function updateCircle(
 
   if (error || !updatedCircle) {
     console.error("Failed to update circle:", error);
-    return { status: "error", message: "Failed to save changes" };
+    return { status: "error", message: "saveFailed" };
   }
 
   revalidatePath(`/${locale}/${academySlug}/admin/circles`);
   revalidatePath(`/${locale}/${academySlug}/admin/circles/${circleId}/edit`);
   
-  return { status: "success", message: "Changes saved successfully" };
+  return { status: "success", message: "saved" };
 }

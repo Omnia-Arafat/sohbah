@@ -44,10 +44,13 @@ export function EditStudentForm({ student, academySlug }: EditStudentFormProps) 
   const fieldErrors =
     state.status === "invalid" ? state.fieldErrors : {};
 
+  /** The action returns message keys, not sentences, so it stays locale-free. */
   function fieldError(key: string) {
     const error = fieldErrors[key];
     if (!error) return null;
-    return <p className="mt-1.5 text-sm text-absent">{error}</p>;
+    return (
+      <p className="mt-1.5 text-sm text-absent">{t(`errors.${error}`)}</p>
+    );
   }
 
   return (
@@ -94,13 +97,14 @@ export function EditStudentForm({ student, academySlug }: EditStudentFormProps) 
           id="phone"
           name="phone"
           type="tel"
+          inputMode="tel"
           dir="ltr"
+          required
           className="input text-start"
           defaultValue={values.phone || ""}
           autoComplete="tel"
           aria-invalid={Boolean(fieldErrors.phone)}
         />
-        <p className="mt-1.5 text-sm text-muted-foreground">{t("optional")}</p>
         {fieldError("phone")}
       </div>
 
@@ -131,7 +135,7 @@ export function EditStudentForm({ student, academySlug }: EditStudentFormProps) 
       </fieldset>
 
       {state.status === "error" && (
-        <p className="text-sm text-absent">{state.message}</p>
+        <p className="text-sm text-absent">{t(`errors.${state.message}`)}</p>
       )}
 
       {state.status === "success" && (

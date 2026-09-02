@@ -80,7 +80,6 @@ export default async function CirclePage({ params }: CirclePageProps) {
       <CircleClient
         academySlug={academySlug}
         slug={slug}
-        circleId={circle.id}
         sessionDate={circle.session_date}
         sessionLink={circle.session_link}
         initialQueue={queue ?? []}

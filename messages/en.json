@@ -25,7 +25,8 @@
     "login": "Teacher login",
     "dashboard": "Teacher dashboard",
     "admin": "Admin dashboard",
-    "reports": "Attendance reports"
+    "reports": "Attendance reports",
+    "adminSignIn": "Admin sign in"
   },
   "home": {
     "title": "Sohbah Academy",
@@ -35,15 +36,16 @@
         "tag": "Students",
         "title": "Join a circle",
         "body": "Register once with your name and your father's name. After that you join any circle by searching for your name – no account, no password.",
-        "cta": "Register as a student",
+        "cta": "Student registration",
         "note": "Already registered? Open your circle's link instead."
       },
       "teachers": {
         "tag": "Teachers and supervisors",
         "title": "Run your circles",
-        "body": "Sign in to see today's circles, mark attendance, drive the recitation queue, and share your circle's link.",
-        "cta": "Teacher sign in",
-        "note": "Accounts are created by an administrator."
+        "body": "Sign in to follow today's circles, record attendance, manage the recitation order, and share the circle link.",
+        "cta": "Teacher / supervisor sign in",
+        "note": "New accounts are reviewed by a supervisor before sign-in works.",
+        "register": "Teacher / supervisor registration"
       }
     },
     "newStudent": {
@@ -72,8 +74,7 @@
       "male": "Male students",
       "female": "Female students",
       "phone": "WhatsApp number",
-      "phoneHint": "Only used to reach you if needed.",
-      "optional": "optional"
+      "phoneHint": "This is how we recognise you, so it must be yours and it can only be registered once."
     },
     "submit": "Register",
     "submitting": "Registering…",
@@ -95,7 +96,10 @@
       "genderRequired": "Choose a section.",
       "tooLong": "That is too long.",
       "generic": "Registration could not be completed. Please try again.",
-      "notConfigured": "The database is not connected yet."
+      "notConfigured": "The database is not connected yet.",
+      "phoneRequired": "A WhatsApp number is required.",
+      "phoneInvalid": "Enter a full phone number.",
+      "phoneTaken": "This number is already registered. Do not register again — open your circle's link and search for your name."
     }
   },
   "circle": {
@@ -146,11 +150,12 @@
     }
   },
   "auth": {
-    "title": "Teacher sign in",
-    "subtitle": "For teachers and supervisors only. Students never sign in.",
+    "title": "Teacher and supervisor sign in",
+    "subtitle": "For teachers and supervisors only. Students do not sign in.",
     "fields": {
-      "email": "Email",
-      "password": "Password"
+      "password": "Password",
+      "phone": "WhatsApp number",
+      "email": "Email"
     },
     "submit": "Sign in",
     "submitting": "Signing in…",
@@ -166,12 +171,17 @@
       "body": "Your teacher record exists but has been switched off. Ask an administrator to reactivate it."
     },
     "errors": {
-      "emailRequired": "Email is required.",
-      "passwordRequired": "Password is required.",
-      "invalidCredentials": "Incorrect email or password.",
+      "passwordRequired": "Your password is required.",
+      "invalidCredentials": "Wrong number or password.",
       "generic": "Sign in could not be completed. Please try again.",
-      "notConfigured": "The database is not connected yet."
-    }
+      "notConfigured": "The database is not connected yet.",
+      "phoneRequired": "Your number is required.",
+      "phoneInvalid": "Enter a full phone number.",
+      "pending": "Your account has not been approved yet. A supervisor reviews it first.",
+      "emailRequired": "Email is required."
+    },
+    "noAccountYet": "No account yet?",
+    "registerAccount": "Teacher / supervisor registration"
   },
   "dashboard": {
     "title": "Teacher dashboard",
@@ -225,7 +235,8 @@
         "timezone": "Timezone",
         "timezoneHint": "The session date is calculated in this timezone, so early-morning circles are recorded on the right day.",
         "slug": "Circle link",
-        "slugHint": "This permanent link is generated automatically. Copy it to share with your students."
+        "slugHint": "This permanent link is generated automatically. Copy it to share with your students.",
+        "teacher": "Teacher"
       },
       "submit": "Create the circle",
       "submitting": "Creating…",
@@ -247,7 +258,8 @@
         "slugTaken": "That link is already in use. Choose another.",
         "forbidden": "You are not allowed to create circles.",
         "generic": "The circle could not be created. Please try again.",
-        "notConfigured": "The database is not connected yet."
+        "notConfigured": "The database is not connected yet.",
+        "teacherRequired": "Choose a teacher."
       }
     }
   },
@@ -256,19 +268,11 @@
     "notToday": "This circle is not scheduled to meet today. You are looking at today's records.",
     "queue": {
       "title": "Today's queue",
-      "hint": "Updates live as students join. Reorder with the arrows.",
+      "hint": "Reorder with the arrows. Refresh to see students who joined since this page loaded.",
       "empty": "Nobody has joined yet."
     },
     "summary": {
-      "joined": "joined",
-      "present": "present",
-      "absent": "absent",
-      "pending": "unmarked"
-    },
-    "attendance": {
-      "label": "Attendance",
-      "present": "Present",
-      "absent": "Absent"
+      "joined": "joined"
     },
     "recitation": {
       "label": "Recitation"
@@ -365,7 +369,26 @@
         "nameMismatch": "The name does not match. Type the exact name to confirm.",
         "unauthorized": "You are not authorized to do this.",
         "notFound": "Academy not found.",
-        "failed": "Could not delete. Please try again."
+        "failed": "Could not delete. Please try again.",
+        "nameRequired": "Name is required.",
+        "tooLong": "That is too long.",
+        "fatherRequired": "Father's name is required.",
+        "genderRequired": "Choose a section.",
+        "phoneRequired": "A phone number is required.",
+        "phoneInvalid": "Enter a full phone number.",
+        "phoneTaken": "Another student in this academy already uses this number.",
+        "typeRequired": "Choose a circle type.",
+        "teacherRequired": "Choose a teacher.",
+        "durationInvalid": "Duration must be between 5 and 480 minutes.",
+        "daysRequired": "Select at least one day.",
+        "linkRequired": "A session link is required.",
+        "linkInvalid": "Enter a valid link.",
+        "startTimeRequired": "A start time is required.",
+        "startTimeInvalid": "Enter a valid time.",
+        "missingParams": "Something is missing from the request.",
+        "academyNotFound": "Academy not found.",
+        "saveFailed": "Could not save the changes. Please try again.",
+        "saved": "Changes saved."
       }
     },
     "students": {
@@ -396,7 +419,6 @@
       "backToStudents": "Back to students",
       "studentName": "Student name",
       "phoneNumber": "Phone number",
-      "optional": "Optional",
       "saveChanges": "Save changes",
       "saving": "Saving…",
       "saved": "Changes saved!",
@@ -422,20 +444,109 @@
         "nameMismatch": "The name does not match. Type the exact name to confirm.",
         "unauthorized": "You are not authorized to do this.",
         "notFound": "Academy not found.",
-        "failed": "Could not delete. Please try again."
-      }
+        "failed": "Could not delete. Please try again.",
+        "nameRequired": "Name is required.",
+        "tooLong": "That is too long.",
+        "fatherRequired": "Father's name is required.",
+        "genderRequired": "Choose a section.",
+        "phoneRequired": "A phone number is required.",
+        "phoneInvalid": "Enter a full phone number.",
+        "phoneTaken": "Another student in this academy already uses this number.",
+        "typeRequired": "Choose a circle type.",
+        "teacherRequired": "Choose a teacher.",
+        "durationInvalid": "Duration must be between 5 and 480 minutes.",
+        "daysRequired": "Select at least one day.",
+        "linkRequired": "A session link is required.",
+        "linkInvalid": "Enter a valid link.",
+        "startTimeRequired": "A start time is required.",
+        "startTimeInvalid": "Enter a valid time.",
+        "missingParams": "Something is missing from the request.",
+        "academyNotFound": "Academy not found.",
+        "saveFailed": "Could not save the changes. Please try again.",
+        "saved": "Changes saved."
+      },
+      "accessDenied": "Access denied",
+      "adminRequired": "This area is for supervisors only."
     },
     "teachers": {
       "title": "Teachers and supervisors",
-      "note": "Accounts are created in Supabase and linked by hand – see supabase/seed/first-admin.sql.",
+      "subtitle": "Review registrations and manage who can sign in.",
+      "back": "Back to admin",
+      "pending": "Awaiting approval ({count})",
+      "noPending": "No applications waiting.",
+      "activeList": "Approved ({count})",
+      "noActive": "Nobody approved yet.",
+      "approve": "Approve",
+      "reject": "Reject",
+      "suspend": "Suspend",
+      "edit": "Edit",
+      "delete": "Delete",
+      "confirmReject": "Reject {name}'s registration? This deletes it permanently.",
+      "confirmDelete": "Delete {name}? This cannot be undone.",
+      "ownsCircles": "Runs circles — reassign them before this account can be deleted.",
+      "editTitle": "Edit teacher",
+      "editSubtitle": "Update this teacher's details.",
+      "backToTeachers": "Back to teachers",
+      "saveChanges": "Save changes",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "fields": {
+        "name": "Full name",
+        "phone": "WhatsApp number",
+        "gender": "Section",
+        "role": "Role"
+      },
+      "errors": {
+        "nameRequired": "Name is required.",
+        "tooLong": "That is too long.",
+        "phoneRequired": "A phone number is required.",
+        "phoneInvalid": "Enter a full phone number.",
+        "phoneTaken": "Another teacher in this academy already uses this number.",
+        "genderRequired": "Choose a section.",
+        "unauthorized": "You are not authorized to do this.",
+        "saveFailed": "Could not save the changes. Please try again.",
+        "roleRequired": "Choose a role.",
+        "cannotChangeOwnRole": "You cannot change your own role.",
+        "noAccount": "This person has no sign-in yet, so there is nothing to reset.",
+        "notConfigured": "Password resets are not configured on the server."
+      },
       "active": "Active",
-      "inactive": "Deactivated"
+      "inactive": "Deactivated",
+      "roles": {
+        "teacher": "Teacher",
+        "admin": "Supervisor"
+      },
+      "tabsLabel": "Filter by role",
+      "tabs": {
+        "teacher": "Teachers",
+        "admin": "Supervisors"
+      },
+      "shareLink": {
+        "title": "Registration link",
+        "body": "Send this to anyone who should register as a teacher or supervisor. Their account appears here for approval."
+      },
+      "resetPassword": "Reset password",
+      "resetting": "Resetting…",
+      "confirmReset": "Reset {name}'s password? Their current one stops working immediately.",
+      "resetDone": "New password for {name}:",
+      "resetHint": "Shown once. Send it to them, then they sign in with their number and this password."
     },
     "circleEdit": {
       "title": "Edit circle",
       "subtitle": "Update the circle settings or deactivate it for good.",
       "open": "Edit",
       "delete": "Delete circle"
+    },
+    "teachersCard": {
+      "title": "Teachers and supervisors",
+      "subtitle": "Review registrations and manage accounts",
+      "pending": "{count} awaiting approval"
+    },
+    "signIn": {
+      "title": "Supervisor sign in",
+      "subtitle": "For administering the academy: circles, students, teachers, and reports.",
+      "teachersNote": "Teaching rather than administering?",
+      "teachersLink": "Teacher / supervisor sign in"
     }
   },
   "reports": {
@@ -443,7 +554,6 @@
     "subtitle": "Ranking over any date range. Only records marked present count as attendance.",
     "back": "Back to the admin dashboard",
     "appliedRange": "Range: {from} to {to}",
-    "unmarkedWarning": "{count} records were never marked by a teacher. They are excluded from the attendance count.",
     "ranges": {
       "today": "Today",
       "week": "Last 7 days",
@@ -455,24 +565,26 @@
       "range": "Period",
       "from": "From",
       "to": "To",
-      "customHint": "Used when the period is set to a custom range.",
       "gender": "Section",
       "circle": "Circle",
       "teacher": "Teacher",
       "all": "All",
-      "apply": "Show the report"
+      "apply": "Show the report",
+      "type": "Circle type",
+      "circleOption": "{name} — {teacher}",
+      "unknownTeacher": "Unassigned"
     },
     "columns": {
-      "present": "present",
-      "absent": "absent",
-      "unmarked": "unmarked",
-      "joined": "joined"
+      "joined": "joined",
+      "recited": "recited",
+      "notRecited": "never recited"
     },
     "results": {
       "title": "Students ({count})",
       "empty": "No attendance records in this range.",
-      "legend": "The three numbers are present, absent, and unmarked, in that order."
-    }
+      "legend": "The three numbers are sessions joined, sessions recited, and sessions joined without reciting, in that order."
+    },
+    "notRecitedWarning": "{count} joined sessions ended without the student reciting."
   },
   "setup": {
     "title": "Database not connected",
@@ -487,12 +599,50 @@
     "required": "required",
     "optional": "optional",
     "copyLink": "Copy link",
-    "copied": "Copied"
+    "copied": "Copied",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",
     "notFound": "Page not found.",
     "notFoundBody": "That link is incorrect or no longer available.",
     "backHome": "Back to home"
+  },
+  "registerTeacher": {
+    "title": "Teacher and supervisor registration",
+    "subtitle": "Create an account as a teacher or supervisor. An administrator reviews it before you can sign in.",
+    "fields": {
+      "name": "Full name",
+      "phone": "WhatsApp number",
+      "phoneHint": "How the administrator will reach you about your application.",
+      "role": "Register as",
+      "password": "Password",
+      "passwordHint": "At least 8 characters. You will sign in with your number and this password."
+    },
+    "roles": {
+      "teacher": "Teacher",
+      "admin": "Supervisor"
+    },
+    "submit": "Register",
+    "submitting": "Registering…",
+    "approvalNotice": "Accounts are reviewed before any access is granted. Registering as a supervisor is a request, not an entitlement.",
+    "success": {
+      "title": "Registration received",
+      "body": "Thank you, {name}. Your registration has been sent to the administrators.",
+      "nextStep": "You will be contacted on the number given. Signing in is not possible until an administrator approves the account."
+    },
+    "errors": {
+      "nameRequired": "Your name is required.",
+      "phoneRequired": "A WhatsApp number is required.",
+      "phoneInvalid": "Enter a full phone number.",
+      "phoneTaken": "An account with this number already exists.",
+      "roleRequired": "Choose what you are applying as.",
+      "tooLong": "That is too long.",
+      "generic": "Registration could not be completed. Please try again.",
+      "notConfigured": "The database is not connected yet.",
+      "passwordRequired": "A password is required.",
+      "passwordTooShort": "Use at least 8 characters."
+    }
   }
 }

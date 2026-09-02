@@ -51,14 +51,9 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
   }
 
   // Only admins can access this page
-  if (session.teacher.role !== "admin") {
-    return (
-      <div className="card">
-        <h2 className="text-xl font-semibold">{tAdmin("accessDenied")}</h2>
-        <p className="mt-2 text-muted-foreground">{tAdmin("adminRequired")}</p>
-      </div>
-    );
-  }
+  // One tier for now: anyone approved may look. The controls that change
+  // something are hidden below and re-checked in every server action.
+  const canManage = session.teacher.role === "admin";
 
   const supabase = await createClient();
 
@@ -139,7 +134,7 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  <Link
+                  {canManage && (<Link
                     href={`/${academySlug}/admin/circles/${circle.id}/edit`}
                     className="btn-secondary flex items-center gap-1.5 px-3 py-2 text-sm"
                     title={tCircles("edit")}
@@ -148,7 +143,7 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                     {tCircles("edit")}
-                  </Link>
+                  </Link>)}
                   <Link
                     href={`/${academySlug}/dashboard/circle/${circle.id}`}
                     className="btn-secondary flex items-center gap-1.5 px-3 py-2 text-sm"
@@ -160,7 +155,7 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
                     {tCircles("session")}
                   </Link>
                   <CopyLinkButton path={`/${locale}/${academySlug}/circle/${circle.registration_slug}`} />
-                  <Link
+                  {canManage && (<Link
                     href={`/${academySlug}/admin/circles/${circle.id}/delete`}
                     className="btn-secondary flex items-center gap-1.5 px-3 py-2 text-sm text-absent hover:bg-red-50 hover:border-red-300 dark:hover:bg-red-950"
                     title={tCircles("delete")}
@@ -169,7 +164,7 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                     {tCircles("delete")}
-                  </Link>
+                  </Link>)}
                 </div>
               </div>
             </div>

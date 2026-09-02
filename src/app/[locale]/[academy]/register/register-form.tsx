@@ -149,10 +149,7 @@ export function RegisterForm({
 
       <div>
         <label className="field-label" htmlFor="phone">
-          {t("fields.phone")}{" "}
-          <span className="font-normal text-muted-foreground">
-            ({t("fields.optional")})
-          </span>
+          {t("fields.phone")}
         </label>
         <input
           id="phone"
@@ -160,13 +157,22 @@ export function RegisterForm({
           type="tel"
           inputMode="tel"
           dir="ltr"
+          required
           className="input text-start"
           defaultValue={values?.phone}
           autoComplete="tel"
+          aria-invalid={Boolean(fieldErrors.phone)}
+          aria-describedby={fieldErrors.phone ? "phone-error" : "phone-hint"}
         />
-        <p className="mt-1.5 text-sm text-muted-foreground">
-          {t("fields.phoneHint")}
-        </p>
+        {fieldErrors.phone ? (
+          <p id="phone-error" className="mt-1.5 text-sm text-absent">
+            {t(`errors.${fieldErrors.phone}`)}
+          </p>
+        ) : (
+          <p id="phone-hint" className="mt-1.5 text-sm text-muted-foreground">
+            {t("fields.phoneHint")}
+          </p>
+        )}
       </div>
 
       {isDuplicate && (

@@ -69,8 +69,18 @@ export default async function AcademyHome({ params }: AcademyHomeProps) {
           <p className="mt-2 flex-1 text-muted-foreground">
             {t("doors.teachers.body")}
           </p>
-          <Link href={`/${academySlug}/login`} className="btn-secondary mt-4 w-full">
+          <Link href={`/${academySlug}/login`} className="btn-primary mt-4 w-full">
             {t("doors.teachers.cta")}
+          </Link>
+          {/*
+            Registering is the other half of this door, not a footnote: a new
+            معلمة has no account yet, and this is the first place she looks.
+          */}
+          <Link
+            href={`/${academySlug}/register-teacher`}
+            className="btn-secondary mt-2 w-full"
+          >
+            {t("doors.teachers.register")}
           </Link>
           <p className="mt-3 text-sm text-muted-foreground">
             {t("doors.teachers.note")}

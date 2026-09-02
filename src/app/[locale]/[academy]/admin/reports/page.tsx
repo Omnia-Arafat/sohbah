@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BackLink } from "@/components/back-link";
-import { requireAdminSession } from "@/lib/auth/dal";
+import { requireStaffSession } from "@/lib/auth/dal";
 import { getTeacherDisplayLabel } from "@/lib/academy-display";
 import { getAcademyContext } from "@/lib/academy-context";
 import type {
   AttendanceReportRow,
   Circle,
+  CircleType,
   GenderCategory,
   Teacher,
 } from "@/lib/database.types";
@@ -21,9 +22,12 @@ type ReportsPageProps = {
     to?: string;
     gender?: string;
     circle?: string;
+    type?: string;
     teacher?: string;
   }>;
 };
+
+const CIRCLE_TYPES: CircleType[] = ["tasheeh", "tajweed", "free_recitation"];
 
 /** Authorized route: never prerender it. */
 export const dynamic = "force-dynamic";
@@ -50,7 +54,7 @@ export default async function ReportsPage({
   const tDashboard = await getTranslations("dashboard");
   const tCircle = await getTranslations("circle");
 
-  await requireAdminSession(`/${academySlug}/admin/reports`);
+  await requireStaffSession(`/${academySlug}/admin/reports`);
 
   const academy = await getAcademyContext(academySlug);
 
@@ -63,6 +67,9 @@ export default async function ReportsPage({
     query.gender === "male" || query.gender === "female" ? query.gender : null;
   const circleId = query.circle && UUID.test(query.circle) ? query.circle : null;
   const teacherId = query.teacher && UUID.test(query.teacher) ? query.teacher : null;
+  const circleType = CIRCLE_TYPES.includes(query.type as CircleType)
+    ? (query.type as CircleType)
+    : null;
 
   const supabase = await createClient();
   const [reportResult, circlesResult, teachersResult] = await Promise.all([
@@ -73,9 +80,10 @@ export default async function ReportsPage({
       p_circle_id: circleId,
       p_teacher_id: teacherId,
       p_academy_id: academy?.id ?? null,
+      p_circle_type: circleType,
     }),
-    supabase.from("circles").select("*").order("name"),
-    supabase.from("teachers").select("*").order("name"),
+    supabase.from("circles").select("*").order("type").order("name"),
+    supabase.from("teachers").select("*").eq("is_active", true).order("name"),
   ]);
 
   if (reportResult.error) console.error("attendance_report failed", reportResult.error);
@@ -84,14 +92,21 @@ export default async function ReportsPage({
   const circles: Circle[] = circlesResult.data ?? [];
   const teachers: Teacher[] = teachersResult.data ?? [];
 
+  /** Circles carry only `teacher_id`; the label needs the name. */
+  function teacherName(teacherId: string) {
+    const teacher = teachers.find((candidate) => candidate.id === teacherId);
+    return teacher
+      ? getTeacherDisplayLabel(teacher, academySlug, locale)
+      : t("filters.unknownTeacher");
+  }
+
   const totals = rows.reduce(
     (acc, row) => ({
-      present: acc.present + Number(row.sessions_present),
-      absent: acc.absent + Number(row.sessions_absent),
-      unmarked: acc.unmarked + Number(row.sessions_unmarked),
       joined: acc.joined + Number(row.sessions_joined),
+      recited: acc.recited + Number(row.sessions_recited),
+      notRecited: acc.notRecited + Number(row.sessions_not_recited),
     }),
-    { present: 0, absent: 0, unmarked: 0, joined: 0 },
+    { joined: 0, recited: 0, notRecited: 0 },
   );
 
   return (
@@ -108,7 +123,7 @@ export default async function ReportsPage({
         A plain GET form: the whole report state lives in the URL, so a range can
         be bookmarked or shared and needs no client-side JavaScript.
       */}
-      <form className="card flex flex-col gap-4">
+      <form className="range-form card flex flex-col gap-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="field-label" htmlFor="range">
@@ -144,7 +159,9 @@ export default async function ReportsPage({
             </select>
           </div>
 
-          <div>
+          {/* Shown only when the range preset is "custom" — see `.range-form`
+              in globals.css. */}
+          <div className="range-custom-only">
             <label className="field-label" htmlFor="from">
               {t("filters.from")}
             </label>
@@ -156,12 +173,9 @@ export default async function ReportsPage({
               className="input text-start"
               defaultValue={range.from}
             />
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              {t("filters.customHint")}
-            </p>
           </div>
 
-          <div>
+          <div className="range-custom-only">
             <label className="field-label" htmlFor="to">
               {t("filters.to")}
             </label>
@@ -176,6 +190,25 @@ export default async function ReportsPage({
           </div>
 
           <div>
+            <label className="field-label" htmlFor="type">
+              {t("filters.type")}
+            </label>
+            <select
+              id="type"
+              name="type"
+              className="input"
+              defaultValue={circleType ?? ""}
+            >
+              <option value="">{t("filters.all")}</option>
+              {CIRCLE_TYPES.map((option) => (
+                <option key={option} value={option}>
+                  {tCircle(`type.${option}`)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
             <label className="field-label" htmlFor="circle">
               {t("filters.circle")}
             </label>
@@ -186,11 +219,28 @@ export default async function ReportsPage({
               defaultValue={circleId ?? ""}
             >
               <option value="">{t("filters.all")}</option>
-              {circles.map((circle) => (
-                <option key={circle.id} value={circle.id}>
-                  {circle.name}
-                </option>
-              ))}
+              {/*
+                Circles are grouped under their type and labelled with the
+                teacher, because a circle's `name` is free text — in practice
+                it is often just the teacher's name, which made the bare list
+                impossible to tell apart from the teacher filter below.
+              */}
+              {CIRCLE_TYPES.map((option) => {
+                const inType = circles.filter((circle) => circle.type === option);
+                if (inType.length === 0) return null;
+                return (
+                  <optgroup key={option} label={tCircle(`type.${option}`)}>
+                    {inType.map((circle) => (
+                      <option key={circle.id} value={circle.id}>
+                        {t("filters.circleOption", {
+                          name: circle.name,
+                          teacher: teacherName(circle.teacher_id),
+                        })}
+                      </option>
+                    ))}
+                  </optgroup>
+                );
+              })}
             </select>
           </div>
 
@@ -225,31 +275,29 @@ export default async function ReportsPage({
         </p>
         <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm">
           <span>
-            <span className="font-semibold text-present">{totals.present}</span>{" "}
-            <span className="text-muted-foreground">{t("columns.present")}</span>
-          </span>
-          <span>
-            <span className="font-semibold text-absent">{totals.absent}</span>{" "}
-            <span className="text-muted-foreground">{t("columns.absent")}</span>
-          </span>
-          <span>
-            <span className="font-semibold">{totals.unmarked}</span>{" "}
-            <span className="text-muted-foreground">{t("columns.unmarked")}</span>
-          </span>
-          <span>
             <span className="font-semibold">{totals.joined}</span>{" "}
             <span className="text-muted-foreground">{t("columns.joined")}</span>
+          </span>
+          <span>
+            <span className="font-semibold text-present">{totals.recited}</span>{" "}
+            <span className="text-muted-foreground">{t("columns.recited")}</span>
+          </span>
+          <span>
+            <span className="font-semibold text-accent-700 dark:text-accent-300">
+              {totals.notRecited}
+            </span>{" "}
+            <span className="text-muted-foreground">{t("columns.notRecited")}</span>
           </span>
         </div>
 
         {/*
-          Feature 5.8: "attended" counts `present` only. Records the teacher
-          never marked stay `pending` and are surfaced in their own column, so
-          undercounting is visible rather than silent.
+          Joining the queue is the attendance mark, so every joined session
+          counts. What the report has to keep visible is the gap: the student
+          was there and took a place in the order, but never got to recite.
         */}
-        {totals.unmarked > 0 && (
+        {totals.notRecited > 0 && (
           <p className="mt-3 text-sm text-accent-700 dark:text-accent-300">
-            {t("unmarkedWarning", { count: String(totals.unmarked) })}
+            {t("notRecitedWarning", { count: String(totals.notRecited) })}
           </p>
         )}
       </section>
@@ -283,18 +331,25 @@ export default async function ReportsPage({
                   </p>
                 </div>
 
-                <div className="flex shrink-0 gap-3 text-sm">
-                  <span className="text-present" title={t("columns.present")}>
-                    {row.sessions_present}
-                  </span>
-                  <span className="text-absent" title={t("columns.absent")}>
-                    {row.sessions_absent}
-                  </span>
+                <div className="flex shrink-0 gap-3 text-sm tabular-nums">
                   <span
                     className="text-muted-foreground"
-                    title={t("columns.unmarked")}
+                    title={t("columns.joined")}
                   >
-                    {row.sessions_unmarked}
+                    {row.sessions_joined}
+                  </span>
+                  <span className="text-present" title={t("columns.recited")}>
+                    {row.sessions_recited}
+                  </span>
+                  <span
+                    className={
+                      Number(row.sessions_not_recited) > 0
+                        ? "font-semibold text-accent-700 dark:text-accent-300"
+                        : "text-muted-foreground"
+                    }
+                    title={t("columns.notRecited")}
+                  >
+                    {row.sessions_not_recited}
                   </span>
                 </div>
               </li>

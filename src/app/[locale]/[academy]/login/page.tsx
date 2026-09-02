@@ -6,7 +6,8 @@ import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { notFound } from "next/navigation";
-import { LoginForm } from "./login-form";
+import { Link } from "@/i18n/navigation";
+import { TeacherLoginForm } from "./teacher-login-form";
 
 type LoginPageProps = {
   params: Promise<{ locale: string; academy: string }>;
@@ -54,10 +55,22 @@ export default async function LoginPage({
 
       {!isSupabaseConfigured() && <SetupNotice />}
 
-      <LoginForm academySlug={academySlug} next={next ?? null} />
+      <TeacherLoginForm academySlug={academySlug} next={next ?? null} />
 
       <p className="text-center text-sm text-muted-foreground">
         {t("studentsNote")}
+      </p>
+
+      {/* The only route to the registration form — someone registering has no
+          account yet, so the sign-in page is where they will look. */}
+      <p className="text-center text-sm text-muted-foreground">
+        {t("noAccountYet")}{" "}
+        <Link
+          href={`/${academySlug}/register-teacher`}
+          className="font-medium text-brand-700 underline dark:text-brand-300"
+        >
+          {t("registerAccount")}
+        </Link>
       </p>
     </div>
   );

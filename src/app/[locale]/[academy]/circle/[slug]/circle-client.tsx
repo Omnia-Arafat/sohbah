@@ -9,6 +9,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { QueueEntry, StudentSearchResult } from "@/lib/database.types";
@@ -23,7 +24,6 @@ import { createClient } from "@/lib/supabase/client";
 type CircleClientProps = {
   academySlug: string;
   slug: string;
-  circleId: string;
   sessionDate: string;
   sessionLink: string;
   initialQueue: QueueEntry[];
@@ -78,7 +78,6 @@ function MotionSection({
 export function CircleClient({
   academySlug,
   slug,
-  circleId,
   sessionDate,
   sessionLink,
   initialQueue,
@@ -89,7 +88,28 @@ export function CircleClient({
   const sessionRef = useRef<HTMLDivElement>(null);
   const shouldScrollRef = useRef(false);
 
-  const [queue, setQueue] = useState<QueueEntry[]>(initialQueue);
+  /**
+   * Seeded from the server render and then left alone — see `refreshQueue`.
+   */
+  const queueKey = useMemo(() => ["circle-queue", slug] as const, [slug]);
+  const queryClient = useQueryClient();
+  const { data: queue = [] } = useQuery({
+    queryKey: queueKey,
+    queryFn: async () => {
+      const { data, error: queueError } = await supabase.rpc("circle_queue", {
+        p_slug: slug,
+      });
+      if (queueError) throw queueError;
+      return (data ?? []) as QueueEntry[];
+    },
+    initialData: initialQueue,
+  });
+
+  const setQueue = useCallback(
+    (next: QueueEntry[]) => queryClient.setQueryData(queueKey, next),
+    [queryClient, queueKey],
+  );
+
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResults | null>(null);
   const [joining, setJoining] = useState<string | null>(null);
@@ -101,34 +121,20 @@ export function CircleClient({
     () => null,
   );
 
+  /**
+   * Refetches the queue on demand. Called after *this* student joins, so they
+   * see their own place in the order straight away.
+   *
+   * Nothing calls it on a timer or a Realtime event: the query defaults (see
+   * `QueryProvider`) disable background refetching, so students who join later
+   * appear only when the page is refreshed.
+   */
   const refreshQueue = useCallback(async () => {
     const { data, error: queueError } = await supabase.rpc("circle_queue", {
       p_slug: slug,
     });
-    if (!queueError && data) setQueue(data);
-  }, [supabase, slug]);
-
-  useEffect(() => {
-    const channel = supabase
-      .channel(`circle:${circleId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "attendance_records",
-          filter: `circle_id=eq.${circleId}`,
-        },
-        () => {
-          void refreshQueue();
-        },
-      )
-      .subscribe();
-
-    return () => {
-      void supabase.removeChannel(channel);
-    };
-  }, [supabase, circleId, refreshQueue]);
+    if (!queueError && data) setQueue(data as QueueEntry[]);
+  }, [supabase, slug, setQueue]);
 
   const trimmed = query.trim();
   useEffect(() => {

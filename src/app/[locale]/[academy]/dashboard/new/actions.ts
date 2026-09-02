@@ -20,6 +20,7 @@ function readValues(formData: FormData): CircleValues {
 
   return {
     name: read("name"),
+    teacherId: read("teacherId"),
     type: read("type"),
     gender: read("gender"),
     sessionLink: read("sessionLink"),
@@ -107,12 +108,39 @@ export async function createCircle(
   }
 
   const sessionLink = normalizeSessionLink(values.sessionLink);
-
   const supabase = await createClient();
+
+  // The form sends `teacherId`, so it has to be re-authorized here rather than
+  // trusted: only an admin may assign a circle to somebody else, and only to an
+  // active teacher inside this academy.
+  let ownerId = session.teacher.id;
+  if (values.teacherId && values.teacherId !== session.teacher.id) {
+    if (session.teacher.role !== "admin") {
+      return { status: "failed", values, reason: "forbidden" };
+    }
+
+    const { data: owner } = await supabase
+      .from("teachers")
+      .select("id")
+      .eq("id", values.teacherId)
+      .eq("academy_id", academy.id)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (!owner) {
+      return {
+        status: "invalid",
+        values,
+        fieldErrors: { teacherId: "teacherRequired" },
+      };
+    }
+    ownerId = owner.id;
+  }
+
   const { data: createdCircle, error } = await supabase
     .from("circles")
     .insert({
-      teacher_id: session.teacher.id,
+      teacher_id: ownerId,
       academy_id: academy.id,
       name: values.name,
       type: values.type as CircleType,

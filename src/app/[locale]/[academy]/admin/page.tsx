@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
+import { UserCheck } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { ChevronForward } from "@/components/back-link";
-import { requireTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
+import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
+import { SetupNotice } from "@/components/setup-notice";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { LoginForm } from "../login/login-form";
 import { createClient } from "@/lib/supabase/server";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { getAcademyAdminRole } from "@/lib/academy-display";
@@ -36,7 +40,43 @@ export default async function AdminPage({ params }: AdminPageProps) {
   const t = await getTranslations("admin");
   const adminRole = getAcademyAdminRole(academySlug, locale);
 
-  const session = await requireTeacherSession(`/${academySlug}/admin`);
+  /*
+    The admin entrance signs you in where you stand rather than bouncing you to
+    the teachers' sign-in page and back. `/admin` is the address you give
+    someone who administers the academy, so it has to work as a landing page for
+    a signed-out visitor — not just as a guarded destination.
+
+    This is presentation only. It is the same `signIn` action and the same
+    Supabase session; every admin screen still checks the role for itself.
+  */
+  const session = await getTeacherSession();
+
+  if (!session) {
+    return (
+      <div className="mx-auto flex w-full max-w-md flex-col gap-6">
+        <section>
+          <h1 className="font-display text-2xl font-bold sm:text-3xl">
+            {t("signIn.title")}
+          </h1>
+          <p className="mt-2 text-muted-foreground">{t("signIn.subtitle")}</p>
+        </section>
+
+        {!isSupabaseConfigured() && <SetupNotice />}
+
+        <LoginForm academySlug={academySlug} next={`/${academySlug}/admin`} />
+
+        <p className="text-center text-sm text-muted-foreground">
+          {t("signIn.teachersNote")}{" "}
+          <Link
+            href={`/${academySlug}/login`}
+            className="font-medium text-brand-700 underline dark:text-brand-300"
+          >
+            {t("signIn.teachersLink")}
+          </Link>
+        </p>
+      </div>
+    );
+  }
 
   if (!isActiveTeacher(session)) {
     return (
@@ -48,19 +88,13 @@ export default async function AdminPage({ params }: AdminPageProps) {
   }
 
   // Only admins can access this page
-  if (session.teacher.role !== "admin") {
-    return (
-      <div className="card">
-        <h2 className="text-xl font-semibold">{t("accessDenied")}</h2>
-        <p className="mt-2 text-muted-foreground">{t("adminRequired")}</p>
-      </div>
-    );
-  }
+  // One tier for now: anyone approved may look. The controls that change
+  // something are hidden below and re-checked in every server action.
 
   const supabase = await createClient();
 
   // Get statistics for this academy
-  const [circlesResult, studentsResult, teachersResult] = await Promise.all([
+  const [circlesResult, studentsResult, teachersResult, pendingResult] = await Promise.all([
     supabase
       .from("circles")
       .select("*", { count: "exact" })
@@ -75,11 +109,18 @@ export default async function AdminPage({ params }: AdminPageProps) {
       .select("*", { count: "exact" })
       .eq("academy_id", academy.id)
       .eq("is_active", true),
+    // Applications waiting for approval, surfaced on the card itself.
+    supabase
+      .from("teachers")
+      .select("*", { count: "exact", head: true })
+      .eq("academy_id", academy.id)
+      .eq("is_active", false),
   ]);
 
   const circlesCount = circlesResult.count ?? 0;
   const studentsCount = studentsResult.count ?? 0;
   const teachersCount = teachersResult.count ?? 0;
+  const pendingTeachersCount = pendingResult.count ?? 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -144,6 +185,28 @@ export default async function AdminPage({ params }: AdminPageProps) {
               <h3 className="font-semibold">{t("students.title")}</h3>
               <p className="text-sm text-muted-foreground">
                 {t("students.subtitle")}
+              </p>
+            </div>
+            <ChevronForward />
+          </div>
+        </Link>
+
+        <Link
+          href={`/${academySlug}/admin/teachers`}
+          className="card hover:border-brand-600 transition-colors"
+        >
+          <div className="flex items-center gap-4">
+            <div className="rounded-xl bg-brand-100 p-3 text-brand-700">
+              <UserCheck className="h-6 w-6" aria-hidden="true" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold">{t("teachersCard.title")}</h3>
+              <p className="text-sm text-muted-foreground">
+                {pendingTeachersCount > 0
+                  ? t("teachersCard.pending", {
+                      count: String(pendingTeachersCount),
+                    })
+                  : t("teachersCard.subtitle")}
               </p>
             </div>
             <ChevronForward />

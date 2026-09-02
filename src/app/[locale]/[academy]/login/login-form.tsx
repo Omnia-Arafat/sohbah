@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { useTranslations } from "next-intl";
+import { PasswordField } from "@/components/password-field";
 import { signIn } from "./actions";
 import { initialLoginState, type LoginState } from "./state";
 
@@ -58,14 +59,11 @@ export function LoginForm({ academySlug, next }: { academySlug: string; next: st
         <label className="field-label" htmlFor="password">
           {t("fields.password")}
         </label>
-        <input
+        <PasswordField
           id="password"
           name="password"
-          type="password"
-          dir="ltr"
-          className="input text-start"
           autoComplete="current-password"
-          aria-invalid={Boolean(fieldErrors.password)}
+          invalid={Boolean(fieldErrors.password)}
         />
         {fieldErrors.password && (
           <p className="mt-1.5 text-sm text-absent">

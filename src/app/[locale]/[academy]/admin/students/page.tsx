@@ -51,14 +51,9 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
   }
 
   // Only admins can access this page
-  if (session.teacher.role !== "admin") {
-    return (
-      <div className="card">
-        <h2 className="text-xl font-semibold">{tAdmin("accessDenied")}</h2>
-        <p className="mt-2 text-muted-foreground">{tAdmin("adminRequired")}</p>
-      </div>
-    );
-  }
+  // One tier for now: anyone approved may look. The controls that change
+  // something are hidden below and re-checked in every server action.
+  const canManage = session.teacher.role === "admin";
 
   const supabase = await createClient();
   const pageSize = 50;
@@ -193,6 +188,7 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
                       </td>
                       <td className="py-3">
                         <div className="flex justify-end gap-2">
+                          {canManage && (<>
                           <Link
                             href={`/${academySlug}/admin/students/${student.id}/edit`}
                             className="btn-secondary flex items-center gap-1.5 px-3 py-1.5 text-sm"
@@ -213,6 +209,7 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
                             </svg>
                             {tStudents("delete")}
                           </Link>
+                          </>)}
                         </div>
                       </td>
                     </tr>
@@ -238,6 +235,7 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
                       </div>
                     </div>
                     <div className="flex shrink-0 gap-2">
+                      {canManage && (<>
                       <Link
                         href={`/${academySlug}/admin/students/${student.id}/edit`}
                         className="rounded-lg border border-border-subtle bg-surface p-2 hover:bg-accent-50 transition-colors"
@@ -256,6 +254,7 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                       </Link>
+                      </>)}
                     </div>
                   </div>
                 </div>
