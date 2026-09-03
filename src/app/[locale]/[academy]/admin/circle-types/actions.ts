@@ -110,8 +110,8 @@ export async function createCircleType(
 
 /**
  * Activates or deactivates a type. Deactivating hides it from new circles;
- * circles already using it are unaffected — see the migration for why there
- * is no delete.
+ * circles already using it are unaffected — it stays the reversible way to
+ * retire a type, alongside the real delete below.
  */
 export async function setCircleTypeActive(formData: FormData) {
   const typeId = String(formData.get("typeId") ?? "");
@@ -130,6 +130,90 @@ export async function setCircleTypeActive(formData: FormData) {
     .eq("academy_id", academy.id);
 
   if (error) console.error("circle type activation failed", error);
+
+  refresh(academySlug);
+}
+
+export type UpdateCircleTypeState =
+  | { status: "idle" }
+  | {
+      status: "invalid";
+      values: { nameAr: string; nameEn: string };
+      fieldErrors: Partial<Record<"nameAr" | "nameEn", string>>;
+    }
+  | { status: "error"; message: string };
+
+/**
+ * Renames a type. The slug — the internal key `circles.type` actually
+ * stores — never changes, so every circle already using this type keeps
+ * pointing at the same row; only the displayed name changes for them too.
+ */
+export async function updateCircleType(
+  _previous: UpdateCircleTypeState,
+  formData: FormData,
+): Promise<UpdateCircleTypeState> {
+  const typeId = String(formData.get("typeId") ?? "");
+  const academySlug = String(formData.get("academySlug") ?? "").trim();
+  const nameAr = String(formData.get("nameAr") ?? "").trim();
+  const nameEn = String(formData.get("nameEn") ?? "").trim();
+  const values = { nameAr, nameEn };
+
+  const fieldErrors: Partial<Record<"nameAr" | "nameEn", string>> = {};
+  if (!nameAr) fieldErrors.nameAr = "required";
+  else if (nameAr.length > MAX_NAME) fieldErrors.nameAr = "tooLong";
+  if (!nameEn) fieldErrors.nameEn = "required";
+  else if (nameEn.length > MAX_NAME) fieldErrors.nameEn = "tooLong";
+
+  if (Object.keys(fieldErrors).length > 0) {
+    return { status: "invalid", values, fieldErrors };
+  }
+
+  await requireAdminSession(`/${academySlug}/admin/circle-types`);
+  const academy = await getAcademyBySlug(academySlug);
+  if (!academy) return { status: "error", message: "generic" };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("circle_types")
+    .update({ name_ar: nameAr, name_en: nameEn })
+    .eq("id", typeId)
+    .eq("academy_id", academy.id);
+
+  if (error) {
+    console.error("circle type update failed", error);
+    return { status: "error", message: "generic" };
+  }
+
+  refresh(academySlug);
+  return { status: "idle" };
+}
+
+/**
+ * Permanently removes a type that no circle uses.
+ *
+ * `fk_circles_type` has no ON DELETE clause, so Postgres defaults to
+ * RESTRICT: a type still referenced by any circle cannot be deleted no matter
+ * what this does — the database refuses it outright. The page additionally
+ * withholds the button in that case so nobody discovers the rule by hitting
+ * an error, but this catch is the real, server-side edge — the button being
+ * hidden is only a courtesy.
+ */
+export async function deleteCircleType(formData: FormData) {
+  const typeId = String(formData.get("typeId") ?? "");
+  const academySlug = String(formData.get("academySlug") ?? "");
+
+  await requireAdminSession(`/${academySlug}/admin/circle-types`);
+  const academy = await getAcademyBySlug(academySlug);
+  if (!academy) return;
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("circle_types")
+    .delete()
+    .eq("id", typeId)
+    .eq("academy_id", academy.id);
+
+  if (error) console.error("circle type delete failed", error);
 
   refresh(academySlug);
 }

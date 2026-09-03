@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BackLink } from "@/components/back-link";
+import { ConfirmButton } from "@/components/confirm-button";
 import { CopyLinkButton } from "@/components/copy-link-button";
 import { Link } from "@/i18n/navigation";
 import { getAcademyBySlug } from "@/lib/academy-dal";
@@ -9,7 +10,6 @@ import { requireStaffSession } from "@/lib/auth/dal";
 import type { Teacher } from "@/lib/database.types";
 import { createClient } from "@/lib/supabase/server";
 import { deleteTeacher, setTeacherActive } from "./actions";
-import { ConfirmButton } from "./confirm-button";
 import { ResetPasswordButton } from "./reset-button";
 
 type PageProps = {

@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BackLink } from "@/components/back-link";
+import { ConfirmButton } from "@/components/confirm-button";
+import { Link } from "@/i18n/navigation";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { loadCircleTypes } from "@/lib/circle-types";
 import { createClient } from "@/lib/supabase/server";
-import { setCircleTypeActive } from "./actions";
+import { deleteCircleType, setCircleTypeActive } from "./actions";
 import { CircleTypeForm } from "./circle-type-form";
 
 type PageProps = {
@@ -69,25 +71,57 @@ export default async function CircleTypesPage({ params }: PageProps) {
           </p>
         </div>
 
-        <form action={setCircleTypeActive}>
-          <input type="hidden" name="typeId" value={type.id} />
-          <input type="hidden" name="academySlug" value={academySlug} />
-          <input
-            type="hidden"
-            name="isActive"
-            value={type.is_active ? "0" : "1"}
-          />
-          <button
-            type="submit"
-            className={
-              type.is_active
-                ? "btn-secondary px-4 py-2 text-sm"
-                : "btn-primary px-4 py-2 text-sm"
-            }
+        <div className="flex flex-wrap gap-2">
+          <form action={setCircleTypeActive}>
+            <input type="hidden" name="typeId" value={type.id} />
+            <input type="hidden" name="academySlug" value={academySlug} />
+            <input
+              type="hidden"
+              name="isActive"
+              value={type.is_active ? "0" : "1"}
+            />
+            <button
+              type="submit"
+              className={
+                type.is_active
+                  ? "btn-secondary px-4 py-2 text-sm"
+                  : "btn-primary px-4 py-2 text-sm"
+              }
+            >
+              {type.is_active ? t("deactivate") : t("activate")}
+            </button>
+          </form>
+
+          <Link
+            href={`/${academySlug}/admin/circle-types/${type.id}/edit`}
+            className="btn-secondary px-4 py-2 text-sm"
           >
-            {type.is_active ? t("deactivate") : t("activate")}
-          </button>
-        </form>
+            {t("edit")}
+          </Link>
+
+          {/*
+            A type still used by a circle cannot be deleted — the database
+            itself refuses it (fk_circles_type has no ON DELETE clause, so it
+            defaults to RESTRICT). The button is withheld rather than shown
+            and then refused, matching how the teachers page treats a teacher
+            who still owns circles.
+          */}
+          {count === 0 && (
+            <form action={deleteCircleType}>
+              <input type="hidden" name="typeId" value={type.id} />
+              <input type="hidden" name="academySlug" value={academySlug} />
+              <ConfirmButton
+                label={t("delete")}
+                confirmMessage={t("confirmDelete", {
+                  name: locale === "ar" ? type.name_ar : type.name_en,
+                })}
+                className="rounded-xl border border-absent px-4 py-2 text-sm
+                           font-semibold text-absent transition-colors
+                           hover:bg-absent hover:text-white"
+              />
+            </form>
+          )}
+        </div>
       </li>
     );
   }

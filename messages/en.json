@@ -568,11 +568,24 @@
         "required": "This name is required.",
         "tooLong": "That is too long.",
         "generic": "Could not add the type. Please try again."
-      }
+      },
+      "edit": "Edit",
+      "delete": "Delete",
+      "confirmDelete": "Delete \"{name}\"? This cannot be undone.",
+      "editTitle": "Edit circle type",
+      "editSubtitle": "Change how this type's name appears — the circles already using it are unaffected.",
+      "backToTypes": "Back to circle types",
+      "saveChanges": "Save changes",
+      "saving": "Saving…",
+      "cancel": "Cancel"
     },
     "circleTypesCard": {
       "title": "Circle types",
       "subtitle": "Add or manage the kinds of circles teachers can create"
+    },
+    "newCircleCard": {
+      "title": "New circle",
+      "subtitle": "Create a circle and assign it to any teacher"
     }
   },
   "reports": {

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Tags, UserCheck } from "lucide-react";
+import { CirclePlus, Tags, UserCheck } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { ChevronForward } from "@/components/back-link";
@@ -170,6 +170,32 @@ export default async function AdminPage({ params }: AdminPageProps) {
             <ChevronForward />
           </div>
         </Link>
+
+        {/*
+          A مشرفة could already reach circle creation through /admin/circles's
+          own "new circle" button, but that buries it a click deep inside a
+          list page. This puts the same form — /dashboard/new already grants
+          an admin the teacher-assignment picker — on the control panel itself.
+        */}
+        {isAdmin && (
+          <Link
+            href={`/${academySlug}/dashboard/new`}
+            className="card hover:border-brand-600 transition-colors"
+          >
+            <div className="flex items-center gap-4">
+              <div className="rounded-xl bg-brand-100 p-3 text-brand-700">
+                <CirclePlus className="h-6 w-6" aria-hidden="true" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold">{t("newCircleCard.title")}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {t("newCircleCard.subtitle")}
+                </p>
+              </div>
+              <ChevronForward />
+            </div>
+          </Link>
+        )}
 
         {/* Managing the type taxonomy is مشرفة-only — unlike the other cards
             here, this one is not shown to a plain teacher at all. */}
