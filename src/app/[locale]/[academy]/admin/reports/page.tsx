@@ -7,10 +7,10 @@ import { getAcademyContext } from "@/lib/academy-context";
 import type {
   AttendanceReportRow,
   Circle,
-  CircleType,
   GenderCategory,
   Teacher,
 } from "@/lib/database.types";
+import { loadCircleTypes } from "@/lib/circle-types";
 import { RANGE_PRESETS, resolveRange } from "@/lib/report-range";
 import { createClient } from "@/lib/supabase/server";
 
@@ -27,7 +27,6 @@ type ReportsPageProps = {
   }>;
 };
 
-const CIRCLE_TYPES: CircleType[] = ["tasheeh", "tajweed", "free_recitation"];
 
 /** Authorized route: never prerender it. */
 export const dynamic = "force-dynamic";
@@ -67,13 +66,24 @@ export default async function ReportsPage({
     query.gender === "male" || query.gender === "female" ? query.gender : null;
   const circleId = query.circle && UUID.test(query.circle) ? query.circle : null;
   const teacherId = query.teacher && UUID.test(query.teacher) ? query.teacher : null;
-  const circleType = CIRCLE_TYPES.includes(query.type as CircleType)
-    ? (query.type as CircleType)
-    : null;
 
   const supabase = await createClient();
-  const [reportResult, circlesResult, teachersResult] = await Promise.all([
-    supabase.rpc("attendance_report", {
+  const [circleTypesResult, circlesResult, teachersResult] = await Promise.all([
+    // `activeOnly: false` — a report can span a period before a type was
+    // deactivated, and its rows must still filter and label correctly.
+    academy ? loadCircleTypes(supabase, academy.id, { activeOnly: false }) : [],
+    supabase.from("circles").select("*").order("type").order("name"),
+    supabase.from("teachers").select("*").eq("is_active", true).order("name"),
+  ]);
+
+  const circleTypes = circleTypesResult;
+  const circleType = circleTypes.some((type) => type.slug === query.type)
+    ? (query.type as string)
+    : null;
+
+  const { data: reportRows, error: reportError } = await supabase.rpc(
+    "attendance_report",
+    {
       p_from: range.from,
       p_to: range.to,
       p_gender: gender,
@@ -81,14 +91,12 @@ export default async function ReportsPage({
       p_teacher_id: teacherId,
       p_academy_id: academy?.id ?? null,
       p_circle_type: circleType,
-    }),
-    supabase.from("circles").select("*").order("type").order("name"),
-    supabase.from("teachers").select("*").eq("is_active", true).order("name"),
-  ]);
+    },
+  );
 
-  if (reportResult.error) console.error("attendance_report failed", reportResult.error);
+  if (reportError) console.error("attendance_report failed", reportError);
 
-  const rows: AttendanceReportRow[] = reportResult.data ?? [];
+  const rows: AttendanceReportRow[] = reportRows ?? [];
   const circles: Circle[] = circlesResult.data ?? [];
   const teachers: Teacher[] = teachersResult.data ?? [];
 
@@ -200,9 +208,9 @@ export default async function ReportsPage({
               defaultValue={circleType ?? ""}
             >
               <option value="">{t("filters.all")}</option>
-              {CIRCLE_TYPES.map((option) => (
-                <option key={option} value={option}>
-                  {tCircle(`type.${option}`)}
+              {circleTypes.map((option) => (
+                <option key={option.slug} value={option.slug}>
+                  {locale === "ar" ? option.name_ar : option.name_en}
                 </option>
               ))}
             </select>
@@ -225,11 +233,12 @@ export default async function ReportsPage({
                 it is often just the teacher's name, which made the bare list
                 impossible to tell apart from the teacher filter below.
               */}
-              {CIRCLE_TYPES.map((option) => {
-                const inType = circles.filter((circle) => circle.type === option);
+              {circleTypes.map((option) => {
+                const inType = circles.filter((circle) => circle.type === option.slug);
                 if (inType.length === 0) return null;
+                const label = locale === "ar" ? option.name_ar : option.name_en;
                 return (
-                  <optgroup key={option} label={tCircle(`type.${option}`)}>
+                  <optgroup key={option.slug} label={label}>
                     {inType.map((circle) => (
                       <option key={circle.id} value={circle.id}>
                         {t("filters.circleOption", {

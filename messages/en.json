@@ -547,6 +547,32 @@
       "subtitle": "For administering the academy: circles, students, teachers, and reports.",
       "teachersNote": "Teaching rather than administering?",
       "teachersLink": "Teacher / supervisor sign in"
+    },
+    "circleTypes": {
+      "title": "Circle types",
+      "subtitle": "Add a new kind of circle — like tajweed or Hadith — for teachers to choose when they create one.",
+      "back": "Back to admin",
+      "fields": {
+        "nameAr": "Name (Arabic)",
+        "nameEn": "Name (English)"
+      },
+      "add": "Add type",
+      "adding": "Adding…",
+      "activeList": "Active ({count})",
+      "inactiveList": "Deactivated ({count})",
+      "noActive": "No active circle types.",
+      "circleCount": "{count, plural, =0 {no circles} one {1 circle} other {# circles}} using it",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "errors": {
+        "required": "This name is required.",
+        "tooLong": "That is too long.",
+        "generic": "Could not add the type. Please try again."
+      }
+    },
+    "circleTypesCard": {
+      "title": "Circle types",
+      "subtitle": "Add or manage the kinds of circles teachers can create"
     }
   },
   "reports": {

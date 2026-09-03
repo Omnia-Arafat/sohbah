@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SetupNotice } from "@/components/setup-notice";
+import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { formatTime } from "@/lib/format-time";
 import { createClient } from "@/lib/supabase/server";
@@ -55,13 +56,18 @@ export default async function CirclePage({ params }: CirclePageProps) {
   if (!circle) notFound();
 
   const supabase = await createClient();
-  const { data: queue } = await supabase.rpc("circle_queue", { p_slug: slug });
+  const [{ data: queue }, circleTypes] = await Promise.all([
+    supabase.rpc("circle_queue", { p_slug: slug }),
+    // `activeOnly: false` — the circle's own type must still show a real
+    // label here even if a supervisor has since deactivated it.
+    loadCircleTypes(supabase, circle.academy_id, { activeOnly: false }),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
       <section className="card border-brand-200 bg-brand-50 dark:border-brand-800 dark:bg-surface">
         <p className="text-sm text-muted-foreground">
-          {t(`type.${circle.type}`)}
+          {circleTypeLabel(circleTypes, circle.type, locale)}
         </p>
         <h1 className="font-display mt-1 text-2xl font-bold sm:text-3xl">
           {circle.name}

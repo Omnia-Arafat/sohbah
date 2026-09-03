@@ -5,6 +5,7 @@ import { requireTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
 import { createClient } from "@/lib/supabase/server";
 import { getAcademyBySlug } from "@/lib/academy-dal";
+import { loadCircleTypes } from "@/lib/circle-types";
 import { notFound } from "next/navigation";
 import { EditCircleForm } from "./edit-form";
 
@@ -69,6 +70,16 @@ export default async function EditCirclePage({ params }: EditCirclePageProps) {
     .eq("is_active", true)
     .order("name");
 
+  // Includes deactivated types so a circle already using one keeps showing its
+  // actual type in the dropdown instead of it silently vanishing.
+  const allTypes = await loadCircleTypes(supabase, academy.id, { activeOnly: false });
+  const circleTypes = allTypes
+    .filter((type) => type.is_active || type.slug === circle.type)
+    .map((type) => ({
+      slug: type.slug,
+      label: locale === "ar" ? type.name_ar : type.name_en,
+    }));
+
   return (
     <div className="mx-auto max-w-2xl">
       <div className="flex flex-col gap-6">
@@ -84,6 +95,7 @@ export default async function EditCirclePage({ params }: EditCirclePageProps) {
         <EditCircleForm
           circle={circle}
           teachers={teachers || []}
+          circleTypes={circleTypes}
           academySlug={academySlug}
         />
       </div>

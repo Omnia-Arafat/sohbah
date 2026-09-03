@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { UserCheck } from "lucide-react";
+import { Tags, UserCheck } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { ChevronForward } from "@/components/back-link";
@@ -87,9 +87,9 @@ export default async function AdminPage({ params }: AdminPageProps) {
     );
   }
 
-  // Only admins can access this page
   // One tier for now: anyone approved may look. The controls that change
   // something are hidden below and re-checked in every server action.
+  const isAdmin = session.teacher.role === "admin";
 
   const supabase = await createClient();
 
@@ -170,6 +170,28 @@ export default async function AdminPage({ params }: AdminPageProps) {
             <ChevronForward />
           </div>
         </Link>
+
+        {/* Managing the type taxonomy is مشرفة-only — unlike the other cards
+            here, this one is not shown to a plain teacher at all. */}
+        {isAdmin && (
+          <Link
+            href={`/${academySlug}/admin/circle-types`}
+            className="card hover:border-brand-600 transition-colors"
+          >
+            <div className="flex items-center gap-4">
+              <div className="rounded-xl bg-brand-100 p-3 text-brand-700">
+                <Tags className="h-6 w-6" aria-hidden="true" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold">{t("circleTypesCard.title")}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {t("circleTypesCard.subtitle")}
+                </p>
+              </div>
+              <ChevronForward />
+            </div>
+          </Link>
+        )}
 
         <Link
           href={`/${academySlug}/admin/students`}

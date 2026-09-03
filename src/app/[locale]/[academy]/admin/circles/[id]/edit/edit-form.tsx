@@ -7,7 +7,6 @@ import { Link } from "@/i18n/navigation";
 import { getTeacherDisplayLabel } from "@/lib/academy-display";
 import { updateCircle, type UpdateCircleState } from "./actions";
 
-const CIRCLE_TYPES = ["tasheeh", "tajweed", "free_recitation"] as const;
 const DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 
 function SubmitButton() {
@@ -44,13 +43,19 @@ type Circle = {
 type EditCircleFormProps = {
   circle: Circle;
   teachers: Teacher[];
+  /** From `circle_types` — an academy-managed, open-ended list. */
+  circleTypes: { slug: string; label: string }[];
   academySlug: string;
 };
 
-export function EditCircleForm({ circle, teachers, academySlug }: EditCircleFormProps) {
+export function EditCircleForm({
+  circle,
+  teachers,
+  circleTypes,
+  academySlug,
+}: EditCircleFormProps) {
   const locale = useLocale();
   const t = useTranslations("admin.circles");
-  const tCircle = useTranslations("circle");
   const tDashboard = useTranslations("dashboard");
   const [state, formAction] = useActionState<UpdateCircleState, FormData>(
     updateCircle,
@@ -106,9 +111,9 @@ export function EditCircleForm({ circle, teachers, academySlug }: EditCircleForm
           className="input"
           defaultValue={values.type}
         >
-          {CIRCLE_TYPES.map((type) => (
-            <option key={type} value={type}>
-              {tCircle(`type.${type}`)}
+          {circleTypes.map((type) => (
+            <option key={type.slug} value={type.slug}>
+              {type.label}
             </option>
           ))}
         </select>

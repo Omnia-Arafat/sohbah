@@ -5,6 +5,7 @@ import { CopyLinkButton } from "@/components/copy-link-button";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
 import { BackLink } from "@/components/back-link";
 import { isActiveTeacher, requireTeacherSession } from "@/lib/auth/dal";
+import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { formatTime } from "@/lib/format-time";
 import { createClient } from "@/lib/supabase/server";
@@ -71,11 +72,14 @@ export default async function TeacherSessionPage({ params }: SessionPageProps) {
   if (!circle) notFound();
 
   const supabase = await createClient();
-  const [queueResult, infoResult] = await Promise.all([
+  const [queueResult, infoResult, circleTypes] = await Promise.all([
     supabase.rpc("circle_queue", { p_slug: circle.registration_slug }),
     // Reused for the session date, which is resolved in the circle's own
     // timezone rather than the server's — a 05:00 Fajr circle depends on it.
     supabase.rpc("circle_public_info", { p_slug: circle.registration_slug }),
+    // `activeOnly: false` — this circle's own type must still show a real
+    // label even if a supervisor has since deactivated it.
+    loadCircleTypes(supabase, circle.academy_id, { activeOnly: false }),
   ]);
 
   if (queueResult.error) console.error("circle_queue failed", queueResult.error);
@@ -92,7 +96,7 @@ export default async function TeacherSessionPage({ params }: SessionPageProps) {
 
         <div className="card mt-2 border-brand-200 bg-brand-50 dark:border-brand-800 dark:bg-surface">
           <p className="text-sm text-muted-foreground">
-            {tCircle(`type.${circle.type}`)} ·{" "}
+            {circleTypeLabel(circleTypes, circle.type, locale)} ·{" "}
             {tDashboard(`gender.${circle.gender_category}`)}
           </p>
           <h1 className="font-display mt-1 text-2xl font-bold sm:text-3xl">

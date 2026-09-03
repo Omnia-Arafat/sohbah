@@ -7,6 +7,7 @@ import { BackLink } from "@/components/back-link";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { getTeacherDisplayLabel } from "@/lib/academy-display";
 import { isActiveTeacher, requireTeacherSession } from "@/lib/auth/dal";
+import { loadCircleTypes } from "@/lib/circle-types";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import { DEFAULT_TIMEZONE } from "@/lib/timezones";
@@ -47,6 +48,14 @@ export default async function NewCirclePage({ params }: NewCirclePageProps) {
     locale,
   );
 
+  const academy = isSupabaseConfigured() ? await getAcademyBySlug(academySlug) : null;
+  const circleTypes = academy
+    ? (await loadCircleTypes(await createClient(), academy.id)).map((type) => ({
+        slug: type.slug,
+        label: locale === "ar" ? type.name_ar : type.name_en,
+      }))
+    : [];
+
   return (
     <div className="flex flex-col gap-6">
       <section>
@@ -63,6 +72,7 @@ export default async function NewCirclePage({ params }: NewCirclePageProps) {
         defaultTimezone={DEFAULT_TIMEZONE}
         assignableTeachers={assignableTeachers}
         defaultTeacherId={session.teacher.id}
+        circleTypes={circleTypes}
         registrationSlug={`halaqa-${randomUUID()}`}
         academySlug={academySlug}
       />

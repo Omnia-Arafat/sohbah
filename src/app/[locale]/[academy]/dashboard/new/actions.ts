@@ -11,7 +11,6 @@ import { createClient } from "@/lib/supabase/server";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import type { CircleFieldErrors, CircleValues, NewCircleState } from "./state";
 
-const CIRCLE_TYPES: CircleType[] = ["tasheeh", "tajweed", "free_recitation"];
 const SLUG_PATTERN = /^halaqa-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -40,9 +39,10 @@ function validate(values: CircleValues): CircleFieldErrors {
   if (!values.name) errors.name = "nameRequired";
   else if (values.name.length > 120) errors.name = "tooLong";
 
-  if (!CIRCLE_TYPES.includes(values.type as CircleType)) {
-    errors.type = "typeRequired";
-  }
+  // Format only — whether the slug is a real, active type for this academy is
+  // enforced by `fk_circles_type` at insert time (see the catch below), since
+  // the valid set is now academy-managed rather than fixed in code.
+  if (!values.type) errors.type = "typeRequired";
 
   if (values.gender !== "male" && values.gender !== "female") {
     errors.gender = "genderRequired";
@@ -157,6 +157,14 @@ export async function createCircle(
 
   if (error || createdCircle?.registration_slug !== registrationSlug) {
     console.error("circle insert failed", error);
+
+    // fk_circles_type: the slug was deactivated or removed between the page
+    // loading and the form being submitted. Same field error as an empty
+    // selection, since to the teacher it is the same fix — pick a type again.
+    if (error?.code === "23503") {
+      return { status: "invalid", values, fieldErrors: { type: "typeRequired" } };
+    }
+
     const reason =
       error?.code === "23505"
         ? "slugTaken"

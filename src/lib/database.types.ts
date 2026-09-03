@@ -7,7 +7,12 @@
  */
 
 export type GenderCategory = "male" | "female";
-export type CircleType = "tasheeh" | "tajweed" | "free_recitation";
+/**
+ * An open, academy-managed list (see `CircleTypeOption` and the `circle_types`
+ * table), not a fixed set — an admin can add one at any time from
+ * /admin/circle-types, so this cannot be a literal union.
+ */
+export type CircleType = string;
 export type AttendanceStatus = "pending" | "present" | "absent";
 export type RecitationStatus = "waiting" | "reciting" | "done";
 export type TeacherRole = "teacher" | "admin";
@@ -138,6 +143,16 @@ export type TeacherLoginMatch = {
   is_active: boolean;
 };
 
+export type CircleTypeOption = {
+  id: string;
+  academy_id: string;
+  slug: string;
+  name_ar: string;
+  name_en: string;
+  is_active: boolean;
+  created_at: string;
+};
+
 export type AttendanceReportRow = {
   student_id: string;
   student_name: string;
@@ -200,6 +215,12 @@ export type Database = {
         Update: Partial<
           Pick<AttendanceRecord, "attendance_status" | "recitation_status" | "queue_order">
         >;
+        Relationships: [];
+      };
+      circle_types: {
+        Row: CircleTypeOption;
+        Insert: Insert<CircleTypeOption, "id" | "created_at" | "is_active">;
+        Update: Partial<CircleTypeOption>;
         Relationships: [];
       };
     };

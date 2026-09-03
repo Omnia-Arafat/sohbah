@@ -7,6 +7,7 @@ import { formatTime } from "@/lib/format-time";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
 import { createClient } from "@/lib/supabase/server";
 import { getAcademyBySlug } from "@/lib/academy-dal";
+import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import { notFound } from "next/navigation";
 import { CopyLinkButton } from "@/components/copy-link-button";
 
@@ -78,6 +79,12 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
 
   if (error) console.error("Failed to fetch circles:", error);
 
+  // `activeOnly: false` — an older circle can reference a since-deactivated
+  // type, and the list still needs a real label for it, not a blank one.
+  const circleTypes = await loadCircleTypes(supabase, academy.id, {
+    activeOnly: false,
+  });
+
   return (
     <div className="flex flex-col gap-6">
       <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -117,7 +124,8 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
                       )}
                     </div>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {t(`circle.type.${circle.type}`)} · {t(`dashboard.gender.${circle.gender_category}`)}
+                      {circleTypeLabel(circleTypes, circle.type, locale)} ·{" "}
+                      {t(`dashboard.gender.${circle.gender_category}`)}
                     </p>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {tCircles("teacherLabel", { name: circle.teacher?.name || tCircles("unknown") })}

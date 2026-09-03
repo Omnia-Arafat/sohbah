@@ -6,7 +6,6 @@ import { useTranslations } from "next-intl";
 import { createCircle } from "./actions";
 import { initialNewCircleState, type NewCircleState } from "./state";
 
-const CIRCLE_TYPES = ["tasheeh", "tajweed", "free_recitation"] as const;
 /** 0 = Sunday … 6 = Saturday, matching PostgreSQL's `dow`. */
 const DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 const DEFAULT_DAYS = [0, 1, 2, 3, 4];
@@ -27,6 +26,8 @@ type CircleFormProps = {
   /** Non-empty only for admins; a plain teacher owns the circles they create. */
   assignableTeachers: { id: string; label: string }[];
   defaultTeacherId: string;
+  /** From `circle_types` — an academy-managed, open-ended list. */
+  circleTypes: { slug: string; label: string }[];
   registrationSlug: string;
   academySlug: string;
 };
@@ -35,11 +36,11 @@ export function CircleForm({
   defaultTimezone,
   assignableTeachers,
   defaultTeacherId,
+  circleTypes,
   registrationSlug,
   academySlug,
 }: CircleFormProps) {
   const t = useTranslations("dashboard.new");
-  const tCircle = useTranslations("circle");
   const tDashboard = useTranslations("dashboard");
 
   const createCircleWithSlug = createCircle.bind(null, registrationSlug);
@@ -115,11 +116,11 @@ export function CircleForm({
           id="type"
           name="type"
           className="input"
-          defaultValue={values?.type ?? "tasheeh"}
+          defaultValue={values?.type ?? circleTypes[0]?.slug ?? ""}
         >
-          {CIRCLE_TYPES.map((type) => (
-            <option key={type} value={type}>
-              {tCircle(`type.${type}`)}
+          {circleTypes.map((type) => (
+            <option key={type.slug} value={type.slug}>
+              {type.label}
             </option>
           ))}
         </select>

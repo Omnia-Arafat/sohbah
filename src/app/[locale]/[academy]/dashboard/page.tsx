@@ -4,7 +4,9 @@ import { CopyLinkButton } from "@/components/copy-link-button";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
 import { Link } from "@/i18n/navigation";
+import { getAcademyBySlug } from "@/lib/academy-dal";
 import { isActiveTeacher, requireTeacherSession } from "@/lib/auth/dal";
+import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import type { Circle } from "@/lib/database.types";
 import { formatTime } from "@/lib/format-time";
 import { createClient } from "@/lib/supabase/server";
@@ -40,9 +42,13 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   }
 
   const supabase = await createClient();
-  const [todayResult, allResult] = await Promise.all([
+  const academy = await getAcademyBySlug(academySlug);
+  const [todayResult, allResult, circleTypes] = await Promise.all([
     supabase.rpc("teacher_today_circles"),
     supabase.from("circles").select("*").eq("is_active", true).order("start_time"),
+    // `activeOnly: false` — an existing circle can reference a since-
+    // deactivated type, and this list still needs a real label for it.
+    academy ? loadCircleTypes(supabase, academy.id, { activeOnly: false }) : [],
   ]);
 
   if (todayResult.error) console.error("teacher_today_circles failed", todayResult.error);
@@ -80,7 +86,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-sm text-muted-foreground">
-                      {tCircle(`type.${circle.type}`)} ·{" "}
+                      {circleTypeLabel(circleTypes, circle.type, locale)} ·{" "}
                       {t(`gender.${circle.gender_category}`)}
                     </p>
                     <h3 className="truncate text-lg font-semibold">{circle.name}</h3>
@@ -121,7 +127,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
               >
                 <div className="min-w-0">
                   <p className="text-sm text-muted-foreground">
-                    {tCircle(`type.${circle.type}`)} ·{" "}
+                    {circleTypeLabel(circleTypes, circle.type, locale)} ·{" "}
                     {t(`gender.${circle.gender_category}`)}
                   </p>
                   <h3 className="truncate font-semibold">{circle.name}</h3>
