@@ -25,6 +25,14 @@ export async function generateMetadata({
   return { title: t("title") };
 }
 
+/**
+ * Reachable by any active teacher, role aside — deliberately. A teacher
+ * assigns the circle to herself; an admin gets the extra teacher picker (see
+ * `loadAssignableTeachers` below). Do not add a role check here: this stays
+ * the one route that must keep working for a plain teacher and a supervisor
+ * alike even after `/admin` is ever locked to admins only, since that page's
+ * own "new circle" shortcut just links back to this same form.
+ */
 export default async function NewCirclePage({ params }: NewCirclePageProps) {
   const { locale, academy: academySlug } = await params;
   setRequestLocale(locale);

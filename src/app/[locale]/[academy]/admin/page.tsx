@@ -176,6 +176,11 @@ export default async function AdminPage({ params }: AdminPageProps) {
           own "new circle" button, but that buries it a click deep inside a
           list page. This puts the same form — /dashboard/new already grants
           an admin the teacher-assignment picker — on the control panel itself.
+
+          This card may end up admin-only later, if /admin itself is ever
+          locked down that way — fine, since it is only a shortcut. The
+          `/dashboard` copy of this same link is the one that must survive
+          that change; see the comment there.
         */}
         {isAdmin && (
           <Link

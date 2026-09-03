@@ -67,6 +67,13 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           </h1>
           <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
         </div>
+        {/*
+          Deliberately reachable by any active teacher, role aside — this is
+          the copy that must keep working even after /admin is ever locked
+          to admins only. /admin/page.tsx has its own shortcut to the same
+          /dashboard/new form; that one is free to become admin-only later,
+          this one must not.
+        */}
         <Link href={`/${academySlug}/dashboard/new`} className="btn-primary w-full sm:w-auto">
           {t("newCircle")}
         </Link>
