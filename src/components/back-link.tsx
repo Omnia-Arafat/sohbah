@@ -1,3 +1,4 @@
+import { ChevronRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 
 type BackLinkProps = {
@@ -24,19 +25,9 @@ export function BackLink({ href, children, className = "" }: BackLinkProps) {
 /** Forward chevron for card/list navigation; points the right way in RTL. */
 export function ChevronForward({ className = "h-5 w-5" }: { className?: string }) {
   return (
-    <svg
+    <ChevronRight
       className={`${className} text-muted-foreground rtl:rotate-180`}
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      aria-hidden
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M9 5l7 7-7 7"
-      />
-    </svg>
+      aria-hidden="true"
+    />
   );
 }

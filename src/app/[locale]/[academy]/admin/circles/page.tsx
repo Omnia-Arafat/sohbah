@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Pencil, Trash2, Video } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { BackLink } from "@/components/back-link";
@@ -111,7 +112,7 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
           </Link>
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="scroll-list grid gap-4">
           {circles.map((circle) => (
             <div key={circle.id} className="card">
               <div className="flex flex-col gap-4">
@@ -147,9 +148,7 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
                     className="btn-secondary flex items-center gap-1.5 px-3 py-2 text-sm"
                     title={tCircles("edit")}
                   >
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
+                    <Pencil className="h-4 w-4" aria-hidden="true" />
                     {tCircles("edit")}
                   </Link>)}
                   <Link
@@ -157,20 +156,17 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
                     className="btn-secondary flex items-center gap-1.5 px-3 py-2 text-sm"
                     title={tCircles("session")}
                   >
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
+                    <Video className="h-4 w-4" aria-hidden="true" />
                     {tCircles("session")}
                   </Link>
                   <CopyLinkButton path={`/${locale}/${academySlug}/circle/${circle.registration_slug}`} />
                   {canManage && (<Link
                     href={`/${academySlug}/admin/circles/${circle.id}/delete`}
-                    className="btn-secondary flex items-center gap-1.5 px-3 py-2 text-sm text-absent hover:bg-red-50 hover:border-red-300 dark:hover:bg-red-950"
+                    className="btn-secondary flex items-center gap-1.5 px-3 py-2 text-sm
+                               text-absent hover:border-absent hover:bg-absent hover:text-white"
                     title={tCircles("delete")}
                   >
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
+                    <Trash2 className="h-4 w-4" aria-hidden="true" />
                     {tCircles("delete")}
                   </Link>)}
                 </div>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Pencil, Trash2 } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { BackLink } from "@/components/back-link";
@@ -156,9 +157,9 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
         ) : (
           <>
             {/* Desktop table */}
-            <div className="hidden sm:block overflow-x-auto">
+            <div className="scroll-list hidden sm:block overflow-x-auto">
               <table className="w-full">
-                <thead>
+                <thead className="sticky top-0 z-10 bg-surface">
                   <tr className="border-b border-border-subtle text-left text-sm text-muted-foreground">
                     <th className="pb-3 font-medium">{tStudents("name")}</th>
                     <th className="pb-3 font-medium">{tStudents("fatherName")}</th>
@@ -194,19 +195,16 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
                             className="btn-secondary flex items-center gap-1.5 px-3 py-1.5 text-sm"
                             title={tStudents("edit")}
                           >
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
+                            <Pencil className="h-4 w-4" aria-hidden="true" />
                             {tStudents("edit")}
                           </Link>
                           <Link
                             href={`/${academySlug}/admin/students/${student.id}/delete`}
-                            className="btn-secondary flex items-center gap-1.5 px-3 py-1.5 text-sm text-absent hover:bg-red-50 hover:border-red-300 dark:hover:bg-red-950"
+                            className="btn-secondary flex items-center gap-1.5 px-3 py-1.5 text-sm
+                                       text-absent hover:border-absent hover:bg-absent hover:text-white"
                             title={tStudents("delete")}
                           >
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
+                            <Trash2 className="h-4 w-4" aria-hidden="true" />
                             {tStudents("delete")}
                           </Link>
                           </>)}
@@ -219,7 +217,7 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
             </div>
 
             {/* Mobile cards */}
-            <div className="flex flex-col gap-3 sm:hidden">
+            <div className="scroll-list flex flex-col gap-3 sm:hidden">
               {students.map((student) => (
                 <div key={student.id} className="rounded-xl border border-border-subtle bg-surface p-4">
                   <div className="flex items-start justify-between gap-3">
@@ -238,21 +236,18 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
                       {canManage && (<>
                       <Link
                         href={`/${academySlug}/admin/students/${student.id}/edit`}
-                        className="rounded-lg border border-border-subtle bg-surface p-2 hover:bg-accent-50 transition-colors"
+                        className="rounded-lg border border-border-subtle bg-surface p-2 hover:bg-brand-50 dark:hover:bg-brand-900 transition-colors"
                         title={tStudents("edit")}
                       >
-                        <svg className="h-4 w-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
+                        <Pencil className="h-4 w-4 text-brand-600" aria-hidden="true" />
                       </Link>
                       <Link
                         href={`/${academySlug}/admin/students/${student.id}/delete`}
-                        className="rounded-lg border border-border-subtle bg-surface p-2 hover:bg-red-50 hover:border-red-300 transition-colors"
+                        className="group rounded-lg border border-border-subtle bg-surface p-2
+                                   hover:border-absent hover:bg-absent transition-colors"
                         title={tStudents("delete")}
                       >
-                        <svg className="h-4 w-4 text-absent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
+                        <Trash2 className="h-4 w-4 text-absent group-hover:text-white" aria-hidden="true" />
                       </Link>
                       </>)}
                     </div>

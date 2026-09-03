@@ -179,9 +179,7 @@ export default async function AdminTeachersPage({
                     ? t("confirmDelete", { name: teacher.name })
                     : t("confirmReject", { name: teacher.name })
                 }
-                className="rounded-xl border border-absent px-4 py-2 text-sm
-                           font-semibold text-absent transition-colors
-                           hover:bg-absent hover:text-white"
+                className="btn-danger"
               />
             </form>
           )}
@@ -266,7 +264,7 @@ export default async function AdminTeachersPage({
         {pending.length === 0 ? (
           <p className="card text-muted-foreground">{t("noPending")}</p>
         ) : (
-          <ul className="flex flex-col gap-3">
+          <ul className="scroll-list flex flex-col gap-3">
             {pending.map((teacher) => (
               <TeacherCard key={teacher.id} teacher={teacher} />
             ))}
@@ -281,7 +279,7 @@ export default async function AdminTeachersPage({
         {active.length === 0 ? (
           <p className="card text-muted-foreground">{t("noActive")}</p>
         ) : (
-          <ul className="flex flex-col gap-3">
+          <ul className="scroll-list flex flex-col gap-3">
             {active.map((teacher) => (
               <TeacherCard key={teacher.id} teacher={teacher} />
             ))}

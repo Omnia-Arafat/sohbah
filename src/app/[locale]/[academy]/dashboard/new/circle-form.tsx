@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { useTranslations } from "next-intl";
+import { SearchableSelect } from "@/components/searchable-select";
 import { createCircle } from "./actions";
 import { initialNewCircleState, type NewCircleState } from "./state";
 
@@ -90,18 +91,18 @@ export function CircleForm({
           <label className="field-label" htmlFor="teacherId">
             {t("fields.teacher")}
           </label>
-          <select
+          <SearchableSelect
             id="teacherId"
             name="teacherId"
-            className="input"
+            options={assignableTeachers.map((teacher) => ({
+              value: teacher.id,
+              label: teacher.label,
+            }))}
             defaultValue={values?.teacherId || defaultTeacherId}
-          >
-            {assignableTeachers.map((teacher) => (
-              <option key={teacher.id} value={teacher.id}>
-                {teacher.label}
-              </option>
-            ))}
-          </select>
+            placeholder={t("fields.teacherSearch")}
+            noMatches={t("fields.teacherNoMatches")}
+            required
+          />
           {fieldError("teacherId")}
         </div>
       ) : (

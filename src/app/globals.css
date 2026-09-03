@@ -111,8 +111,60 @@
            border border-border-subtle bg-surface text-foreground hover:bg-surface-muted;
   }
 
+  /* For a destructive text action (delete, reject) that sits beside a
+     .btn-secondary of the same size — was duplicated verbatim across the
+     teachers and circle-types pages before this. Deliberately smaller padding
+     than .btn-primary/.btn-secondary: it is always paired with other px-4
+     py-2 actions in the same row, never used alone at full button size. */
+  .btn-danger {
+    @apply rounded-xl border border-absent px-4 py-2 text-sm font-semibold
+           text-absent transition-colors
+           focus-visible:outline-2 focus-visible:outline-offset-2
+           focus-visible:outline-absent disabled:opacity-50
+           hover:bg-absent hover:text-white;
+  }
+
   .field-label {
     @apply mb-1.5 block text-sm font-medium text-foreground;
+  }
+
+  /* Every long, growing list in the app — students, teachers, circles, a
+     circle's live queue, a report's results — gets the same treatment: a
+     bounded height with its own scrollbar, so a busy academy's page stays a
+     fixed size instead of growing forever and pushing the header and filters
+     off screen. `70vh` rather than a fixed pixel value so it scales with
+     whatever device it is opened on, phone or desktop alike.
+
+     `overscroll-contain` stops scrolling past the end of the list from also
+     scrolling the page behind it — a small thing, but noticeable the moment
+     it is missing on a phone. */
+  .scroll-list {
+    @apply max-h-[70vh] overflow-y-auto overscroll-contain;
+
+    /* Sidr-green scrollbar instead of the OS default, so a long list still
+       reads as Sohbah's rather than the browser's. Firefox uses the two
+       `scrollbar-*` properties; every Chromium/WebKit browser uses the
+       pseudo-elements below — both are set so neither engine falls back to
+       its own default. */
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-brand-300) transparent;
+  }
+
+  .scroll-list::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .scroll-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scroll-list::-webkit-scrollbar-thumb {
+    background-color: var(--color-brand-300);
+    border-radius: 9999px;
+  }
+
+  .scroll-list::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-brand-500);
   }
 
   /* The report's from/to dates matter only for the "custom" range preset, so
@@ -133,6 +185,67 @@
     @apply w-full rounded-xl border border-border-subtle bg-surface px-4 py-3
            text-base text-foreground placeholder:text-muted-foreground
            focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-200;
+  }
+
+  /* Every <select className="input"> in the app gets this automatically — no
+     per-page change needed. `appearance: none` removes the browser's own
+     arrow (a different shape and position on every OS/browser combination)
+     and this draws one that matches every other icon in the app: lucide's
+     chevron-down, in the same muted-foreground used for every other icon.
+     `currentColor` cannot reach into a background-image, so the color is
+     hard-coded here — once per colour scheme, mirroring the dark-mode block
+     at the top of this file instead of the theme's CSS variables. */
+  select.input {
+    appearance: none;
+    background-repeat: no-repeat;
+    /* End side by default (LTR: right) — same side a native <select> arrow
+       always sits on, regardless of direction. */
+    background-position: right 0.875rem center;
+    background-size: 1rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235a6e66' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    padding-inline-end: 2.5rem;
+  }
+
+  [dir="rtl"] select.input {
+    /* End side in RTL is the left. */
+    background-position: left 0.875rem center;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    select.input {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2393a9a0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    }
+  }
+
+  /* The open panel of <SearchableSelect> (@/components/searchable-select) — a
+     bounded height so a long list of names scrolls instead of pushing the
+     rest of the form down, in the same Sidr-green scrollbar as .scroll-list.
+     Kept as its own class rather than reusing .scroll-list: that one is sized
+     for a full page section (`max-h-[70vh]`), which would make a dropdown
+     panel absurdly tall — this is sized for a dropdown instead. */
+  .combobox-panel {
+    @apply absolute z-20 mt-1 w-full overflow-y-auto rounded-xl border
+           border-border-subtle bg-surface shadow-md;
+    max-height: 16rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-brand-300) transparent;
+  }
+
+  .combobox-panel::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .combobox-panel::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .combobox-panel::-webkit-scrollbar-thumb {
+    background-color: var(--color-brand-300);
+    border-radius: 9999px;
+  }
+
+  .combobox-panel::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-brand-500);
   }
 
   .badge {

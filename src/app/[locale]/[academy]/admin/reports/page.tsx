@@ -319,7 +319,7 @@ export default async function ReportsPage({
         {rows.length === 0 ? (
           <p className="card text-muted-foreground">{t("results.empty")}</p>
         ) : (
-          <ol className="flex flex-col gap-2">
+          <ol className="scroll-list flex flex-col gap-2">
             {rows.map((row, index) => (
               <li
                 key={row.student_id}

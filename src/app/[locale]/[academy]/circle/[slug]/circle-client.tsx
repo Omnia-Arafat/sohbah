@@ -315,7 +315,7 @@ export function CircleClient({
         {queue.length === 0 ? (
           <p className="card text-muted-foreground">{t("queue.empty")}</p>
         ) : (
-          <ol className="flex flex-col gap-2">
+          <ol className="scroll-list flex flex-col gap-2">
             {queue.map((entry, index) => {
               const isMe = joined?.studentId === entry.student_id;
               return (

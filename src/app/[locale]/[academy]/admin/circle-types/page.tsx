@@ -115,9 +115,7 @@ export default async function CircleTypesPage({ params }: PageProps) {
                 confirmMessage={t("confirmDelete", {
                   name: locale === "ar" ? type.name_ar : type.name_en,
                 })}
-                className="rounded-xl border border-absent px-4 py-2 text-sm
-                           font-semibold text-absent transition-colors
-                           hover:bg-absent hover:text-white"
+                className="btn-danger"
               />
             </form>
           )}
@@ -145,7 +143,7 @@ export default async function CircleTypesPage({ params }: PageProps) {
         {active.length === 0 ? (
           <p className="card text-muted-foreground">{t("noActive")}</p>
         ) : (
-          <ul className="flex flex-col gap-3">
+          <ul className="scroll-list flex flex-col gap-3">
             {active.map((type) => (
               <TypeRow key={type.id} type={type} />
             ))}
@@ -158,7 +156,7 @@ export default async function CircleTypesPage({ params }: PageProps) {
           <h2 className="mb-3 text-lg font-semibold">
             {t("inactiveList", { count: String(inactive.length) })}
           </h2>
-          <ul className="flex flex-col gap-3">
+          <ul className="scroll-list flex flex-col gap-3">
             {inactive.map((type) => (
               <TypeRow key={type.id} type={type} />
             ))}

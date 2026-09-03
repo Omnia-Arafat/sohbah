@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { SearchableSelect } from "@/components/searchable-select";
 import { getTeacherDisplayLabel } from "@/lib/academy-display";
 import { updateCircle, type UpdateCircleState } from "./actions";
 
@@ -150,19 +151,18 @@ export function EditCircleForm({
         <label className="field-label" htmlFor="teacher">
           {t("assignedTeacher")}
         </label>
-        <select
+        <SearchableSelect
           id="teacher"
           name="teacher_id"
-          className="input"
+          options={teachers.map((teacher) => ({
+            value: teacher.id,
+            label: getTeacherDisplayLabel(teacher, academySlug, locale),
+          }))}
           defaultValue={values.teacher_id}
+          placeholder={t("teacherSearch")}
+          noMatches={t("teacherNoMatches")}
           required
-        >
-          {teachers.map((teacher) => (
-            <option key={teacher.id} value={teacher.id}>
-              {getTeacherDisplayLabel(teacher, academySlug, locale)}
-            </option>
-          ))}
-        </select>
+        />
         {fieldError("teacher_id")}
       </div>
 

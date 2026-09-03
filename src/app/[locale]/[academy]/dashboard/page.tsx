@@ -87,7 +87,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         {todayCircles.length === 0 ? (
           <p className="card text-muted-foreground">{t("today.empty")}</p>
         ) : (
-          <ul className="flex flex-col gap-3">
+          <ul className="scroll-list flex flex-col gap-3">
             {todayCircles.map((circle) => (
               <li key={circle.id} className="card flex flex-col gap-3">
                 <div className="flex flex-wrap items-start justify-between gap-2">
@@ -126,7 +126,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         {otherCircles.length === 0 ? (
           <p className="card text-muted-foreground">{t("other.empty")}</p>
         ) : (
-          <ul className="flex flex-col gap-3">
+          <ul className="scroll-list flex flex-col gap-3">
             {otherCircles.map((circle) => (
               <li
                 key={circle.id}

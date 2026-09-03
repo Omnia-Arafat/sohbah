@@ -1,5 +1,6 @@
 'use client'
 
+import { ChevronRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -87,19 +88,7 @@ export function AcademySelector({ academies, locale }: Props) {
                     }}
                   >
                     {t('nav.home')}
-                    <svg
-                      className="h-5 w-5 rtl:rotate-180"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
+                    <ChevronRight className="h-5 w-5 rtl:rotate-180" aria-hidden="true" />
                   </div>
                 </div>
 

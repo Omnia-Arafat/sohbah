@@ -236,7 +236,9 @@
         "timezoneHint": "The session date is calculated in this timezone, so early-morning circles are recorded on the right day.",
         "slug": "Circle link",
         "slugHint": "This permanent link is generated automatically. Copy it to share with your students.",
-        "teacher": "Teacher"
+        "teacher": "Teacher",
+        "teacherSearch": "Type a name to search…",
+        "teacherNoMatches": "No teacher matches that name."
       },
       "submit": "Create the circle",
       "submitting": "Creating…",
@@ -389,7 +391,9 @@
         "academyNotFound": "Academy not found.",
         "saveFailed": "Could not save the changes. Please try again.",
         "saved": "Changes saved."
-      }
+      },
+      "teacherSearch": "Type a name to search…",
+      "teacherNoMatches": "No teacher matches that name."
     },
     "students": {
       "title": "Manage students",

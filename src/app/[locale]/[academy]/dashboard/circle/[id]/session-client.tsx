@@ -222,7 +222,7 @@ export function SessionClient({
       {queue.length === 0 ? (
         <p className="card text-muted-foreground">{t("queue.empty")}</p>
       ) : (
-        <ol className="flex flex-col gap-3">
+        <ol className="scroll-list flex flex-col gap-3">
           {queue.map((entry, index) => (
             <li
               key={entry.attendance_id}
