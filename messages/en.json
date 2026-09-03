@@ -26,7 +26,8 @@
     "dashboard": "Teacher dashboard",
     "admin": "Admin dashboard",
     "reports": "Attendance reports",
-    "adminSignIn": "Admin sign in"
+    "adminSignIn": "Admin sign in",
+    "schedule": "Schedule"
   },
   "home": {
     "title": "Sohbah Academy",
@@ -590,6 +591,58 @@
     "newCircleCard": {
       "title": "New circle",
       "subtitle": "Create a circle and assign it to any teacher"
+    },
+    "schedulesCard": {
+      "title": "Schedule boards",
+      "subtitle": "Publish and arrange the public timetable"
+    },
+    "schedules": {
+      "title": "Schedule boards",
+      "subtitle": "Each board is one table on the public schedule page. Its rows are read live from the circles themselves, so you never retype a name.",
+      "back": "Back to admin",
+      "viewPublic": "View public schedule",
+      "addTitle": "New board",
+      "add": "Add board",
+      "adding": "Adding…",
+      "noTypes": "Add a circle type first — a board covers one type.",
+      "boardList": "Boards ({count})",
+      "noBoards": "No boards yet.",
+      "draft": "Draft",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "edit": "Edit",
+      "delete": "Delete",
+      "confirmDelete": "Delete the board \"{name}\"? The circles inside it are not affected.",
+      "orderLabel": "order {order}",
+      "editTitle": "Edit board",
+      "editSubtitle": "Changes appear on the public schedule immediately.",
+      "backToBoards": "Back to boards",
+      "saveChanges": "Save changes",
+      "saving": "Saving…",
+      "fields": {
+        "titleAr": "Title (Arabic)",
+        "titleEn": "Title (English)",
+        "circleType": "Circle type",
+        "circleTypePlaceholder": "Choose a type…",
+        "gender": "Section",
+        "genderBoth": "Both sections",
+        "noteAr": "Note (Arabic)",
+        "noteEn": "Note (English)",
+        "notePlaceholder": "e.g. all times are Cairo/Makkah time",
+        "displayOrder": "Order",
+        "displayOrderHint": "Lower numbers appear first.",
+        "timeWindow": "Time window (optional)",
+        "startFrom": "From",
+        "startTo": "To",
+        "timeWindowHint": "Leave both empty to include every hour of this type. Set them to split one type into separate boards — a 2 PM board and a 5 PM one."
+      },
+      "errors": {
+        "required": "Required.",
+        "tooLong": "Too long.",
+        "generic": "Something went wrong. Try again.",
+        "timeOrder": "\"To\" must not be earlier than \"From\"."
+      },
+      "windowLabel": "{from} – {to}"
     }
   },
   "reports": {
@@ -687,5 +740,41 @@
       "passwordRequired": "A password is required.",
       "passwordTooShort": "Use at least 8 characters."
     }
+  },
+  "schedule": {
+    "title": "Weekly schedule",
+    "subtitle": "Every active circle, by day. Tap a name to open that circle.",
+    "noBoards": "No schedule has been published yet.",
+    "boardEmpty": "No active circles in this table yet.",
+    "today": "Today",
+    "footnote": "Times follow each circle's own timezone.",
+    "days": {
+      "0": "Sunday",
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday"
+    }
+  },
+  "bottomNav": {
+    "home": "Home",
+    "schedule": "Schedule",
+    "newCircle": "New circle",
+    "circles": "Circles",
+    "more": "More",
+    "allSections": "All sections",
+    "adminArea": "Admin area",
+    "close": "Close",
+    "signOut": "Sign out",
+    "students": "Students",
+    "teachers": "Teachers",
+    "reports": "Reports",
+    "circleTypes": "Circle types",
+    "schedules": "Schedule boards",
+    "adminHome": "Admin dashboard",
+    "groupTeaching": "Teaching",
+    "groupSupervision": "Supervision"
   }
 }

@@ -153,6 +153,48 @@ export type CircleTypeOption = {
   created_at: string;
 };
 
+/**
+ * One published table on the public schedule page. Holds presentation only —
+ * the days and names it renders are read live from `circles`.
+ */
+/**
+ * What `academy_schedule` returns: an active circle as the public timetable
+ * may see it — no `session_link`, and the teacher's name already joined in.
+ */
+export type ScheduleCircle = {
+  id: string;
+  name: string;
+  type: CircleType;
+  gender_category: GenderCategory;
+  start_time: string;
+  timezone: string;
+  days_of_week: number[];
+  registration_slug: string;
+  teacher_name: string;
+};
+
+export type ScheduleBoard = {
+  id: string;
+  academy_id: string;
+  circle_type: CircleType;
+  /** Null covers both sections. */
+  gender_category: GenderCategory | null;
+  /**
+   * Inclusive HH:MM bounds on a circle's `start_time`, each optional and each
+   * open-ended alone — this is what separates a "2ظ" board from a "5م" one
+   * when both cover the same circle type.
+   */
+  start_from: string | null;
+  start_to: string | null;
+  title_ar: string;
+  title_en: string;
+  note_ar: string | null;
+  note_en: string | null;
+  display_order: number;
+  is_published: boolean;
+  created_at: string;
+};
+
 export type AttendanceReportRow = {
   student_id: string;
   student_name: string;
@@ -223,6 +265,15 @@ export type Database = {
         Update: Partial<CircleTypeOption>;
         Relationships: [];
       };
+      schedule_boards: {
+        Row: ScheduleBoard;
+        Insert: Insert<
+          ScheduleBoard,
+          "id" | "created_at" | "is_published" | "display_order"
+        >;
+        Update: Partial<ScheduleBoard>;
+        Relationships: [];
+      };
     };
     Views: Empty;
     Functions: {
@@ -233,6 +284,10 @@ export type Database = {
       circle_public_info: {
         Args: { p_slug: string };
         Returns: CirclePublicInfo[];
+      };
+      academy_schedule: {
+        Args: { p_academy_id: string };
+        Returns: ScheduleCircle[];
       };
       search_students: {
         Args: { p_slug: string; p_query: string };

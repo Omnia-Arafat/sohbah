@@ -73,13 +73,25 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           to admins only. /admin/page.tsx has its own shortcut to the same
           /dashboard/new form; that one is free to become admin-only later,
           this one must not.
+
+          Hidden on a phone only because the bottom bar's centre button is the
+          same link, right under the thumb — so the entry point is still there
+          on every screen size, never fewer than once.
         */}
-        <Link href={`/${academySlug}/dashboard/new`} className="btn-primary w-full sm:w-auto">
+        <Link
+          href={`/${academySlug}/dashboard/new`}
+          className="btn-primary w-full max-sm:hidden sm:w-auto"
+        >
           {t("newCircle")}
         </Link>
       </section>
 
-      <DashboardHeader teacher={session.teacher} academySlug={academySlug} />
+      {/* Same reasoning: the admin area and sign out both sit in the bottom
+          bar's "المزيد" sheet on a phone, so this card would be a second copy
+          of them at the top of every visit. */}
+      <div className="max-sm:hidden">
+        <DashboardHeader teacher={session.teacher} academySlug={academySlug} />
+      </div>
 
       <section>
         <h2 className="mb-3 text-lg font-semibold">{t("today.title")}</h2>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BarChart, CirclePlus, GraduationCap, Home, Tags, UserCheck, Users } from "lucide-react";
+import { BarChart, CalendarDays, CirclePlus, GraduationCap, Home, Tags, UserCheck, Users } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { ChevronForward } from "@/components/back-link";
@@ -215,6 +215,26 @@ export default async function AdminPage({ params }: AdminPageProps) {
                 <h3 className="font-semibold">{t("circleTypesCard.title")}</h3>
                 <p className="text-sm text-muted-foreground">
                   {t("circleTypesCard.subtitle")}
+                </p>
+              </div>
+              <ChevronForward />
+            </div>
+          </Link>
+        )}
+
+        {isAdmin && (
+          <Link
+            href={`/${academySlug}/admin/schedules`}
+            className="card hover:border-brand-600 transition-colors"
+          >
+            <div className="flex items-center gap-4">
+              <div className="rounded-xl bg-brand-100 p-3 text-brand-700">
+                <CalendarDays className="h-6 w-6" aria-hidden="true" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold">{t("schedulesCard.title")}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {t("schedulesCard.subtitle")}
                 </p>
               </div>
               <ChevronForward />

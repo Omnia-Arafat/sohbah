@@ -132,14 +132,16 @@
      circle's live queue, a report's results — gets the same treatment: a
      bounded height with its own scrollbar, so a busy academy's page stays a
      fixed size instead of growing forever and pushing the header and filters
-     off screen. `70vh` rather than a fixed pixel value so it scales with
-     whatever device it is opened on, phone or desktop alike.
+     off screen. A viewport fraction rather than a fixed pixel value so it
+     scales with whatever device it is opened on — but a smaller fraction on a
+     phone, where 70vh filled almost the whole screen and the bounded box read
+     as no bound at all.
 
      `overscroll-contain` stops scrolling past the end of the list from also
      scrolling the page behind it — a small thing, but noticeable the moment
      it is missing on a phone. */
   .scroll-list {
-    @apply max-h-[70vh] overflow-y-auto overscroll-contain;
+    @apply max-h-[48vh] overflow-y-auto overscroll-contain sm:max-h-[70vh];
 
     /* Sidr-green scrollbar instead of the OS default, so a long list still
        reads as Sohbah's rather than the browser's. Firefox uses the two
@@ -293,6 +295,39 @@
     animation: queue-item-in 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
   }
 
+  /* The "المزيد" sheet in the bottom navigation slides up from the edge it is
+     attached to, so it reads as the bar expanding rather than a new page. */
+  .motion-sheet {
+    animation: sheet-in 0.26s cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+
+  @keyframes sheet-in {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  /* Schedule page — each board rises in after the one above it, so a page of
+     several timetables reads top-to-bottom instead of appearing all at once.
+     The stagger comes from an inline animation-delay per board. */
+  .motion-board {
+    animation: board-in 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  @keyframes board-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   @keyframes queue-item-in {
     from {
       opacity: 0;
@@ -306,7 +341,9 @@
 
   @media (prefers-reduced-motion: reduce) {
     .motion-section,
-    .motion-queue-item {
+    .motion-queue-item,
+    .motion-board,
+    .motion-sheet {
       animation: none;
       transition: none;
     }

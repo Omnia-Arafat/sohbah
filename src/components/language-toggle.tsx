@@ -32,9 +32,12 @@ export function LanguageToggle() {
       onClick={switchLocale}
       disabled={isPending}
       aria-label={t("switchTo")}
-      className="btn-secondary px-3 py-2 text-sm"
+      className="btn-secondary px-3 py-1.5 text-sm"
     >
-      {t(next)}
+      {/* Two letters on a phone: the full word competed with the academy's own
+          name for a row that has no space to spare. */}
+      <span className="sm:hidden">{next === "en" ? "EN" : "ع"}</span>
+      <span className="hidden sm:inline">{t(next)}</span>
     </button>
   );
 }
