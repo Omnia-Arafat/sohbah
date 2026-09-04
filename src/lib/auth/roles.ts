@@ -47,3 +47,14 @@ export function canManageStaff(teacher: Teacher): boolean {
 
 /** Labels for the roles a person can be given, in the order they escalate. */
 export const ASSIGNABLE_ROLES: StaffRole[] = ["supervisor", "admin"];
+
+/**
+ * The one role worth printing under someone's name, highest first. The legacy
+ * `role` column cannot answer this — a مشرفة is stored there as `teacher`, so
+ * reading it showed supervisors the label "معلم".
+ */
+export function primaryRoleKey(teacher: Teacher): StaffRole {
+  if (hasRole(teacher, "admin")) return "admin";
+  if (hasRole(teacher, "supervisor")) return "supervisor";
+  return "teacher";
+}

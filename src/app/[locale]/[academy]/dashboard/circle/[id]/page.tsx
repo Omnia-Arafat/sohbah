@@ -98,29 +98,31 @@ export default async function TeacherSessionPage({ params }: SessionPageProps) {
         </BackLink>
 
         <div className="card mt-2 border-brand-200 bg-brand-50 dark:border-brand-800 dark:bg-surface">
-          <p className="text-sm text-muted-foreground">
-            {circleTypeLabel(circleTypes, circle.type, locale)} ·{" "}
-            {tDashboard(`gender.${circle.gender_category}`)}
-          </p>
-          {/* Next to the name, because that is what it edits. */}
-          <div className="mt-1 flex flex-wrap items-center gap-3">
-            <h1 className="font-display text-2xl font-bold sm:text-3xl">
-              {circle.name}
-            </h1>
+          {/* Top line of the card: what this circle is, and the way to change
+              it, kept out of the way of the name below. */}
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-sm text-muted-foreground">
+              {circleTypeLabel(circleTypes, circle.type, locale)} ·{" "}
+              {tDashboard(`gender.${circle.gender_category}`)}
+            </p>
             {(canEditAnyCircle(session.teacher) ||
               circle.teacher_id === session.teacher.id) && (
               <Link
                 href={`/${academySlug}/admin/circles/${circle.id}/edit`}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-border-subtle
-                           bg-surface px-3 py-1.5 text-sm font-medium text-muted-foreground
-                           transition-colors hover:border-brand-600 hover:text-brand-700
-                           dark:hover:text-brand-300"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border
+                           border-border-subtle bg-surface px-3 py-1.5 text-sm font-medium
+                           text-muted-foreground transition-colors hover:border-brand-600
+                           hover:text-brand-700 dark:hover:text-brand-300"
               >
                 <Pencil className="h-4 w-4" aria-hidden="true" />
                 {tCircle("edit")}
               </Link>
             )}
           </div>
+
+          <h1 className="font-display mt-1 text-2xl font-bold sm:text-3xl">
+            {circle.name}
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {tCircle("startsAt", { time: formatTime(circle.start_time, locale) })}
             {" · "}

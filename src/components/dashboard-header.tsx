@@ -1,4 +1,4 @@
-import { isAdminRole } from "@/lib/auth/roles";
+import { isAdminRole, primaryRoleKey } from "@/lib/auth/roles";
 import { getLocale, getTranslations } from "next-intl/server";
 import { signOut } from "@/app/[locale]/[academy]/login/actions";
 import { Link } from "@/i18n/navigation";
@@ -24,7 +24,7 @@ export async function DashboardHeader({
         <p className="truncate font-semibold">{displayName}</p>
         {teacher.role !== "admin" && (
           <p className="text-sm text-muted-foreground">
-            {t(`role.${teacher.role}`)}
+            {t(`role.${primaryRoleKey(teacher)}`)}
           </p>
         )}
       </div>

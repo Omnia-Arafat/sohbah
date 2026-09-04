@@ -203,7 +203,8 @@
     "joinedCount": "المنضمون: {count}",
     "role": {
       "teacher": "معلم",
-      "admin": "مشرف"
+      "admin": "أدمن",
+      "supervisor": "مشرفة"
     },
     "gender": {
       "male": "قسم الطلاب",

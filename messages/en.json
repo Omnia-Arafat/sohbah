@@ -203,7 +203,8 @@
     "joinedCount": "{count} joined",
     "role": {
       "teacher": "Teacher",
-      "admin": "Administrator"
+      "admin": "Admin",
+      "supervisor": "Supervisor"
     },
     "gender": {
       "male": "Male students",

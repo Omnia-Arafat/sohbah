@@ -1,3 +1,4 @@
+import { canManageStudents } from "@/lib/auth/roles";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BackLink } from "@/components/back-link";
@@ -42,7 +43,8 @@ export default async function DeleteStudentPage({ params }: DeleteStudentPagePro
     );
   }
 
-  if (session.teacher.role !== "admin") {
+  // Supervisors manage the student roster, same as admins.
+  if (!canManageStudents(session.teacher)) {
     return (
       <div className="card">
         <h2 className="text-xl font-semibold">{tAdmin("accessDenied")}</h2>
