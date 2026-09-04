@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import { isActiveTeacher, getTeacherSession } from "@/lib/auth/dal";
+import { canSupervise } from "@/lib/auth/roles";
 import type { CircleType, GenderCategory } from "@/lib/database.types";
 import { normalizeSessionLink } from "@/lib/circle-link";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -116,13 +117,14 @@ export async function createCircle(
   const supabase = await createClient();
 
   // The form sends `teacherId`, so it has to be re-authorized here rather than
-  // trusted: only an admin may assign a circle to somebody else, and only to an
-  // active teacher inside this academy. The lookup also supplies the name the
-  // circle is created under — see the note on `CircleValues.teacherId`.
+  // trusted: only a supervisor or an admin may create a circle for somebody
+  // else, and only for an active teacher inside this academy. The lookup also
+  // supplies the name the circle is created under — see the note on
+  // `CircleValues.teacherId`.
   let ownerId = session.teacher.id;
   let ownerName = session.teacher.name;
   if (values.teacherId && values.teacherId !== session.teacher.id) {
-    if (session.teacher.role !== "admin") {
+    if (!canSupervise(session.teacher)) {
       return { status: "failed", values, reason: "forbidden" };
     }
 
