@@ -1,0 +1,272 @@
+[
+  {
+    "id": "96fd17e1-0db7-46c5-899a-ef6f146b7539",
+    "name": "رقية صبري",
+    "role": "admin",
+    "roles": [
+      "teacher",
+      "admin"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "9228ef7d-cf3d-4c23-8ff9-b4b77ec6c13b",
+    "name": "Sohbah Admin",
+    "role": "admin",
+    "roles": [
+      "teacher",
+      "admin"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "8929cda9-5dd1-4ac9-ae7f-7d868cd7bed4",
+    "name": "Admin",
+    "role": "admin",
+    "roles": [
+      "teacher",
+      "admin"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "5611d8af-bbab-4b9b-8e1f-e92b1138d1d9",
+    "name": "مشرف صحبة",
+    "role": "admin",
+    "roles": [
+      "teacher",
+      "admin"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "a35bd22d-be1c-40cd-a2ed-6e572b534b68",
+    "name": "حنان محمد عبدالغني خلف",
+    "role": "teacher",
+    "roles": [
+      "teacher"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "6ed39276-e2c7-4101-b1ba-2916775f0643",
+    "name": "زينب احمد محمد",
+    "role": "teacher",
+    "roles": [
+      "teacher"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "d908aee4-667c-4eb9-9654-3d8cb18ab97a",
+    "name": "كريمة علي",
+    "role": "teacher",
+    "roles": [
+      "teacher"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "8e6eaa7e-0bbc-422b-9636-14ee7629de74",
+    "name": "نوره خلف",
+    "role": "teacher",
+    "roles": [
+      "teacher"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "b575655d-7119-4fcb-8c6d-f011e23afb3a",
+    "name": "أسماء حمدي عبد الحميد أحمد خطاب",
+    "role": "teacher",
+    "roles": [
+      "teacher"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "3b602c61-f7a3-4d51-a831-9fb9d012a004",
+    "name": "ميمونة شباح",
+    "role": "teacher",
+    "roles": [
+      "teacher"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "baa10b27-50d3-4ff1-8b23-1ff7d2a1aff3",
+    "name": "نبيهه محمد علي جوخب",
+    "role": "teacher",
+    "roles": [
+      "teacher"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "75346649-40c3-4b21-9118-0f0a41c38f00",
+    "name": "فاطمة عبدالله",
+    "role": "teacher",
+    "roles": [
+      "teacher"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "8bd53406-048a-49a0-92ae-14216b90c958",
+    "name": "م.سهير محروس",
+    "role": "teacher",
+    "roles": [
+      "teacher"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "1e4abf5e-6716-47da-86bb-04ab60515222",
+    "name": "منة أحمد",
+    "role": "teacher",
+    "roles": [
+      "teacher"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "6a30b495-feeb-4c3c-9097-18df6e13f1dd",
+    "name": "مها طلال عقله الدخان",
+    "role": "teacher",
+    "roles": [
+      "teacher"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "1317069d-f374-4a32-9737-8aa1d0674fd2",
+    "name": "Marwa Saeed",
+    "role": "teacher",
+    "roles": [
+      "teacher"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "1e5c46b3-c585-4cc8-aedd-3e27277089dc",
+    "name": "أسماء إبراهيم محمد",
+    "role": "teacher",
+    "roles": [
+      "teacher"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "b59a12f0-eb83-4ba1-96a2-928cc53bbeac",
+    "name": "ياسمين عزيز",
+    "role": "teacher",
+    "roles": [
+      "teacher"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "42ccc2a8-aa63-483a-a34f-e1530648789c",
+    "name": "شيماء جودة",
+    "role": "teacher",
+    "roles": [
+      "teacher"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "da204a98-2d11-47bb-bb1b-662f3e93d09e",
+    "name": "سيده دسوقي محمد",
+    "role": "teacher",
+    "roles": [
+      "teacher",
+      "supervisor"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "dceca302-1cb6-497d-9c59-e38609d7da16",
+    "name": "إكرام مبارك عبدالغفار",
+    "role": "teacher",
+    "roles": [
+      "teacher",
+      "supervisor"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "2c3a755e-ad07-451f-9c7d-31b5c386b2e2",
+    "name": "هديل رمضان خلف",
+    "role": "teacher",
+    "roles": [
+      "teacher",
+      "supervisor"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "120b7f08-53f2-4097-832e-e3ab1db4963a",
+    "name": "أم كريم",
+    "role": "teacher",
+    "roles": [
+      "teacher",
+      "supervisor"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "dd5bac84-ffd6-4629-951d-5d97d70958bf",
+    "name": "حنان سيد",
+    "role": "teacher",
+    "roles": [
+      "teacher",
+      "supervisor"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "3aa219fe-1a25-47c8-ac7d-fd7ea353f0a3",
+    "name": "وسام لطفي",
+    "role": "admin",
+    "roles": [
+      "teacher",
+      "admin"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  },
+  {
+    "id": "8185d675-17ab-455f-aa7b-9b8391bdac86",
+    "name": "حسناء",
+    "role": "teacher",
+    "roles": [
+      "teacher"
+    ],
+    "is_active": true,
+    "academy_id": "1bbbeae7-9479-48a0-a67f-6075ffb8ad10"
+  }
+]
