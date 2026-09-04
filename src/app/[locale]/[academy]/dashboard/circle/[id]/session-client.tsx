@@ -12,6 +12,8 @@ type SessionClientProps = {
   circleId: string;
   sessionDate: string;
   initialQueue: QueueEntry[];
+  /** Null means unlimited — see `circles.max_students`. */
+  maxStudents: number | null;
 };
 
 const RECITATION_OPTIONS: RecitationStatus[] = ["waiting", "reciting", "done"];
@@ -21,6 +23,7 @@ export function SessionClient({
   circleId,
   sessionDate,
   initialQueue,
+  maxStudents,
 }: SessionClientProps) {
   const t = useTranslations("session");
   const tCircle = useTranslations("circle");
@@ -199,7 +202,11 @@ export function SessionClient({
       {/* Four equal cells rather than a wrapping row: the numbers stay in the
           same place as they change, so the teacher can glance instead of read. */}
       <section className="card grid grid-cols-4 gap-2 p-4 text-center">
-        <SummaryCell value={queue.length} label={t("summary.joined")} />
+        <SummaryCell
+          value={queue.length}
+          suffix={maxStudents !== null ? `/${maxStudents}` : undefined}
+          label={t("summary.joined")}
+        />
         <SummaryCell value={counts.waiting} label={tCircle("status.waiting")} />
         <SummaryCell
           value={counts.reciting}
@@ -356,15 +363,22 @@ function SummaryCell({
   value,
   label,
   tone = "text-foreground",
+  suffix,
 }: {
   value: number;
   label: string;
   tone?: string;
+  suffix?: string;
 }) {
   return (
     <div className="flex flex-col">
       <span className={`text-2xl font-bold tabular-nums leading-none ${tone}`}>
         {value}
+        {suffix && (
+          <span className="text-base font-normal text-muted-foreground">
+            {suffix}
+          </span>
+        )}
       </span>
       <span className="mt-1 text-xs text-muted-foreground">{label}</span>
     </div>

@@ -135,8 +135,13 @@
       "title": "You are on the list, {name}",
       "position": "You are number {position} in the queue."
     },
+    "full": {
+      "title": "This circle is full",
+      "body": "All the available spots have been taken. Please check back later — a spot may open up if someone is removed."
+    },
     "queue": {
       "title": "Queue ({count})",
+      "titleWithMax": "Queue ({count}/{max})",
       "empty": "Nobody has joined yet. Be the first.",
       "you": "(you)"
     },
@@ -147,7 +152,8 @@
     },
     "errors": {
       "generic": "That did not work. Please try again.",
-      "genderMismatch": "You cannot join a circle from a different section."
+      "genderMismatch": "You cannot join a circle from a different section.",
+      "full": "This circle is full."
     }
   },
   "auth": {
@@ -239,7 +245,10 @@
         "slugHint": "This permanent link is generated automatically. Copy it to share with your students.",
         "teacher": "Teacher",
         "teacherSearch": "Type a name to search…",
-        "teacherNoMatches": "No teacher matches that name."
+        "teacherNoMatches": "No teacher matches that name.",
+        "maxStudents": "Maximum students",
+        "maxStudentsPlaceholder": "Unlimited",
+        "maxStudentsHint": "Leave empty for no limit. Once this many students have joined, others cannot join until a spot opens up."
       },
       "submit": "Create the circle",
       "submitting": "Creating…",
@@ -262,7 +271,8 @@
         "forbidden": "You are not allowed to create circles.",
         "generic": "The circle could not be created. Please try again.",
         "notConfigured": "The database is not connected yet.",
-        "teacherRequired": "Choose a teacher."
+        "teacherRequired": "Choose a teacher.",
+        "maxStudentsInvalid": "Enter a number between 1 and 500."
       }
     }
   },
@@ -362,6 +372,9 @@
       "daysOfWeek": "Days",
       "startTime": "Start time",
       "duration": "Duration (minutes)",
+      "maxStudents": "Maximum students",
+      "maxStudentsPlaceholder": "Unlimited",
+      "maxStudentsHint": "Leave empty for no limit. Once this many students have joined, others cannot join until a spot opens up.",
       "saveChanges": "Save changes",
       "saving": "Saving…",
       "saved": "Changes saved!",
@@ -391,7 +404,8 @@
         "missingParams": "Something is missing from the request.",
         "academyNotFound": "Academy not found.",
         "saveFailed": "Could not save the changes. Please try again.",
-        "saved": "Changes saved."
+        "saved": "Changes saved.",
+        "maxStudentsInvalid": "Enter a number between 1 and 500."
       },
       "teacherSearch": "Type a name to search…",
       "teacherNoMatches": "No teacher matches that name."

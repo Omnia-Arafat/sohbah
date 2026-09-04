@@ -138,6 +138,7 @@ export default async function TeacherSessionPage({ params }: SessionPageProps) {
             circleId={circle.id}
             sessionDate={info.session_date}
             initialQueue={queueResult.data ?? []}
+            maxStudents={circle.max_students}
           />
         ) : (
           <p className="card text-muted-foreground">{t("errors.generic")}</p>
