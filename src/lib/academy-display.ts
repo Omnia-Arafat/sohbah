@@ -65,15 +65,26 @@ export function getAcademyNameFromMessages(
 
 type TeacherLike = { name: string; role: string };
 
-/** Admin label follows the academy in the URL, not the name stored in the DB. */
+/**
+ * A person is shown by her own name — always.
+ *
+ * This used to swap the name for the academy's admin label ("مشرف صحبة")
+ * whenever `role` was admin, which was harmless while admin meant one system
+ * account. Once real teachers started holding the admin role it stopped being
+ * harmless: رقية and وسام disappeared from every picker and turned into a
+ * third row reading "مشرف صحبة", so a circle could not be assigned to them.
+ *
+ * The system account is literally named "مشرف صحبة" in the database, so it
+ * still reads the same without the special case.
+ *
+ * `academySlug` and `locale` are kept in the signature — every caller passes
+ * them, and the academy label is still needed elsewhere (see
+ * `getAcademyAdminRole`, used by the admin landing page).
+ */
 export function getTeacherDisplayLabel(
   teacher: TeacherLike,
-  academySlug: string | undefined,
-  locale: string,
+  _academySlug: string | undefined,
+  _locale: string,
 ): string {
-  if (teacher.role === "admin" && academySlug) {
-    const adminRole = getAcademyAdminRole(academySlug, locale);
-    if (adminRole) return adminRole;
-  }
   return teacher.name;
 }
