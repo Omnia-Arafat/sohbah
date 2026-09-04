@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Pencil } from "lucide-react";
+import { canEditAnyCircle } from "@/lib/auth/roles";
+import { Link } from "@/i18n/navigation";
 import { CopyLinkButton } from "@/components/copy-link-button";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
 import { BackLink } from "@/components/back-link";
@@ -99,9 +102,25 @@ export default async function TeacherSessionPage({ params }: SessionPageProps) {
             {circleTypeLabel(circleTypes, circle.type, locale)} ·{" "}
             {tDashboard(`gender.${circle.gender_category}`)}
           </p>
-          <h1 className="font-display mt-1 text-2xl font-bold sm:text-3xl">
-            {circle.name}
-          </h1>
+          {/* Next to the name, because that is what it edits. */}
+          <div className="mt-1 flex flex-wrap items-center gap-3">
+            <h1 className="font-display text-2xl font-bold sm:text-3xl">
+              {circle.name}
+            </h1>
+            {(canEditAnyCircle(session.teacher) ||
+              circle.teacher_id === session.teacher.id) && (
+              <Link
+                href={`/${academySlug}/admin/circles/${circle.id}/edit`}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-border-subtle
+                           bg-surface px-3 py-1.5 text-sm font-medium text-muted-foreground
+                           transition-colors hover:border-brand-600 hover:text-brand-700
+                           dark:hover:text-brand-300"
+              >
+                <Pencil className="h-4 w-4" aria-hidden="true" />
+                {tCircle("edit")}
+              </Link>
+            )}
+          </div>
           <p className="mt-1 text-sm text-muted-foreground">
             {tCircle("startsAt", { time: formatTime(circle.start_time, locale) })}
             {" · "}

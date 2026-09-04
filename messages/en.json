@@ -154,7 +154,8 @@
       "generic": "That did not work. Please try again.",
       "genderMismatch": "You cannot join a circle from a different section.",
       "full": "This circle is full."
-    }
+    },
+    "edit": "Edit"
   },
   "auth": {
     "title": "Teacher and supervisor sign in",
