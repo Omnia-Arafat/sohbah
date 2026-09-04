@@ -27,6 +27,8 @@ type CircleClientProps = {
   sessionDate: string;
   sessionLink: string;
   initialQueue: QueueEntry[];
+  /** Null means unlimited — see `circles.max_students`. */
+  maxStudents: number | null;
 };
 
 type SearchResults = { query: string; items: StudentSearchResult[] };
@@ -81,6 +83,7 @@ export function CircleClient({
   sessionDate,
   sessionLink,
   initialQueue,
+  maxStudents,
 }: CircleClientProps) {
   const t = useTranslations("circle");
   const supabase = useMemo(() => createClient(), []);
@@ -189,7 +192,9 @@ export function CircleClient({
       setError(
         joinError.message.includes("gender_mismatch")
           ? "genderMismatch"
-          : "generic",
+          : joinError.message.includes("circle_full")
+            ? "full"
+            : "generic",
       );
       return;
     }
@@ -210,9 +215,18 @@ export function CircleClient({
     ? queue.find((entry) => entry.student_id === joined.studentId)?.queue_order
     : undefined;
 
+  // A cap frees up the moment someone is removed (the queue is a live count,
+  // not a stored counter), so this only ever reflects the current queue.
+  const isFull = maxStudents !== null && queue.length >= maxStudents && !joined;
+
   return (
     <div className="flex flex-col gap-6">
-      <MotionSection show={!joined} className="card">
+      <MotionSection show={!joined && isFull} className="card">
+        <p className="font-semibold">{t("full.title")}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{t("full.body")}</p>
+      </MotionSection>
+
+      <MotionSection show={!joined && !isFull} className="card">
         <label className="field-label" htmlFor="student-search">
           {t("search.label")}
         </label>
@@ -309,7 +323,12 @@ export function CircleClient({
 
       <section className="motion-section">
         <h2 className="mb-3 text-lg font-semibold">
-          {t("queue.title", { count: String(queue.length) })}
+          {maxStudents !== null
+            ? t("queue.titleWithMax", {
+                count: String(queue.length),
+                max: String(maxStudents),
+              })
+            : t("queue.title", { count: String(queue.length) })}
         </h2>
 
         {queue.length === 0 ? (

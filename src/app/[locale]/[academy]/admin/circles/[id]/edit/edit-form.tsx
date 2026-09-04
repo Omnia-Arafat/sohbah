@@ -39,6 +39,7 @@ type Circle = {
   days_of_week: number[];
   teacher_id: string;
   is_active: boolean;
+  max_students: number | null;
 };
 
 type EditCircleFormProps = {
@@ -235,6 +236,29 @@ export function EditCircleForm({
           aria-invalid={Boolean(fieldErrors.duration)}
         />
         {fieldError("duration")}
+      </div>
+
+      <div>
+        <label className="field-label" htmlFor="maxStudents">
+          {t("maxStudents")}
+        </label>
+        <input
+          id="maxStudents"
+          name="maxStudents"
+          type="number"
+          inputMode="numeric"
+          min="1"
+          max="500"
+          dir="ltr"
+          className="input text-start"
+          placeholder={t("maxStudentsPlaceholder")}
+          defaultValue={values.max_students ?? ""}
+          aria-invalid={Boolean(fieldErrors.maxStudents)}
+        />
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          {t("maxStudentsHint")}
+        </p>
+        {fieldError("maxStudents")}
       </div>
 
       <div>

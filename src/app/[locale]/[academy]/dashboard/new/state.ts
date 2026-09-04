@@ -22,6 +22,8 @@ export type CircleValues = {
   duration: string;
   /** PostgreSQL dow convention: 0 = Sunday … 6 = Saturday. */
   days: number[];
+  /** Empty string means unlimited — see `circles.max_students`. */
+  maxStudents: string;
 };
 
 export type CircleFieldErrors = Partial<Record<keyof CircleValues, string>>;

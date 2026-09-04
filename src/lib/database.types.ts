@@ -74,6 +74,8 @@ export type Circle = {
   is_active: boolean;
   academy_id: string;
   created_at: string;
+  /** Null means unlimited. Enforced live by `join_circle()`, not a counter. */
+  max_students: number | null;
 };
 
 export type AttendanceRecord = {
@@ -99,6 +101,7 @@ export type CirclePublicInfo = {
   session_date: string;
   meets_today: boolean;
   academy_id: string;
+  max_students: number | null;
 };
 
 export type StudentSearchResult = {
@@ -244,7 +247,7 @@ export type Database = {
         Row: Circle;
         Insert: Insert<
           Circle,
-          "id" | "created_at" | "is_active" | "timezone" | "duration_minutes" | "days_of_week" | "academy_id"
+          "id" | "created_at" | "is_active" | "timezone" | "duration_minutes" | "days_of_week" | "academy_id" | "max_students"
         >;
         Update: Partial<Circle>;
         Relationships: [];

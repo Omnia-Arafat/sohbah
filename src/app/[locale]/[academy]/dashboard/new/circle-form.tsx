@@ -212,6 +212,29 @@ export function CircleForm({
         {fieldError("startTime")}
       </div>
 
+      <div>
+        <label className="field-label" htmlFor="maxStudents">
+          {t("fields.maxStudents")}
+        </label>
+        <input
+          id="maxStudents"
+          name="maxStudents"
+          type="number"
+          inputMode="numeric"
+          min="1"
+          max="500"
+          dir="ltr"
+          className="input text-start"
+          placeholder={t("fields.maxStudentsPlaceholder")}
+          defaultValue={values?.maxStudents}
+          aria-invalid={Boolean(fieldErrors.maxStudents)}
+        />
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          {t("fields.maxStudentsHint")}
+        </p>
+        {fieldError("maxStudents")}
+      </div>
+
       {state.status === "failed" && (
         <p className="text-sm text-absent">{t(`errors.${state.reason}`)}</p>
       )}

@@ -29,6 +29,7 @@ function readValues(formData: FormData): CircleValues {
       .getAll("days")
       .map((day) => Number(day))
       .filter((day) => Number.isInteger(day) && day >= 0 && day <= 6),
+    maxStudents: read("maxStudents"),
   };
 }
 
@@ -67,6 +68,14 @@ function validate(values: CircleValues): CircleFieldErrors {
   }
 
   if (values.days.length === 0) errors.days = "daysRequired";
+
+  // Blank means unlimited, so only validate a number that was actually typed.
+  if (values.maxStudents) {
+    const max = Number(values.maxStudents);
+    if (!Number.isInteger(max) || max < 1 || max > 500) {
+      errors.maxStudents = "maxStudentsInvalid";
+    }
+  }
 
   return errors;
 }
@@ -150,6 +159,7 @@ export async function createCircle(
       duration_minutes: Number(values.duration),
       days_of_week: values.days.slice().sort((a, b) => a - b),
       registration_slug: registrationSlug,
+      max_students: values.maxStudents ? Number(values.maxStudents) : null,
     })
     .select("registration_slug")
     .single();

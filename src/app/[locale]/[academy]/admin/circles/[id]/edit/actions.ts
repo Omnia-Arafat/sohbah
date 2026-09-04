@@ -18,6 +18,7 @@ type CircleFormValues = {
   duration_minutes: number;
   days_of_week: number[];
   status: string;
+  max_students: number | null;
 };
 
 export type UpdateCircleState =
@@ -38,9 +39,12 @@ export async function updateCircle(
     return { status: "error", message: "missingParams" };
   }
 
-  // Check authorization
+  // Any approved teacher or supervisor may edit any circle in the academy —
+  // the academy asked for this while a real supervisor role does not exist
+  // yet. Being approved is still required, and `circles_update_staff` in the
+  // database enforces the same rule independently of this check.
   const session = await getTeacherSession();
-  if (!isActiveTeacher(session) || session.teacher.role !== "admin") {
+  if (!isActiveTeacher(session)) {
     return { status: "error", message: "unauthorized" };
   }
 
@@ -62,6 +66,7 @@ export async function updateCircle(
   const startTime = (formData.get("startTime")?.toString() || "").slice(0, 5);
   const duration = formData.get("duration")?.toString() || "";
   const status = formData.get("status")?.toString() || "active";
+  const maxStudentsRaw = formData.get("maxStudents")?.toString().trim() || "";
   const days = formData
     .getAll("days")
     .map((day) => Number(day))
@@ -130,6 +135,15 @@ export async function updateCircle(
     fieldErrors.days = "daysRequired";
   }
 
+  // Blank means unlimited, so only validate a number that was actually typed.
+  let maxStudents: number | null = null;
+  if (maxStudentsRaw) {
+    maxStudents = Number(maxStudentsRaw);
+    if (!Number.isInteger(maxStudents) || maxStudents < 1 || maxStudents > 500) {
+      fieldErrors.maxStudents = "maxStudentsInvalid";
+    }
+  }
+
   if (Object.keys(fieldErrors).length > 0) {
     return {
       status: "invalid",
@@ -142,6 +156,7 @@ export async function updateCircle(
         duration_minutes: durationNum,
         days_of_week: days,
         status,
+        max_students: maxStudentsRaw ? maxStudents : null,
       },
       fieldErrors,
     };
@@ -166,6 +181,7 @@ export async function updateCircle(
       duration_minutes: durationNum,
       days_of_week: days.slice().sort((a, b) => a - b),
       is_active: status === "active",
+      max_students: maxStudents,
     })
     .eq("id", circleId)
     .eq("academy_id", academy.id)
@@ -190,6 +206,7 @@ export async function updateCircle(
           duration_minutes: durationNum,
           days_of_week: days,
           status,
+          max_students: maxStudents,
         },
         fieldErrors: { type: "typeRequired" },
       };

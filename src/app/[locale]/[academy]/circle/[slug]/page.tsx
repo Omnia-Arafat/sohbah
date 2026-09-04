@@ -89,6 +89,7 @@ export default async function CirclePage({ params }: CirclePageProps) {
         sessionDate={circle.session_date}
         sessionLink={circle.session_link}
         initialQueue={queue ?? []}
+        maxStudents={circle.max_students}
       />
     </div>
   );

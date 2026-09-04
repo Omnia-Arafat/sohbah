@@ -52,10 +52,15 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
     );
   }
 
-  // Only admins can access this page
-  // One tier for now: anyone approved may look. The controls that change
-  // something are hidden below and re-checked in every server action.
-  const canManage = session.teacher.role === "admin";
+  // One tier for now: anyone approved may look, and — by the academy's own
+  // decision — anyone approved may edit any circle, not only their own. The
+  // supervisors who need this are stored as ordinary teachers, so there is no
+  // narrower group to grant it to until a real supervisor role exists.
+  const canEdit = true;
+
+  // Deleting stays with admins: it is the one action here that cannot be
+  // undone, and it takes the circle's attendance history with it.
+  const canDelete = session.teacher.role === "admin";
 
   const supabase = await createClient();
 
@@ -143,7 +148,7 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  {canManage && (<Link
+                  {canEdit && (<Link
                     href={`/${academySlug}/admin/circles/${circle.id}/edit`}
                     className="btn-secondary flex items-center gap-1.5 px-3 py-2 text-sm"
                     title={tCircles("edit")}
@@ -160,7 +165,7 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
                     {tCircles("session")}
                   </Link>
                   <CopyLinkButton path={`/${locale}/${academySlug}/circle/${circle.registration_slug}`} />
-                  {canManage && (<Link
+                  {canDelete && (<Link
                     href={`/${academySlug}/admin/circles/${circle.id}/delete`}
                     className="btn-secondary flex items-center gap-1.5 px-3 py-2 text-sm
                                text-absent hover:border-absent hover:bg-absent hover:text-white"
