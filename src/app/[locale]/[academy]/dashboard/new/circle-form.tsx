@@ -66,22 +66,13 @@ export function CircleForm({
       <input type="hidden" name="timezone" value={defaultTimezone} />
       <input type="hidden" name="academySlug" value={academySlug} />
 
-      <div>
-        <label className="field-label" htmlFor="name">
-          {t("fields.name")}
-        </label>
-        <input
-          id="name"
-          name="name"
-          className="input"
-          defaultValue={values?.name}
-          autoComplete="name"
-          aria-invalid={Boolean(fieldErrors.name)}
-        />
-        {fieldError("name")}
-      </div>
-
       {/*
+        No free-text "teacher name" field — that used to be the only record of
+        whose circle this was, back when circles.teacher_id defaulted to
+        whoever created it. It is redundant now: the circle's name is set
+        server-side from whichever teacher is actually picked below, so this
+        select is the single source of truth for "whose circle is this."
+
         Admins may hand a circle to any active teacher; a plain teacher always
         owns what they create, so they get a hidden field instead of a picker
         they could use to assign work to somebody else.

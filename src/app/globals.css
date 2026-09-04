@@ -132,16 +132,17 @@
      circle's live queue, a report's results — gets the same treatment: a
      bounded height with its own scrollbar, so a busy academy's page stays a
      fixed size instead of growing forever and pushing the header and filters
-     off screen. A viewport fraction rather than a fixed pixel value so it
-     scales with whatever device it is opened on — but a smaller fraction on a
-     phone, where 70vh filled almost the whole screen and the bounded box read
-     as no bound at all.
+     off screen. On a phone the bound is a fixed height rather than a viewport
+     fraction, and deliberately not a whole number of cards: it stops part-way
+     through the third, and that half-visible card is what tells you the list
+     carries on. A container ending exactly at a card's edge reads as the end
+     of the list. From `sm` up there is room to show far more at once.
 
      `overscroll-contain` stops scrolling past the end of the list from also
      scrolling the page behind it — a small thing, but noticeable the moment
      it is missing on a phone. */
   .scroll-list {
-    @apply max-h-[48vh] overflow-y-auto overscroll-contain sm:max-h-[70vh];
+    @apply max-h-[23rem] overflow-y-auto overscroll-contain sm:max-h-[70vh];
 
     /* Sidr-green scrollbar instead of the OS default, so a long list still
        reads as Sohbah's rather than the browser's. Firefox uses the two
@@ -150,6 +151,16 @@
        its own default. */
     scrollbar-width: thin;
     scrollbar-color: var(--color-brand-300) transparent;
+  }
+
+  /* Every list this class is on is also a `flex flex-col`, and a flex item
+     shrinks to fit its container by default. With a max-height on the parent
+     that meant a long list did not scroll — it squeezed: 27 rows in a circle's
+     queue were crushed to ~28px each and `overflow-hidden` on the row clipped
+     the name, the badge and the buttons away, leaving blank strips. Rows must
+     keep their natural height and let the container scroll instead. */
+  .scroll-list > * {
+    flex-shrink: 0;
   }
 
   .scroll-list::-webkit-scrollbar {

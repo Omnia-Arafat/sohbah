@@ -10,7 +10,6 @@ import { getAcademyBySlug } from "@/lib/academy-dal";
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 type CircleFormValues = {
-  name: string;
   type: string;
   gender_category: string;
   teacher_id: string;
@@ -51,8 +50,9 @@ export async function updateCircle(
     return { status: "error", message: "academyNotFound" };
   }
 
+  const supabase = await createClient();
+
   // Read form values
-  const name = formData.get("name")?.toString().trim() || "";
   const type = formData.get("type")?.toString() || "";
   const gender = formData.get("gender")?.toString() || "";
   const teacher_id = formData.get("teacher_id")?.toString() || "";
@@ -70,9 +70,6 @@ export async function updateCircle(
   // Validate
   const fieldErrors: Record<string, string> = {};
 
-  if (!name) fieldErrors.name = "nameRequired";
-  else if (name.length > 120) fieldErrors.name = "tooLong";
-
   // Format only — whether the slug is a real, active type for this academy is
   // enforced by `fk_circles_type` at update time (see the catch below), since
   // the valid set is now academy-managed rather than fixed in code.
@@ -84,6 +81,26 @@ export async function updateCircle(
 
   if (!teacher_id) {
     fieldErrors.teacher_id = "teacherRequired";
+  }
+
+  // The circle's name is derived from whoever owns it — see the note in
+  // dashboard/new/state.ts — so a valid teacher_id doubles as validating the
+  // name. Looked up now rather than after the other checks so it is ready for
+  // both the success path and the fk_circles_type catch below.
+  let ownerName: string | null = null;
+  if (teacher_id) {
+    const { data: owner } = await supabase
+      .from("teachers")
+      .select("name")
+      .eq("id", teacher_id)
+      .eq("academy_id", academy.id)
+      .maybeSingle();
+
+    if (!owner) {
+      fieldErrors.teacher_id = "teacherRequired";
+    } else {
+      ownerName = owner.name;
+    }
   }
 
   if (!sessionLink) {
@@ -117,7 +134,6 @@ export async function updateCircle(
     return {
       status: "invalid",
       values: {
-        name,
         type,
         gender_category: gender,
         teacher_id,
@@ -131,13 +147,17 @@ export async function updateCircle(
     };
   }
 
+  // Reached only once fieldErrors is empty, so the teacher_id lookup above
+  // already succeeded — this is a type-narrowing formality, not a real check.
+  if (!ownerName) {
+    return { status: "error", message: "saveFailed" };
+  }
+
   // Update in database
-  const supabase = await createClient();
-  
   const { data: updatedCircle, error } = await supabase
     .from("circles")
     .update({
-      name,
+      name: ownerName,
       type,
       gender_category: gender as GenderCategory,
       teacher_id,
@@ -162,7 +182,6 @@ export async function updateCircle(
       return {
         status: "invalid",
         values: {
-          name,
           type,
           gender_category: gender,
           teacher_id,

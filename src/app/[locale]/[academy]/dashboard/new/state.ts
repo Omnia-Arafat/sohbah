@@ -5,13 +5,13 @@
 
 /**
  * Neither the circle name nor the registration slug is a form field:
- *  - the name is always the owning teacher's name;
+ *  - the name is never typed — the action sets it to the owning teacher's own
+ *    registered name, taken from `teacherId` below;
  *  - the slug is generated server-side, because it is effectively the
  *    credential for the circle page and should not be guessable or
  *    hand-picked.
  */
 export type CircleValues = {
-  name: string;
   /** Who the circle belongs to. Only an admin may set it to somebody else. */
   teacherId: string;
   type: string;

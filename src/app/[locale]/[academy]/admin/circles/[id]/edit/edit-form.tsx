@@ -88,21 +88,6 @@ export function EditCircleForm({
       <input type="hidden" name="locale" value={locale} />
 
       <div>
-        <label className="field-label" htmlFor="name">
-          {t("circleName")}
-        </label>
-        <input
-          id="name"
-          name="name"
-          className="input"
-          defaultValue={values.name}
-          required
-          aria-invalid={Boolean(fieldErrors.name)}
-        />
-        {fieldError("name")}
-      </div>
-
-      <div>
         <label className="field-label" htmlFor="type">
           {t("type")}
         </label>

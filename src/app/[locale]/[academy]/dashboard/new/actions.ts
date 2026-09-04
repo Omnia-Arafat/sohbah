@@ -18,7 +18,6 @@ function readValues(formData: FormData): CircleValues {
   const read = (key: string) => String(formData.get(key) ?? "").trim();
 
   return {
-    name: read("name"),
     teacherId: read("teacherId"),
     type: read("type"),
     gender: read("gender"),
@@ -35,9 +34,6 @@ function readValues(formData: FormData): CircleValues {
 
 function validate(values: CircleValues): CircleFieldErrors {
   const errors: CircleFieldErrors = {};
-
-  if (!values.name) errors.name = "nameRequired";
-  else if (values.name.length > 120) errors.name = "tooLong";
 
   // Format only — whether the slug is a real, active type for this academy is
   // enforced by `fk_circles_type` at insert time (see the catch below), since
@@ -112,8 +108,10 @@ export async function createCircle(
 
   // The form sends `teacherId`, so it has to be re-authorized here rather than
   // trusted: only an admin may assign a circle to somebody else, and only to an
-  // active teacher inside this academy.
+  // active teacher inside this academy. The lookup also supplies the name the
+  // circle is created under — see the note on `CircleValues.teacherId`.
   let ownerId = session.teacher.id;
+  let ownerName = session.teacher.name;
   if (values.teacherId && values.teacherId !== session.teacher.id) {
     if (session.teacher.role !== "admin") {
       return { status: "failed", values, reason: "forbidden" };
@@ -121,7 +119,7 @@ export async function createCircle(
 
     const { data: owner } = await supabase
       .from("teachers")
-      .select("id")
+      .select("id, name")
       .eq("id", values.teacherId)
       .eq("academy_id", academy.id)
       .eq("is_active", true)
@@ -135,6 +133,7 @@ export async function createCircle(
       };
     }
     ownerId = owner.id;
+    ownerName = owner.name;
   }
 
   const { data: createdCircle, error } = await supabase
@@ -142,7 +141,7 @@ export async function createCircle(
     .insert({
       teacher_id: ownerId,
       academy_id: academy.id,
-      name: values.name,
+      name: ownerName,
       type: values.type as CircleType,
       gender_category: values.gender as GenderCategory,
       session_link: sessionLink,
