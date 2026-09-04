@@ -12,6 +12,7 @@ import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import { notFound } from "next/navigation";
 import { CopyLinkButton } from "@/components/copy-link-button";
 import { canEditAnyCircle, isAdminRole } from "@/lib/auth/roles";
+import { ListSearch } from "@/components/list-search";
 
 type CirclesAdminPageProps = {
   params: Promise<{ locale: string; academy: string }>;
@@ -85,6 +86,7 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
 
   if (error) console.error("Failed to fetch circles:", error);
 
+
   // `activeOnly: false` — an older circle can reference a since-deactivated
   // type, and the list still needs a real label for it, not a blank one.
   const circleTypes = await loadCircleTypes(supabase, academy.id, {
@@ -109,7 +111,15 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
 
       <BackLink href={`/${academySlug}/admin`}>{tAdmin("backToAdmin")}</BackLink>
 
-      {!circles || circles.length === 0 ? (
+      {circles.length > 0 && (
+        <ListSearch
+          scopeId="circles-list"
+          placeholder={tCircles("searchPlaceholder")}
+          emptyText={tCircles("searchEmpty")}
+        />
+      )}
+
+      {circles.length === 0 ? (
         <div className="card text-center">
           <p className="text-muted-foreground">{tCircles("noCircles")}</p>
           <Link href={`/${academySlug}/dashboard/new`} className="btn-primary mt-4">
@@ -117,9 +127,14 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
           </Link>
         </div>
       ) : (
-        <div className="scroll-list grid gap-4">
+        <div id="circles-list" className="scroll-list grid gap-4">
           {circles.map((circle) => (
-            <div key={circle.id} className="card">
+            <div
+              key={circle.id}
+              className="card"
+              // What the search field matches this row against.
+              data-search={`${circle.teacher?.name ?? ""} ${circle.name}`}
+            >
               <div className="flex flex-col gap-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">

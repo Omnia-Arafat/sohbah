@@ -274,7 +274,9 @@
         "teacherRequired": "Choose a teacher.",
         "maxStudentsInvalid": "Enter a number between 1 and 500."
       }
-    }
+    },
+    "searchPlaceholder": "Search by teacher name…",
+    "searchEmpty": "No circle matches that name."
   },
   "session": {
     "title": "Circle session",
@@ -408,7 +410,9 @@
         "maxStudentsInvalid": "Enter a number between 1 and 500."
       },
       "teacherSearch": "Type a name to search…",
-      "teacherNoMatches": "No teacher matches that name."
+      "teacherNoMatches": "No teacher matches that name.",
+      "searchPlaceholder": "Search by teacher name…",
+      "searchEmpty": "No circle matches that name."
     },
     "students": {
       "title": "Manage students",

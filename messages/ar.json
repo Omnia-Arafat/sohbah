@@ -274,7 +274,9 @@
         "teacherRequired": "اختر المعلمة.",
         "maxStudentsInvalid": "اكتب رقمًا بين ١ و٥٠٠."
       }
-    }
+    },
+    "searchPlaceholder": "ابحثي باسم المعلمة…",
+    "searchEmpty": "مفيش حلقة بالاسم ده."
   },
   "session": {
     "title": "جلسة الحلقة",
@@ -406,7 +408,9 @@
       "deleting": "جارٍ الحذف…",
       "deleteConfirmButton": "نعم، احذف \"{name}\"",
       "teacherSearch": "اكتب اسمًا للبحث…",
-      "teacherNoMatches": "لا توجد معلمة بهذا الاسم."
+      "teacherNoMatches": "لا توجد معلمة بهذا الاسم.",
+      "searchPlaceholder": "ابحثي باسم المعلمة…",
+      "searchEmpty": "مفيش حلقة بالاسم ده."
     },
     "students": {
       "title": "إدارة الطلاب",

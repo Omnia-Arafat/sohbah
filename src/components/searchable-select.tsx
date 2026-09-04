@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { matchesSearch } from "@/lib/arabic-search";
 
 type Option = { value: string; label: string };
 
@@ -53,11 +54,13 @@ export function SearchableSelect({
 
   const selectedLabel = options.find((option) => option.value === value)?.label ?? "";
 
-  const filtered = useMemo(() => {
-    const needle = draft.trim().toLowerCase();
-    if (!needle) return options;
-    return options.filter((option) => option.label.toLowerCase().includes(needle));
-  }, [options, draft]);
+  // Same matching as every other search in the app: spelling variants fold
+  // together and a title in front of the name is ignored, so "معلمه وسام"
+  // still finds "وسام لطفي".
+  const filtered = useMemo(
+    () => options.filter((option) => matchesSearch(option.label, draft)),
+    [options, draft],
+  );
 
   // Registers a listener on mount/while open; the setState it triggers lives
   // in the callback, not the effect body, so this is the ordinary "subscribe

@@ -10,8 +10,11 @@ import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import type { Circle } from "@/lib/database.types";
 import { formatTime } from "@/lib/format-time";
 import { createClient } from "@/lib/supabase/server";
+import { ListSearch } from "@/components/list-search";
 
-type DashboardPageProps = { params: Promise<{ locale: string; academy: string }> };
+type DashboardPageProps = {
+  params: Promise<{ locale: string; academy: string }>;
+};
 
 export const dynamic = "force-dynamic";
 
@@ -93,7 +96,16 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         <DashboardHeader teacher={session.teacher} academySlug={academySlug} />
       </div>
 
-      <section>
+      {(todayCircles.length > 0 || otherCircles.length > 0) && (
+        <ListSearch
+          scopeId="dashboard-circles"
+          placeholder={t("searchPlaceholder")}
+          emptyText={t("searchEmpty")}
+        />
+      )}
+
+      <div id="dashboard-circles" className="flex flex-col gap-6">
+      <section data-search-section>
         <h2 className="mb-3 text-lg font-semibold">{t("today.title")}</h2>
 
         {todayCircles.length === 0 ? (
@@ -101,7 +113,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         ) : (
           <ul className="scroll-list flex flex-col gap-3">
             {todayCircles.map((circle) => (
-              <li key={circle.id} className="card flex flex-col gap-3">
+              <li key={circle.id} className="card flex flex-col gap-3" data-search={circle.name}>
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-sm text-muted-foreground">
@@ -132,7 +144,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         )}
       </section>
 
-      <section>
+      <section data-search-section>
         <h2 className="mb-3 text-lg font-semibold">{t("other.title")}</h2>
 
         {otherCircles.length === 0 ? (
@@ -143,6 +155,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
               <li
                 key={circle.id}
                 className="card flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                data-search={circle.name}
               >
                 <div className="min-w-0">
                   <p className="text-sm text-muted-foreground">
@@ -171,6 +184,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           </ul>
         )}
       </section>
+      </div>
     </div>
   );
 }
