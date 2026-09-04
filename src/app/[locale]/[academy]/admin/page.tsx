@@ -1,3 +1,4 @@
+import { isAdminRole } from "@/lib/auth/roles";
 import type { Metadata } from "next";
 import { BarChart, CalendarDays, CirclePlus, GraduationCap, Home, Tags, UserCheck, Users } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -89,7 +90,7 @@ export default async function AdminPage({ params }: AdminPageProps) {
 
   // One tier for now: anyone approved may look. The controls that change
   // something are hidden below and re-checked in every server action.
-  const isAdmin = session.teacher.role === "admin";
+  const isAdmin = isAdminRole(session.teacher);
 
   const supabase = await createClient();
 

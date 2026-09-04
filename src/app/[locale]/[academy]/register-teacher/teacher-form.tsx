@@ -11,7 +11,7 @@ import {
   type TeacherApplicationState,
 } from "./state";
 
-const ROLES = ["teacher", "admin"] as const;
+const ROLES = ["teacher", "supervisor"] as const;
 
 function SubmitButton({
   label,

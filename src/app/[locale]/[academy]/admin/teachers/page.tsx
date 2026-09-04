@@ -9,8 +9,9 @@ import { getAcademyBySlug } from "@/lib/academy-dal";
 import { requireStaffSession } from "@/lib/auth/dal";
 import type { Teacher } from "@/lib/database.types";
 import { createClient } from "@/lib/supabase/server";
-import { deleteTeacher, setTeacherActive } from "./actions";
+import { deleteTeacher, setTeacherActive, setTeacherRole } from "./actions";
 import { ResetPasswordButton } from "./reset-button";
+import { ASSIGNABLE_ROLES, canManageStaff, hasRole } from "@/lib/auth/roles";
 
 type PageProps = {
   params: Promise<{ locale: string; academy: string }>;
@@ -45,7 +46,7 @@ export default async function AdminTeachersPage({
 
   const session = await requireStaffSession(`/${academySlug}/admin/teachers`);
   // Approving, editing and removing stay مشرفة-only; every action re-checks.
-  const canManage = session.teacher.role === "admin";
+  const canManage = canManageStaff(session.teacher);
 
   const academy = await getAcademyBySlug(academySlug);
   if (!academy) notFound();
@@ -122,8 +123,52 @@ export default async function AdminTeachersPage({
                 {t("ownsCircles")}
               </p>
             )}
+            {/* Only the roles beyond the baseline are worth a badge — every
+                approved person is a معلمة, so saying so tells nobody anything. */}
+            {(teacher.roles ?? [teacher.role]).some(
+              (role) => role === "supervisor" || role === "admin",
+            ) && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {ASSIGNABLE_ROLES.filter((role) => hasRole(teacher, role)).map(
+                  (role) => (
+                    <span key={role} className="badge bg-brand-50 text-brand-700 dark:bg-brand-900 dark:text-brand-100">
+                      {t(`roles.${role}`)}
+                    </span>
+                  ),
+                )}
+              </div>
+            )}
           </div>
         </div>
+
+        {/* Granting a role is admin-only, and a person may hold both. */}
+        {canManage && (
+          <div className="flex flex-wrap items-center gap-2 border-t border-border-subtle pt-3">
+            <span className="text-sm text-muted-foreground">{t("rolesLabel")}</span>
+            {ASSIGNABLE_ROLES.map((role) => {
+              const granted = hasRole(teacher, role);
+              return (
+                <form key={role} action={setTeacherRole}>
+                  <HiddenContext teacherId={teacher.id} />
+                  <input type="hidden" name="role" value={role} />
+                  <input type="hidden" name="granted" value={granted ? "0" : "1"} />
+                  <button
+                    type="submit"
+                    aria-pressed={granted}
+                    className={
+                      granted
+                        ? "rounded-xl border border-brand-600 bg-brand-50 px-3 py-1.5 text-sm font-semibold text-brand-700 dark:bg-brand-900 dark:text-brand-100"
+                        : "rounded-xl border border-border-subtle px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:border-brand-600 hover:text-brand-700"
+                    }
+                  >
+                    {granted ? "✓ " : "+ "}
+                    {t(`roles.${role}`)}
+                  </button>
+                </form>
+              );
+            })}
+          </div>
+        )}
 
         {/* Everyone approved can see this list; only a مشرفة can act on it. */}
         {canManage && (

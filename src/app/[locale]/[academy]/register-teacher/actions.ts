@@ -1,6 +1,6 @@
 "use server";
 
-import type { TeacherRole } from "@/lib/database.types";
+import type { ApplicantRole } from "@/lib/database.types";
 import {
   MIN_PASSWORD_LENGTH,
   credentialEmail,
@@ -61,7 +61,7 @@ export async function applyAsTeacher(
     fieldErrors.phone = "phoneInvalid";
   }
 
-  if (values.role !== "teacher" && values.role !== "admin") {
+  if (values.role !== "teacher" && values.role !== "supervisor") {
     fieldErrors.role = "roleRequired";
   }
 
@@ -93,7 +93,7 @@ export async function applyAsTeacher(
     p_academy_id: academyId,
     p_name: values.name,
     p_phone: values.phone,
-    p_role: values.role as TeacherRole,
+    p_role: values.role as ApplicantRole,
   });
 
   if (error) {

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { isActiveTeacher, getTeacherSession } from "@/lib/auth/dal";
+import { canEditAnyCircle } from "@/lib/auth/roles";
 import type { GenderCategory } from "@/lib/database.types";
 import { normalizeSessionLink } from "@/lib/circle-link";
 import { createClient } from "@/lib/supabase/server";
@@ -39,13 +40,25 @@ export async function updateCircle(
     return { status: "error", message: "missingParams" };
   }
 
-  // Any approved teacher or supervisor may edit any circle in the academy —
-  // the academy asked for this while a real supervisor role does not exist
-  // yet. Being approved is still required, and `circles_update_staff` in the
-  // database enforces the same rule independently of this check.
+  // A supervisor or admin edits any circle; a teacher edits her own. The exact
+  // same rule is written as `circles_update_own_or_supervisor` in the database,
+  // which is what actually refuses the write — this check is here so the user
+  // gets a clear message instead of a save that quietly changes nothing.
   const session = await getTeacherSession();
   if (!isActiveTeacher(session)) {
     return { status: "error", message: "unauthorized" };
+  }
+
+  if (!canEditAnyCircle(session.teacher)) {
+    const supabase = await createClient();
+    const { data: owned } = await supabase
+      .from("circles")
+      .select("id")
+      .eq("id", circleId)
+      .eq("teacher_id", session.teacher.id)
+      .maybeSingle();
+
+    if (!owned) return { status: "error", message: "unauthorized" };
   }
 
   // Verify academy

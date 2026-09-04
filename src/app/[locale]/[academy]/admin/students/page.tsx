@@ -1,3 +1,4 @@
+import { canManageStudents } from "@/lib/auth/roles";
 import type { Metadata } from "next";
 import { Pencil, Trash2 } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -54,7 +55,7 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
   // Only admins can access this page
   // One tier for now: anyone approved may look. The controls that change
   // something are hidden below and re-checked in every server action.
-  const canManage = session.teacher.role === "admin";
+  const canManage = canManageStudents(session.teacher);
 
   const supabase = await createClient();
   const pageSize = 50;

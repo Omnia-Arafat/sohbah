@@ -533,12 +533,13 @@
       "inactive": "Deactivated",
       "roles": {
         "teacher": "Teacher",
-        "admin": "Supervisor"
+        "supervisor": "Supervisor",
+        "admin": "Admin"
       },
       "tabsLabel": "Filter by role",
       "tabs": {
         "teacher": "Teachers",
-        "admin": "Supervisors"
+        "admin": "Admins"
       },
       "shareLink": {
         "title": "Registration link",
@@ -548,7 +549,8 @@
       "resetting": "Resetting…",
       "confirmReset": "Reset {name}'s password? Their current one stops working immediately.",
       "resetDone": "New password for {name}:",
-      "resetHint": "Shown once. Send it to them, then they sign in with their number and this password."
+      "resetHint": "Shown once. Send it to them, then they sign in with their number and this password.",
+      "rolesLabel": "Roles:"
     },
     "circleEdit": {
       "title": "Edit circle",
@@ -732,7 +734,7 @@
     },
     "roles": {
       "teacher": "Teacher",
-      "admin": "Supervisor"
+      "supervisor": "Supervisor"
     },
     "submit": "Register",
     "submitting": "Registering…",

@@ -1,3 +1,4 @@
+import { canSupervise } from "@/lib/auth/roles";
 import type { Metadata } from "next";
 import { randomUUID } from "node:crypto";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -52,7 +53,7 @@ export default async function NewCirclePage({ params }: NewCirclePageProps) {
   // Only admins choose an owner; for everyone else the list stays empty and the
   // form falls back to a hidden field holding their own id.
   const assignableTeachers = await loadAssignableTeachers(
-    session.teacher.role === "admin" ? academySlug : null,
+    canSupervise(session.teacher) ? academySlug : null,
     locale,
   );
 

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { isAdmin, requireTeacherSession } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
+import type { StaffRole } from "@/lib/database.types";
 import { createAdminClient, isServiceRoleConfigured } from "@/lib/supabase/admin";
 import { generateTemporaryPassword } from "@/lib/auth/teacher-credentials";
 
@@ -249,4 +250,56 @@ export async function resetTeacherPassword(
   }
 
   return { status: "done", password };
+}
+
+/**
+ * Grant or take away one role. `teacher` is the baseline everyone keeps, so
+ * only `supervisor` and `admin` can be toggled; a person may hold both.
+ *
+ * The database refuses this write for anyone but an admin
+ * (`teachers_guard_privileged`), so a tampered form cannot promote anyone —
+ * this check is what makes it a clean no-op instead of a raised exception.
+ */
+export async function setTeacherRole(formData: FormData) {
+  const context = readContext(formData);
+  const role = String(formData.get("role") ?? "");
+  const granted = formData.get("granted") === "1";
+
+  if (role !== "supervisor" && role !== "admin") return;
+
+  const auth = await authorize(context);
+  if (!auth) return;
+
+  // Taking your own admin role away would lock the academy out of the only
+  // screen that could give it back. Same reasoning as suspending yourself.
+  if (auth.session.teacher.id === context.teacherId && role === "admin" && !granted) {
+    return;
+  }
+
+  const supabase = await createClient();
+  const { data: target } = await supabase
+    .from("teachers")
+    .select("roles, role")
+    .eq("id", context.teacherId)
+    .eq("academy_id", auth.academy.id)
+    .maybeSingle();
+
+  if (!target) return;
+
+  const current = new Set<StaffRole>(
+    (target.roles ?? [target.role]) as StaffRole[],
+  );
+  current.add("teacher");
+  if (granted) current.add(role);
+  else current.delete(role);
+
+  const { error } = await supabase
+    .from("teachers")
+    .update({ roles: [...current] })
+    .eq("id", context.teacherId)
+    .eq("academy_id", auth.academy.id);
+
+  if (error) console.error("teacher role change failed", error);
+
+  refresh(context);
 }

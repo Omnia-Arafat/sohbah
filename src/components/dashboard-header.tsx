@@ -1,3 +1,4 @@
+import { isAdminRole } from "@/lib/auth/roles";
 import { getLocale, getTranslations } from "next-intl/server";
 import { signOut } from "@/app/[locale]/[academy]/login/actions";
 import { Link } from "@/i18n/navigation";
@@ -29,7 +30,7 @@ export async function DashboardHeader({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        {teacher.role === "admin" && academySlug && (
+        {isAdminRole(teacher) && academySlug && (
           <Link
             href={`/${academySlug}/admin`}
             className="btn-secondary px-4 py-2 text-sm"

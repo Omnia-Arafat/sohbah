@@ -1,3 +1,4 @@
+import { isAdminRole } from "./roles";
 import { cache } from "react";
 import { notFound } from "next/navigation";
 import { redirect } from "next/navigation";
@@ -91,7 +92,7 @@ export function isActiveTeacher(
 export function isAdmin(
   session: TeacherSession | null,
 ): session is TeacherSession & { teacher: Teacher } {
-  return isActiveTeacher(session) && session.teacher.role === "admin";
+  return isActiveTeacher(session) && isAdminRole(session.teacher);
 }
 
 /**

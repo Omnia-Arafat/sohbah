@@ -11,6 +11,7 @@ import { getAcademyBySlug } from "@/lib/academy-dal";
 import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import { notFound } from "next/navigation";
 import { CopyLinkButton } from "@/components/copy-link-button";
+import { canEditAnyCircle, isAdminRole } from "@/lib/auth/roles";
 
 type CirclesAdminPageProps = {
   params: Promise<{ locale: string; academy: string }>;
@@ -52,15 +53,14 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
     );
   }
 
-  // One tier for now: anyone approved may look, and — by the academy's own
-  // decision — anyone approved may edit any circle, not only their own. The
-  // supervisors who need this are stored as ordinary teachers, so there is no
-  // narrower group to grant it to until a real supervisor role exists.
-  const canEdit = true;
+  // A supervisor or an admin edits any circle in the academy; everyone else
+  // edits the ones that are hers. Decided per circle, just below.
+  const editsAnyCircle = canEditAnyCircle(session.teacher);
+  const teacherId = session.teacher.id;
 
   // Deleting stays with admins: it is the one action here that cannot be
   // undone, and it takes the circle's attendance history with it.
-  const canDelete = session.teacher.role === "admin";
+  const canDelete = isAdminRole(session.teacher);
 
   const supabase = await createClient();
 
@@ -148,7 +148,7 @@ export default async function CirclesAdminPage({ params }: CirclesAdminPageProps
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  {canEdit && (<Link
+                  {(editsAnyCircle || circle.teacher_id === teacherId) && (<Link
                     href={`/${academySlug}/admin/circles/${circle.id}/edit`}
                     className="btn-secondary flex items-center gap-1.5 px-3 py-2 text-sm"
                     title={tCircles("edit")}
