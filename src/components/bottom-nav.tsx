@@ -72,9 +72,10 @@ export function BottomNav({
 
   /** Sections that live in the sheet rather than on a tab of their own. */
   const sheetLinks = [
-    // A supervisor/admin gets this tab as her primary second tab instead —
-    // still one tap away here for the plain teacher who does not.
-    { href: schedule, label: t("schedule"), Icon: CalendarDays, adminOnly: false, hidden: canSupervise },
+    // A plain teacher already has this as her primary second tab; a
+    // supervisor/admin has "التقارير" there instead, so it only needs a
+    // place in the sheet for her.
+    { href: schedule, label: t("schedule"), Icon: CalendarDays, adminOnly: false, hidden: !canSupervise },
     { href: `/${academySlug}/admin/students`, label: t("students"), Icon: GraduationCap, adminOnly: false, hidden: false },
     { href: `/${academySlug}/admin/teachers`, label: t("teachers"), Icon: UserCheck, adminOnly: false, hidden: false },
     // The mirror image: already a primary tab for her, so listing it again
