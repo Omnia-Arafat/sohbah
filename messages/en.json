@@ -678,6 +678,7 @@
       "week": "Last 7 days",
       "month": "This month",
       "year": "This year",
+      "all": "Since the start",
       "custom": "Custom range"
     },
     "filters": {
@@ -691,7 +692,8 @@
       "apply": "Show the report",
       "type": "Circle type",
       "circleOption": "{name} — {teacher}",
-      "unknownTeacher": "Unassigned"
+      "unknownTeacher": "Unassigned",
+      "downloadPdf": "Download PDF"
     },
     "columns": {
       "joined": "joined",
@@ -703,7 +705,13 @@
       "empty": "No attendance records in this range.",
       "legend": "The three numbers are sessions joined, sessions recited, and sessions joined without reciting, in that order."
     },
-    "notRecitedWarning": "{count} joined sessions ended without the student reciting."
+    "notRecitedWarning": "{count} joined sessions ended without the student reciting.",
+    "print": {
+      "generatedOn": "Generated on {date}",
+      "downloadButton": "Download PDF",
+      "totalsLabel": "Totals",
+      "studentColumn": "Student"
+    }
   },
   "setup": {
     "title": "Database not connected",

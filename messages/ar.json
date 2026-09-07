@@ -675,9 +675,10 @@
     "appliedRange": "المدة: من {from} إلى {to}",
     "ranges": {
       "today": "اليوم",
-      "week": "آخر ٣٧ يومًا",
+      "week": "آخر ٧ أيام",
       "month": "هذا الشهر",
       "year": "هذه السنة",
+      "all": "منذ البداية",
       "custom": "مدة مخصّصة"
     },
     "filters": {
@@ -691,7 +692,8 @@
       "apply": "عرض التقرير",
       "type": "نوع الحلقة",
       "circleOption": "{name} — {teacher}",
-      "unknownTeacher": "غير مسندة"
+      "unknownTeacher": "غير مسندة",
+      "downloadPdf": "تحميل PDF"
     },
     "columns": {
       "joined": "حضور",
@@ -703,7 +705,13 @@
       "empty": "لا توجد سجلات حضور في هذه المدة.",
       "legend": "الأرقام الثلاثة: عدد الحضور، وعدد التلاوات، وعدد الجلسات التي حضرها دون أن يتلو، بهذا الترتيب."
     },
-    "notRecitedWarning": "{count} جلسة حضرها الطالب وانتهت دون أن يتلو."
+    "notRecitedWarning": "{count} جلسة حضرها الطالب وانتهت دون أن يتلو.",
+    "print": {
+      "generatedOn": "تاريخ الإصدار: {date}",
+      "downloadButton": "تحميل PDF",
+      "totalsLabel": "الإجمالي",
+      "studentColumn": "الطالبة"
+    }
   },
   "setup": {
     "title": "قاعدة البيانات غير مربوطة",

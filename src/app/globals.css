@@ -28,6 +28,32 @@
   }
 }
 
+/* A printed report — the PDF export in particular — has to read the same on
+   paper regardless of the browser's dark mode, so pin the light palette
+   rather than let the query above win. */
+@media print {
+  :root {
+    --background: #ffffff;
+    --surface: #ffffff;
+    --surface-muted: #f6f9f7;
+    --foreground: #0e1f19;
+    --muted-foreground: #5a6e66;
+    --border: #dbe5e0;
+  }
+
+  @page {
+    margin: 14mm 12mm;
+  }
+
+  table thead {
+    display: table-header-group;
+  }
+
+  table tr {
+    break-inside: avoid;
+  }
+}
+
 @theme inline {
   --font-sans: var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-amiri), var(--font-cairo), ui-serif, serif;

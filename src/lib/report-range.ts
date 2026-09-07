@@ -1,6 +1,6 @@
 import { DEFAULT_TIMEZONE } from "./timezones";
 
-export const RANGE_PRESETS = ["today", "week", "month", "year", "custom"] as const;
+export const RANGE_PRESETS = ["today", "week", "month", "year", "all", "custom"] as const;
 export type RangePreset = (typeof RANGE_PRESETS)[number];
 
 export type ReportRange = {
@@ -81,6 +81,10 @@ export function resolveRange(
       return { preset, from: addDays(today, -6), to: today };
     case "year":
       return { preset, from: `${today.slice(0, 4)}-01-01`, to: today };
+    case "all":
+      // No circle predates this, so it is an unconditional lower bound rather
+      // than something derived per academy — simpler, and never wrong.
+      return { preset, from: "2020-01-01", to: today };
     case "month":
     default:
       return { preset: "month", from: `${today.slice(0, 7)}-01`, to: today };

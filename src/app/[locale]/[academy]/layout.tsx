@@ -88,8 +88,8 @@ export default async function AcademyLayout({
       {/* The rail is fixed, so the page is inset by its width from `sm` up
           rather than sharing a flex row with it — the header, content and
           footer keep the exact structure they had before it existed. */}
-      <div className={`flex flex-1 flex-col ${teacher ? "sm:ps-63" : ""}`}>
-        <header className="border-b border-border-subtle bg-surface">
+      <div className={`flex flex-1 flex-col ${teacher ? "sm:ps-63 print:ps-0" : ""}`}>
+        <header className="border-b border-border-subtle bg-surface print:hidden">
           <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-4 px-4 py-3">
             {/* Hidden from `sm` up for a signed-in teacher: the side rail carries
                 the same logo and name there, and two of them is one too many. */}
@@ -166,7 +166,7 @@ export default async function AcademyLayout({
 
         {/* Extra bottom padding on phones so the fixed bar never covers the last
             row of a page; from `sm` up the bar is not rendered at all. */}
-        <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 max-sm:pb-28">
+        <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 max-sm:pb-28 print:max-w-none print:p-0">
           {children}
         </main>
 

@@ -98,7 +98,7 @@ export function SideNav({
   }
 
   return (
-    <aside className="fixed inset-y-0 start-0 z-30 hidden w-63 flex-col border-e border-border-subtle bg-surface sm:flex">
+    <aside className="fixed inset-y-0 start-0 z-30 hidden w-63 flex-col border-e border-border-subtle bg-surface sm:flex print:hidden">
       <Link
         href={`/${academySlug}`}
         className="flex min-w-0 items-center gap-3 border-b border-border-subtle px-4 py-4"

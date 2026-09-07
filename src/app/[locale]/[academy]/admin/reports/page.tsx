@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BackLink } from "@/components/back-link";
+import { Link } from "@/i18n/navigation";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { getTeacherDisplayLabel } from "@/lib/academy-display";
 import { getAcademyContext } from "@/lib/academy-context";
@@ -116,6 +117,20 @@ export default async function ReportsPage({
     }),
     { joined: 0, recited: 0, notRecited: 0 },
   );
+
+  // Explicit range bounds, not just the preset — the print page re-resolves
+  // "today" independently, and a from/to a few seconds apart from this
+  // render should never be visible to whoever opens the PDF.
+  const printParams = new URLSearchParams({
+    range: range.preset,
+    from: range.from,
+    to: range.to,
+  });
+  if (gender) printParams.set("gender", gender);
+  if (circleId) printParams.set("circle", circleId);
+  if (circleType) printParams.set("type", circleType);
+  if (teacherId) printParams.set("teacher", teacherId);
+  const printHref = `/${academySlug}/admin/reports/print?${printParams.toString()}`;
 
   return (
     <div className="flex flex-col gap-6">
@@ -279,9 +294,19 @@ export default async function ReportsPage({
       </form>
 
       <section className="card">
-        <p className="text-sm text-muted-foreground">
-          {t("appliedRange", { from: range.from, to: range.to })}
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">
+            {t("appliedRange", { from: range.from, to: range.to })}
+          </p>
+          <Link
+            href={printHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-secondary px-4 py-2 text-sm"
+          >
+            {t("filters.downloadPdf")}
+          </Link>
+        </div>
         <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm">
           <span>
             <span className="font-semibold">{totals.joined}</span>{" "}
