@@ -283,6 +283,15 @@
     }
   }
 
+  /* A multi-select renders as a listbox, not a one-line dropdown — no arrow
+     to draw, and the end-padding it leaves room for. The extra `[multiple]`
+     beats `select.input`'s specificity, so this wins regardless of order. */
+  select.input[multiple] {
+    appearance: auto;
+    background-image: none;
+    padding-inline-end: 1rem;
+  }
+
   /* The open panel of <SearchableSelect> (@/components/searchable-select) — a
      bounded height so a long list of names scrolls instead of pushing the
      rest of the form down, in the same Sidr-green scrollbar as .scroll-list.

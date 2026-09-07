@@ -67,8 +67,11 @@ export default async function ReportsPage({
   // forwarding it into the RPC.
   const gender: GenderCategory | null =
     query.gender === "male" || query.gender === "female" ? query.gender : null;
-  const teacherIds = (Array.isArray(query.teacher) ? query.teacher : query.teacher ? [query.teacher] : [])
-    .filter((id) => UUID.test(id));
+  // "" is the "الكل" option — its whole point is to override any teacher ids
+  // also selected alongside it, since a plain multi-select cannot enforce
+  // that the two stay mutually exclusive on its own.
+  const teacherRaw = Array.isArray(query.teacher) ? query.teacher : query.teacher ? [query.teacher] : [];
+  const teacherIds = teacherRaw.includes("") ? [] : teacherRaw.filter((id) => UUID.test(id));
 
   const supabase = await createClient();
   const [circleTypesResult, circlesResult, teachersResult] = await Promise.all([
@@ -301,30 +304,27 @@ export default async function ReportsPage({
           </div>
 
           <div className="sm:col-span-2">
-            <label className="field-label">{t("filters.teacher")}</label>
-            <p className="mb-2 text-sm text-muted-foreground">
+            <label className="field-label" htmlFor="teacher">
+              {t("filters.teacher")}
+            </label>
+            <select
+              id="teacher"
+              name="teacher"
+              multiple
+              size={6}
+              className="input"
+              defaultValue={teacherIds.length > 0 ? teacherIds : [""]}
+            >
+              <option value="">{t("filters.all")}</option>
+              {teachersForType.map((teacher) => (
+                <option key={teacher.id} value={teacher.id}>
+                  {getTeacherDisplayLabel(teacher, academySlug, locale)}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1.5 text-sm text-muted-foreground">
               {t("filters.teacherHint")}
             </p>
-            <div className="scroll-list flex max-h-56 flex-col gap-1 rounded-xl border border-border-subtle bg-surface p-2">
-              {teachersForType.map((teacher) => (
-                <label
-                  key={teacher.id}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2
-                             text-sm transition-colors hover:bg-surface-muted
-                             has-checked:bg-brand-50 has-checked:text-brand-800
-                             dark:has-checked:bg-brand-900 dark:has-checked:text-brand-100"
-                >
-                  <input
-                    type="checkbox"
-                    name="teacher"
-                    value={teacher.id}
-                    defaultChecked={teacherIds.includes(teacher.id)}
-                    className="accent-brand-600"
-                  />
-                  {getTeacherDisplayLabel(teacher, academySlug, locale)}
-                </label>
-              ))}
-            </div>
           </div>
         </div>
 
