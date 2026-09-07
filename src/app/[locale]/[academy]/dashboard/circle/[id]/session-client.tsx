@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronUp, ChevronDown, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -17,6 +17,51 @@ type SessionClientProps = {
 };
 
 const RECITATION_OPTIONS: RecitationStatus[] = ["waiting", "reciting", "done"];
+
+/**
+ * A minimal FLIP: whenever an item tagged `data-flip-id` ends up somewhere
+ * else after a render — someone marked "done" and sank to the bottom, say —
+ * it is nudged back to its old spot with no transition and released, so the
+ * browser animates the move instead of the row just jumping there. Runs
+ * after every render with no dependency array on purpose: a reorder can come
+ * from this device's own click or from Realtime echoing someone else's, and
+ * both should animate the same way.
+ */
+function useReorderAnimation<T extends HTMLElement>() {
+  const containerRef = useRef<T | null>(null);
+  const previousTops = useRef<Map<string, number>>(new Map());
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const items = Array.from(container.children) as HTMLElement[];
+    const nextTops = new Map<string, number>();
+
+    for (const item of items) {
+      const id = item.dataset.flipId;
+      if (!id) continue;
+
+      const top = item.getBoundingClientRect().top;
+      nextTops.set(id, top);
+
+      const previousTop = previousTops.current.get(id);
+      if (previousTop !== undefined && Math.abs(previousTop - top) > 1) {
+        const delta = previousTop - top;
+        item.style.transition = "none";
+        item.style.transform = `translateY(${delta}px)`;
+        requestAnimationFrame(() => {
+          item.style.transition = "transform 320ms cubic-bezier(0.4, 0, 0.2, 1)";
+          item.style.transform = "";
+        });
+      }
+    }
+
+    previousTops.current = nextTops;
+  });
+
+  return containerRef;
+}
 
 export function SessionClient({
   slug,
@@ -221,6 +266,17 @@ export function SessionClient({
     }
   }
 
+  // A finished recitation sinks to the bottom, out of the teacher's way,
+  // while `queue_order` (the badge number) stays exactly what it was — this
+  // is display order only, never written back to the database.
+  const sortedQueue = useMemo(() => {
+    const notDone = queue.filter((row) => row.recitation_status !== "done");
+    const done = queue.filter((row) => row.recitation_status === "done");
+    return [...notDone, ...done];
+  }, [queue]);
+
+  const listRef = useReorderAnimation<HTMLOListElement>();
+
   // Everyone in the queue is present by definition, so the useful split is how
   // far through the recitations the circle has got.
   const counts = {
@@ -261,10 +317,11 @@ export function SessionClient({
       {queue.length === 0 ? (
         <p className="card text-muted-foreground">{t("queue.empty")}</p>
       ) : (
-        <ol className="scroll-list flex flex-col gap-3">
-          {queue.map((entry, index) => (
+        <ol ref={listRef} className="scroll-list flex flex-col gap-3">
+          {sortedQueue.map((entry, index) => (
             <li
               key={entry.attendance_id}
+              data-flip-id={entry.attendance_id}
               className={`card gap-0 overflow-hidden p-0 transition-colors ${cardToneClass(
                 entry.recitation_status,
               )}`}
@@ -315,7 +372,7 @@ export function SessionClient({
                     <button
                       type="button"
                       onClick={() => move(entry, 1)}
-                      disabled={index === queue.length - 1 || busy !== null}
+                      disabled={index === sortedQueue.length - 1 || busy !== null}
                       aria-label={t("reorder.down")}
                       title={t("reorder.down")}
                       className={REORDER_BUTTON}
