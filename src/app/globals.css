@@ -52,6 +52,15 @@
   table tr {
     break-inside: avoid;
   }
+
+  /* Chrome and Firefox both default "background graphics" off in the print
+     dialog, which would otherwise silently drop the report's header band and
+     ranking highlights. This hints the browser to keep them without the
+     viewer having to find and enable that checkbox themselves. */
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
 }
 
 @theme inline {

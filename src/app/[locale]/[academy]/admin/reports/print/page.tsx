@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Star } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { getTeacherDisplayLabel } from "@/lib/academy-display";
@@ -35,9 +36,16 @@ const UUID =
 export async function generateMetadata({
   params,
 }: Pick<PrintReportPageProps, "params">): Promise<Metadata> {
-  const { locale } = await params;
+  const { locale, academy: academySlug } = await params;
   const t = await getTranslations({ locale, namespace: "reports" });
-  return { title: t("title") };
+  const academy = await getAcademyContext(academySlug);
+
+  // A fixed name, not one that changes with the filters on screen: "Save as
+  // PDF" suggests the document's <title> as the file name, and a name that
+  // moved every time someone narrowed the report would be harder to find
+  // again than a plain, predictable one.
+  const academyName = academy ? (locale === "ar" ? academy.name_ar : academy.name_en) : "";
+  return { title: academyName ? `${academyName} - ${t("title")}` : t("title") };
 }
 
 export default async function PrintReportPage({
@@ -49,7 +57,6 @@ export default async function PrintReportPage({
 
   const t = await getTranslations("reports");
   const tDashboard = await getTranslations("dashboard");
-  const tCircle = await getTranslations("circle");
 
   await requireStaffSession(`/${academySlug}/admin/reports/print`);
 
@@ -145,8 +152,8 @@ export default async function PrintReportPage({
       </div>
 
       <header
-        className="flex items-center gap-4 border-b-2 pb-4"
-        style={{ borderColor: academy.primary_color }}
+        className="-mx-6 flex items-center gap-4 px-6 py-5 print:mx-0"
+        style={{ backgroundColor: `${academy.primary_color}14` }}
       >
         {academy.logo_path ? (
           // A plain <img>, not next/image: print rendering needs the real
@@ -155,30 +162,38 @@ export default async function PrintReportPage({
           <img
             src={academy.logo_path}
             alt={academyName}
-            className="h-14 w-14 shrink-0 object-contain"
+            className="h-16 w-16 shrink-0 rounded-full bg-surface object-contain p-1.5 shadow-sm"
           />
         ) : null}
         <div className="min-w-0">
           <h1
-            className="font-display truncate text-xl font-bold"
+            className="font-display truncate text-2xl font-bold"
             style={{ color: academy.primary_color }}
           >
             {academyName}
           </h1>
-          <p className="text-sm text-muted-foreground">{t("title")}</p>
+          <p className="text-sm font-medium text-muted-foreground">{t("title")}</p>
         </div>
       </header>
 
-      <section className="text-sm text-muted-foreground">
+      <section className="flex flex-wrap items-center gap-2 text-sm">
         {filterLines.map((line) => (
-          <p key={line}>{line}</p>
+          <span
+            key={line}
+            className="rounded-full border border-border-subtle bg-surface-muted px-3 py-1
+                       text-muted-foreground"
+          >
+            {line}
+          </span>
         ))}
-        <p className="mt-1">{t("print.generatedOn", { date: generatedOn })}</p>
+        <span className="ms-auto text-xs text-muted-foreground print:ms-0 print:w-full">
+          {t("print.generatedOn", { date: generatedOn })}
+        </span>
       </section>
 
       <table className="w-full border-collapse text-sm">
         <thead>
-          <tr className="border-b-2 border-foreground text-start">
+          <tr className="text-start" style={{ borderBottom: `2px solid ${academy.primary_color}` }}>
             <th className="px-2 py-2 text-start">#</th>
             <th className="px-2 py-2 text-start">{t("print.studentColumn")}</th>
             <th className="px-2 py-2 text-center">{t("columns.joined")}</th>
@@ -187,35 +202,58 @@ export default async function PrintReportPage({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, index) => (
-            <tr
-              key={row.student_id}
-              className="border-b border-border-subtle"
-              style={{ breakInside: "avoid" }}
-            >
-              <td className="px-2 py-1.5 tabular-nums text-muted-foreground">
-                {index + 1}
-              </td>
-              <td className="px-2 py-1.5">
-                <span className="font-medium">{row.student_name}</span>
-                <span className="ms-1.5 text-xs text-muted-foreground">
-                  {tCircle("search.fatherLabel", { name: row.father_name })}
-                </span>
-              </td>
-              <td className="px-2 py-1.5 text-center tabular-nums">
-                {row.sessions_joined}
-              </td>
-              <td className="px-2 py-1.5 text-center tabular-nums">
-                {row.sessions_recited}
-              </td>
-              <td className="px-2 py-1.5 text-center tabular-nums">
-                {row.sessions_not_recited}
-              </td>
-            </tr>
-          ))}
+          {rows.map((row, index) => {
+            // Matches the same ranking treatment as the on-screen report —
+            // #1 gets a star, #2-5 a lighter version of it — so the PDF and
+            // the page it came from read as the same document.
+            const isFirst = index === 0;
+            const isTopFive = index < 5;
+
+            return (
+              <tr
+                key={row.student_id}
+                className="border-b border-border-subtle"
+                style={{
+                  breakInside: "avoid",
+                  backgroundColor: isFirst
+                    ? "#fef3c7"
+                    : isTopFive
+                      ? `${academy.primary_color}0d`
+                      : index % 2 === 1
+                        ? "var(--color-surface-muted)"
+                        : undefined,
+                }}
+              >
+                <td className="px-2 py-1.5 tabular-nums text-muted-foreground">
+                  {isFirst ? (
+                    <Star
+                      className="h-4 w-4 text-amber-500"
+                      fill="currentColor"
+                      aria-label="1"
+                    />
+                  ) : (
+                    index + 1
+                  )}
+                </td>
+                <td className="px-2 py-1.5 font-medium">{row.student_name}</td>
+                <td className="px-2 py-1.5 text-center tabular-nums">
+                  {row.sessions_joined}
+                </td>
+                <td className="px-2 py-1.5 text-center tabular-nums">
+                  {row.sessions_recited}
+                </td>
+                <td className="px-2 py-1.5 text-center tabular-nums">
+                  {row.sessions_not_recited}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
         <tfoot>
-          <tr className="border-t-2 border-foreground font-semibold">
+          <tr
+            className="font-semibold"
+            style={{ borderTop: `2px solid ${academy.primary_color}` }}
+          >
             <td className="px-2 py-2" colSpan={2}>
               {t("print.totalsLabel")}
             </td>
