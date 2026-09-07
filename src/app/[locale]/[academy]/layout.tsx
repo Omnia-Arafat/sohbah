@@ -12,7 +12,7 @@ import { signOut } from "@/app/[locale]/[academy]/login/actions";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { getLocalizedAcademyName, getTeacherDisplayLabel } from "@/lib/academy-display";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
-import { isAdminRole, primaryRoleKey } from "@/lib/auth/roles";
+import { canSupervise, isAdminRole, primaryRoleKey } from "@/lib/auth/roles";
 
 type AcademyLayoutProps = {
   children: React.ReactNode;
@@ -176,6 +176,7 @@ export default async function AcademyLayout({
         <BottomNav
           academySlug={academySlug}
           isAdmin={isAdminRole(teacher)}
+          canSupervise={canSupervise(teacher)}
           teacherName={getTeacherDisplayLabel(teacher, academySlug, locale)}
           roleLabel={tDashboard(`role.${primaryRoleKey(teacher)}`)}
           signOutAction={signOut.bind(null, academySlug)}

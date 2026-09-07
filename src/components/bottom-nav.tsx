@@ -30,12 +30,16 @@ import { Link, usePathname } from "@/i18n/navigation";
 export function BottomNav({
   academySlug,
   isAdmin,
+  canSupervise,
   teacherName,
   roleLabel,
   signOutAction,
 }: {
   academySlug: string;
   isAdmin: boolean;
+  /** Supervisors and admins get the reports tab in place of the schedule
+   *  tab — the schedule is still one tap away in "المزيد" for them. */
+  canSupervise: boolean;
   teacherName: string;
   roleLabel: string;
   /** Bound to this academy by the layout; posted from the sheet. */
@@ -58,21 +62,28 @@ export function BottomNav({
 
   const home = `/${academySlug}/dashboard`;
   const schedule = `/${academySlug}/schedule`;
+  const reports = `/${academySlug}/admin/reports`;
   const circles = `/${academySlug}/admin/circles`;
 
   const isHome = pathname === home;
   const isSchedule = pathname.startsWith(schedule);
+  const isReports = pathname.startsWith(reports);
   const isCircles = pathname.startsWith(circles);
 
   /** Sections that live in the sheet rather than on a tab of their own. */
   const sheetLinks = [
-    { href: `/${academySlug}/admin/students`, label: t("students"), Icon: GraduationCap, adminOnly: false },
-    { href: `/${academySlug}/admin/teachers`, label: t("teachers"), Icon: UserCheck, adminOnly: false },
-    { href: `/${academySlug}/admin/reports`, label: t("reports"), Icon: BarChart, adminOnly: false },
-    { href: `/${academySlug}/admin/circle-types`, label: t("circleTypes"), Icon: Tags, adminOnly: true },
-    { href: `/${academySlug}/admin/schedules`, label: t("schedules"), Icon: CalendarDays, adminOnly: true },
-    { href: `/${academySlug}/admin`, label: t("adminHome"), Icon: LayoutGrid, adminOnly: false },
-  ].filter((link) => !link.adminOnly || isAdmin);
+    // A supervisor/admin gets this tab as her primary second tab instead —
+    // still one tap away here for the plain teacher who does not.
+    { href: schedule, label: t("schedule"), Icon: CalendarDays, adminOnly: false, hidden: canSupervise },
+    { href: `/${academySlug}/admin/students`, label: t("students"), Icon: GraduationCap, adminOnly: false, hidden: false },
+    { href: `/${academySlug}/admin/teachers`, label: t("teachers"), Icon: UserCheck, adminOnly: false, hidden: false },
+    // The mirror image: already a primary tab for her, so listing it again
+    // here would just be clutter.
+    { href: reports, label: t("reports"), Icon: BarChart, adminOnly: false, hidden: canSupervise },
+    { href: `/${academySlug}/admin/circle-types`, label: t("circleTypes"), Icon: Tags, adminOnly: true, hidden: false },
+    { href: `/${academySlug}/admin/schedules`, label: t("schedules"), Icon: CalendarDays, adminOnly: true, hidden: false },
+    { href: `/${academySlug}/admin`, label: t("adminHome"), Icon: LayoutGrid, adminOnly: false, hidden: false },
+  ].filter((link) => (!link.adminOnly || isAdmin) && !link.hidden);
 
   return (
     <>
@@ -145,7 +156,11 @@ export function BottomNav({
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border-subtle bg-surface pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_10px_rgba(14,31,25,0.05)] sm:hidden print:hidden">
         <div className="mx-auto flex max-w-4xl items-start justify-around pt-2">
           <NavTab href={home} label={t("home")} active={isHome} Icon={House} />
-          <NavTab href={schedule} label={t("schedule")} active={isSchedule} Icon={CalendarDays} />
+          {canSupervise ? (
+            <NavTab href={reports} label={t("reports")} active={isReports} Icon={BarChart} />
+          ) : (
+            <NavTab href={schedule} label={t("schedule")} active={isSchedule} Icon={CalendarDays} />
+          )}
 
           {/* The one creative act in the app, given its own affordance. */}
           <Link
