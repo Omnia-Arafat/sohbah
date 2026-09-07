@@ -116,6 +116,7 @@
     "startsAt": "Starts at {time}",
     "openSession": "Open the session",
     "openSessionHint": "You are on the list. Enter the session when it is your turn.",
+    "openSessionLockedHint": "Register your name first to unlock this.",
     "notToday": "This circle is not scheduled to meet today.",
     "search": {
       "label": "Search for your name",

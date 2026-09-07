@@ -117,6 +117,8 @@ export function CircleClient({
   const [results, setResults] = useState<SearchResults | null>(null);
   const [joining, setJoining] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showLockedHint, setShowLockedHint] = useState(false);
+  const lockedHintTimer = useRef<number | null>(null);
 
   const joined = useSyncExternalStore(
     subscribeJoined,
@@ -176,6 +178,20 @@ export function CircleClient({
 
   const matches = results?.query === trimmed ? results.items : null;
   const searching = trimmed.length >= MIN_QUERY && matches === null;
+
+  function showLockedSessionHint() {
+    setShowLockedHint(true);
+    if (lockedHintTimer.current) window.clearTimeout(lockedHintTimer.current);
+    lockedHintTimer.current = window.setTimeout(() => {
+      setShowLockedHint(false);
+    }, 2500);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (lockedHintTimer.current) window.clearTimeout(lockedHintTimer.current);
+    };
+  }, []);
 
   async function join(student: StudentSearchResult) {
     setJoining(student.id);
@@ -321,6 +337,46 @@ export function CircleClient({
         )}
       </MotionSection>
 
+      {/* Always on screen — near the search box, not buried below the queue —
+          so a student sees the door to the session as soon as they register.
+          It just stays locked until then rather than being hidden. */}
+      <section
+        ref={sessionRef}
+        className="card border-brand-200 bg-brand-50 dark:border-brand-800 dark:bg-surface"
+      >
+        <p className="text-sm text-muted-foreground">
+          {joined ? t("openSessionHint") : t("openSessionLockedHint")}
+        </p>
+        <div className="relative mt-3 inline-block w-full sm:w-auto">
+          {joined ? (
+            <a
+              href={sessionLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary w-full sm:w-auto"
+            >
+              {t("openSession")}
+            </a>
+          ) : (
+            <button
+              type="button"
+              className="btn-primary w-full cursor-not-allowed opacity-50 sm:w-auto"
+              aria-disabled="true"
+              title={t("openSessionLockedHint")}
+              onClick={showLockedSessionHint}
+            >
+              {t("openSession")}
+            </button>
+          )}
+
+          {showLockedHint && (
+            <span role="tooltip" className="tooltip-bubble">
+              {t("openSessionLockedHint")}
+            </span>
+          )}
+        </div>
+      </section>
+
       <section className="motion-section">
         <h2 className="mb-3 text-lg font-semibold">
           {maxStudents !== null
@@ -375,24 +431,6 @@ export function CircleClient({
           </ol>
         )}
       </section>
-
-      <MotionSection
-        show={Boolean(joined)}
-        className="card border-brand-200 bg-brand-50 dark:border-brand-800 dark:bg-surface"
-        delay={280}
-      >
-        <div ref={sessionRef}>
-          <p className="text-sm text-muted-foreground">{t("openSessionHint")}</p>
-          <a
-            href={sessionLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-primary mt-3 w-full sm:w-auto"
-          >
-            {t("openSession")}
-          </a>
-        </div>
-      </MotionSection>
     </div>
   );
 }

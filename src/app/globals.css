@@ -128,6 +128,29 @@
     @apply mb-1.5 block text-sm font-medium text-foreground;
   }
 
+  /* A transient hint bubble for a disabled control, shown on tap since a
+     native title attribute never fires on touch devices. */
+  .tooltip-bubble {
+    /* `left`, not the logical `start`: the centering transform below is a
+       physical translateX, so the offset it centers against must be too —
+       `start-1/2` flips to `right` in RTL and the two fight each other. */
+    @apply absolute left-1/2 top-full z-10 mt-2 w-max max-w-56 -translate-x-1/2
+           rounded-lg bg-foreground px-3 py-1.5 text-center text-xs font-medium
+           text-background shadow-lg;
+    animation: tooltip-in 0.18s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  @keyframes tooltip-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -4px);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+  }
+
   /* Every long, growing list in the app — students, teachers, circles, a
      circle's live queue, a report's results — gets the same treatment: a
      bounded height with its own scrollbar, so a busy academy's page stays a
