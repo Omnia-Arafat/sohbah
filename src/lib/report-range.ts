@@ -103,12 +103,13 @@ export function resolveRange(
   switch (mode) {
     case "week": {
       const weekNum = Number(params.week);
-      const week = Number.isInteger(weekNum) && weekNum >= 1 && weekNum <= 5 ? weekNum : 1;
+      const week = Number.isInteger(weekNum) && weekNum >= 1 && weekNum <= 4 ? weekNum : 1;
       const lastDay = daysInMonth(month);
-      // Weeks 1-4 are plain 7-day slices; whatever is left over (29-31) is
-      // week 5, so every day of the month always falls in exactly one week.
+      // Weeks 1-3 are plain 7-day slices; week 4 absorbs whatever is left
+      // over (21-28, 29, 30 or 31), so every day of the month always falls
+      // in exactly one week and there is never a 5th, near-empty option.
       const startDay = Math.min((week - 1) * 7 + 1, lastDay);
-      const endDay = Math.min(week * 7, lastDay);
+      const endDay = week === 4 ? lastDay : week * 7;
       return {
         mode,
         from: `${month}-${pad2(startDay)}`,

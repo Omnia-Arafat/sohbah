@@ -197,7 +197,7 @@ export default async function ReportsPage({
               {t("filters.week")}
             </label>
             <select id="week" name="week" className="input" defaultValue={range.week}>
-              {[1, 2, 3, 4, 5].map((week) => (
+              {[1, 2, 3, 4].map((week) => (
                 <option key={week} value={week}>
                   {t(`filters.weekOptions.${week}`)}
                 </option>
