@@ -708,10 +708,15 @@
       "recited": "recited",
       "notRecited": "never recited"
     },
+    "totals": {
+      "joinedLabel": "times attended",
+      "recitedLabel": "times recited",
+      "notRecitedLabel": "attended without reciting"
+    },
     "results": {
       "title": "Students ({count})",
       "empty": "No attendance records in this range.",
-      "legend": "The three numbers are sessions joined, sessions recited, and sessions joined without reciting, in that order."
+      "legend": "Three columns: how many times she attended, how many of those she recited, and how many she attended without reciting."
     },
     "notRecitedWarning": "{count} joined sessions ended without the student reciting.",
     "print": {

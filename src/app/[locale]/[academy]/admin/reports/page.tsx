@@ -344,17 +344,17 @@ export default async function ReportsPage({
         <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm">
           <span>
             <span className="font-semibold">{totals.joined}</span>{" "}
-            <span className="text-muted-foreground">{t("columns.joined")}</span>
+            <span className="text-muted-foreground">{t("totals.joinedLabel")}</span>
           </span>
           <span>
             <span className="font-semibold text-present">{totals.recited}</span>{" "}
-            <span className="text-muted-foreground">{t("columns.recited")}</span>
+            <span className="text-muted-foreground">{t("totals.recitedLabel")}</span>
           </span>
           <span>
             <span className="font-semibold text-accent-700 dark:text-accent-300">
               {totals.notRecited}
             </span>{" "}
-            <span className="text-muted-foreground">{t("columns.notRecited")}</span>
+            <span className="text-muted-foreground">{t("totals.notRecitedLabel")}</span>
           </span>
         </div>
 
@@ -378,51 +378,62 @@ export default async function ReportsPage({
         {rows.length === 0 ? (
           <p className="card text-muted-foreground">{t("results.empty")}</p>
         ) : (
-          <ol className="scroll-list flex flex-col gap-2">
-            {rows.map((row, index) => (
-              <li
-                key={row.student_id}
-                className="card flex items-center gap-3 py-3"
-              >
-                <span
-                  className="flex h-8 w-8 shrink-0 items-center justify-center
-                             rounded-full bg-surface-muted text-xs font-bold"
+          <>
+            {/* Labels the same three numbers every row ends in, so reading
+                them doesn't depend on hovering a `title` — which a touch
+                screen cannot do anyway. */}
+            <div className="mb-1.5 flex items-center gap-3 px-4 text-xs text-muted-foreground">
+              <span className="w-8 shrink-0" aria-hidden="true" />
+              <span className="min-w-0 flex-1" aria-hidden="true" />
+              <div className="flex shrink-0 gap-3">
+                <span className="w-8 text-center">{t("columns.joined")}</span>
+                <span className="w-8 text-center">{t("columns.recited")}</span>
+                <span className="w-8 text-center">{t("columns.notRecited")}</span>
+              </div>
+            </div>
+
+            <ol className="scroll-list flex flex-col gap-2">
+              {rows.map((row, index) => (
+                <li
+                  key={row.student_id}
+                  className="card flex items-center gap-3 py-3"
                 >
-                  {index + 1}
-                </span>
-
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold">{row.student_name}</p>
-                  <p className="truncate text-sm text-muted-foreground">
-                    {tCircle("search.fatherLabel", { name: row.father_name })} ·{" "}
-                    {tDashboard(`gender.${row.gender_category}`)}
-                  </p>
-                </div>
-
-                <div className="flex shrink-0 gap-3 text-sm tabular-nums">
                   <span
-                    className="text-muted-foreground"
-                    title={t("columns.joined")}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center
+                               rounded-full bg-surface-muted text-xs font-bold"
                   >
-                    {row.sessions_joined}
+                    {index + 1}
                   </span>
-                  <span className="text-present" title={t("columns.recited")}>
-                    {row.sessions_recited}
-                  </span>
-                  <span
-                    className={
-                      Number(row.sessions_not_recited) > 0
-                        ? "font-semibold text-accent-700 dark:text-accent-300"
-                        : "text-muted-foreground"
-                    }
-                    title={t("columns.notRecited")}
-                  >
-                    {row.sessions_not_recited}
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ol>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold">{row.student_name}</p>
+                    <p className="truncate text-sm text-muted-foreground">
+                      {tCircle("search.fatherLabel", { name: row.father_name })} ·{" "}
+                      {tDashboard(`gender.${row.gender_category}`)}
+                    </p>
+                  </div>
+
+                  <div className="flex shrink-0 gap-3 text-sm tabular-nums">
+                    <span className="w-8 text-center text-muted-foreground">
+                      {row.sessions_joined}
+                    </span>
+                    <span className="w-8 text-center text-present">
+                      {row.sessions_recited}
+                    </span>
+                    <span
+                      className={`w-8 text-center ${
+                        Number(row.sessions_not_recited) > 0
+                          ? "font-semibold text-accent-700 dark:text-accent-300"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {row.sessions_not_recited}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </>
         )}
 
         <p className="mt-3 text-xs text-muted-foreground">
