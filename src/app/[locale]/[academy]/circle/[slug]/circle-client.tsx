@@ -20,6 +20,7 @@ import {
   subscribeJoined,
 } from "@/lib/joined-store";
 import { createClient } from "@/lib/supabase/client";
+import { useReorderAnimation } from "@/lib/use-reorder-animation";
 
 type CircleClientProps = {
   academySlug: string;
@@ -264,6 +265,17 @@ export function CircleClient({
   // not a stored counter), so this only ever reflects the current queue.
   const isFull = maxStudents !== null && queue.length >= maxStudents && !joined;
 
+  // A finished recitation sinks to the bottom, out of the way of whoever is
+  // still waiting — display order only, `queue_order` (the badge number)
+  // never changes. Matches the teacher's live queue (session-client.tsx).
+  const sortedQueue = useMemo(() => {
+    const notDone = queue.filter((entry) => entry.recitation_status !== "done");
+    const done = queue.filter((entry) => entry.recitation_status === "done");
+    return [...notDone, ...done];
+  }, [queue]);
+
+  const listRef = useReorderAnimation<HTMLOListElement>();
+
   return (
     <div className="flex flex-col gap-6">
       <MotionSection show={!joined && isFull} className="card">
@@ -419,12 +431,13 @@ export function CircleClient({
         {queue.length === 0 ? (
           <p className="card text-muted-foreground">{t("queue.empty")}</p>
         ) : (
-          <ol className="scroll-list flex flex-col gap-2">
-            {queue.map((entry, index) => {
+          <ol ref={listRef} className="scroll-list flex flex-col gap-2">
+            {sortedQueue.map((entry, index) => {
               const isMe = joined?.studentId === entry.student_id;
               return (
                 <li
                   key={entry.attendance_id}
+                  data-flip-id={entry.attendance_id}
                   className={`motion-queue-item card flex items-center gap-3 py-3 transition-colors duration-300 ${
                     isMe ? "border-brand-400 bg-brand-50 dark:bg-brand-950" : ""
                   }`}

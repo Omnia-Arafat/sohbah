@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronUp, ChevronDown, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { QueueEntry, RecitationStatus } from "@/lib/database.types";
 import { createClient } from "@/lib/supabase/client";
+import { useReorderAnimation } from "@/lib/use-reorder-animation";
 
 type SessionClientProps = {
   slug: string;
@@ -17,51 +18,6 @@ type SessionClientProps = {
 };
 
 const RECITATION_OPTIONS: RecitationStatus[] = ["waiting", "reciting", "done"];
-
-/**
- * A minimal FLIP: whenever an item tagged `data-flip-id` ends up somewhere
- * else after a render — someone marked "done" and sank to the bottom, say —
- * it is nudged back to its old spot with no transition and released, so the
- * browser animates the move instead of the row just jumping there. Runs
- * after every render with no dependency array on purpose: a reorder can come
- * from this device's own click or from Realtime echoing someone else's, and
- * both should animate the same way.
- */
-function useReorderAnimation<T extends HTMLElement>() {
-  const containerRef = useRef<T | null>(null);
-  const previousTops = useRef<Map<string, number>>(new Map());
-
-  useLayoutEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const items = Array.from(container.children) as HTMLElement[];
-    const nextTops = new Map<string, number>();
-
-    for (const item of items) {
-      const id = item.dataset.flipId;
-      if (!id) continue;
-
-      const top = item.getBoundingClientRect().top;
-      nextTops.set(id, top);
-
-      const previousTop = previousTops.current.get(id);
-      if (previousTop !== undefined && Math.abs(previousTop - top) > 1) {
-        const delta = previousTop - top;
-        item.style.transition = "none";
-        item.style.transform = `translateY(${delta}px)`;
-        requestAnimationFrame(() => {
-          item.style.transition = "transform 320ms cubic-bezier(0.4, 0, 0.2, 1)";
-          item.style.transform = "";
-        });
-      }
-    }
-
-    previousTops.current = nextTops;
-  });
-
-  return containerRef;
-}
 
 export function SessionClient({
   slug,
