@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Star } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BackLink } from "@/components/back-link";
+import { MonthYearPicker } from "@/components/month-year-picker";
 import { MultiSelectDropdown } from "@/components/multi-select";
 import { Link } from "@/i18n/navigation";
 import { requireStaffSession } from "@/lib/auth/dal";
@@ -172,7 +173,9 @@ export default async function ReportsPage({
         </div>
 
         {/* Exactly one of these four shows at a time, driven purely by which
-            option in #mode is selected — see `.range-form` in globals.css. */}
+            option in #mode is selected — see `.range-form` in globals.css.
+            A single-field mode (month, year) spans the full row instead of
+            leaving the other grid cell empty beside it. */}
         <div className="grid gap-4 sm:grid-cols-2">
           {/* A separate field name from the month-mode picker below, even
               though both mean "month" — two inputs sharing one `name` would
@@ -182,13 +185,11 @@ export default async function ReportsPage({
             <label className="field-label" htmlFor="weekMonth">
               {t("filters.month")}
             </label>
-            <input
+            <MonthYearPicker
               id="weekMonth"
               name="weekMonth"
-              type="month"
-              dir="ltr"
-              className="input text-start"
               defaultValue={range.month}
+              locale={locale}
             />
           </div>
 
@@ -205,21 +206,19 @@ export default async function ReportsPage({
             </select>
           </div>
 
-          <div className="mode-month-only">
+          <div className="mode-month-only sm:col-span-2">
             <label className="field-label" htmlFor="month">
               {t("filters.month")}
             </label>
-            <input
+            <MonthYearPicker
               id="month"
               name="month"
-              type="month"
-              dir="ltr"
-              className="input text-start"
               defaultValue={range.month}
+              locale={locale}
             />
           </div>
 
-          <div className="mode-year-only">
+          <div className="mode-year-only sm:col-span-2">
             <label className="field-label" htmlFor="year">
               {t("filters.year")}
             </label>
