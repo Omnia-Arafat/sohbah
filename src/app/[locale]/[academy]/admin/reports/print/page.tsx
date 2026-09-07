@@ -21,9 +21,8 @@ type PrintReportPageProps = {
     from?: string;
     to?: string;
     gender?: string;
-    circle?: string;
     type?: string;
-    teacher?: string;
+    teacher?: string | string[];
   }>;
 };
 
@@ -63,13 +62,12 @@ export default async function PrintReportPage({
   // Same validation as the report page — this URL is just as user-editable.
   const gender: GenderCategory | null =
     query.gender === "male" || query.gender === "female" ? query.gender : null;
-  const circleId = query.circle && UUID.test(query.circle) ? query.circle : null;
-  const teacherId = query.teacher && UUID.test(query.teacher) ? query.teacher : null;
+  const teacherIds = (Array.isArray(query.teacher) ? query.teacher : query.teacher ? [query.teacher] : [])
+    .filter((id) => UUID.test(id));
 
   const supabase = await createClient();
-  const [circleTypes, circlesResult, teachersResult] = await Promise.all([
+  const [circleTypes, teachersResult] = await Promise.all([
     loadCircleTypes(supabase, academy.id, { activeOnly: false }),
-    supabase.from("circles").select("*").eq("academy_id", academy.id),
     supabase.from("teachers").select("*").eq("academy_id", academy.id),
   ]);
 
@@ -83,8 +81,7 @@ export default async function PrintReportPage({
       p_from: range.from,
       p_to: range.to,
       p_gender: gender,
-      p_circle_id: circleId,
-      p_teacher_id: teacherId,
+      p_teacher_ids: teacherIds.length > 0 ? teacherIds : null,
       p_academy_id: academy.id,
       p_circle_type: circleType,
     },
@@ -93,7 +90,6 @@ export default async function PrintReportPage({
   if (reportError) console.error("attendance_report failed", reportError);
 
   const rows: AttendanceReportRow[] = reportRows ?? [];
-  const circles = circlesResult.data ?? [];
   const teachers: Teacher[] = teachersResult.data ?? [];
 
   function teacherName(id: string) {
@@ -103,7 +99,6 @@ export default async function PrintReportPage({
       : t("filters.unknownTeacher");
   }
 
-  const circle = circleId ? circles.find((candidate) => candidate.id === circleId) : null;
   const circleTypeOption = circleType
     ? circleTypes.find((option) => option.slug === circleType)
     : null;
@@ -129,18 +124,15 @@ export default async function PrintReportPage({
   const filterLines: string[] = [
     `${t("filters.mode")}: ${t(`filters.modes.${range.mode}`)} (${range.from} – ${range.to})`,
   ];
-  if (circle) {
-    filterLines.push(
-      `${t("filters.circle")}: ${t("filters.circleOption", { name: circle.name, teacher: teacherName(circle.teacher_id) })}`,
-    );
-  }
   if (circleTypeOption) {
     filterLines.push(
       `${t("filters.type")}: ${locale === "ar" ? circleTypeOption.name_ar : circleTypeOption.name_en}`,
     );
   }
-  if (teacherId && !circle) {
-    filterLines.push(`${t("filters.teacher")}: ${teacherName(teacherId)}`);
+  if (teacherIds.length > 0) {
+    filterLines.push(
+      `${t("filters.teacher")}: ${teacherIds.map(teacherName).join("، ")}`,
+    );
   }
   if (gender) {
     filterLines.push(`${t("filters.gender")}: ${tDashboard(`gender.${gender}`)}`);

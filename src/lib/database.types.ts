@@ -357,8 +357,7 @@ export type Database = {
           p_from: string;
           p_to: string;
           p_gender?: GenderCategory | null;
-          p_circle_id?: string | null;
-          p_teacher_id?: string | null;
+          p_teacher_ids?: string[] | null;
           p_academy_id?: string | null;
           p_circle_type?: CircleType | null;
         };

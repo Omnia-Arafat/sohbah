@@ -25,9 +25,8 @@ type ReportsPageProps = {
     from?: string;
     to?: string;
     gender?: string;
-    circle?: string;
     type?: string;
-    teacher?: string;
+    teacher?: string | string[];
   }>;
 };
 
@@ -68,8 +67,8 @@ export default async function ReportsPage({
   // forwarding it into the RPC.
   const gender: GenderCategory | null =
     query.gender === "male" || query.gender === "female" ? query.gender : null;
-  const circleId = query.circle && UUID.test(query.circle) ? query.circle : null;
-  const teacherId = query.teacher && UUID.test(query.teacher) ? query.teacher : null;
+  const teacherIds = (Array.isArray(query.teacher) ? query.teacher : query.teacher ? [query.teacher] : [])
+    .filter((id) => UUID.test(id));
 
   const supabase = await createClient();
   const [circleTypesResult, circlesResult, teachersResult] = await Promise.all([
@@ -91,8 +90,7 @@ export default async function ReportsPage({
       p_from: range.from,
       p_to: range.to,
       p_gender: gender,
-      p_circle_id: circleId,
-      p_teacher_id: teacherId,
+      p_teacher_ids: teacherIds.length > 0 ? teacherIds : null,
       p_academy_id: academy?.id ?? null,
       p_circle_type: circleType,
     },
@@ -104,13 +102,15 @@ export default async function ReportsPage({
   const circles: Circle[] = circlesResult.data ?? [];
   const teachers: Teacher[] = teachersResult.data ?? [];
 
-  /** Circles carry only `teacher_id`; the label needs the name. */
-  function teacherName(teacherId: string) {
-    const teacher = teachers.find((candidate) => candidate.id === teacherId);
-    return teacher
-      ? getTeacherDisplayLabel(teacher, academySlug, locale)
-      : t("filters.unknownTeacher");
-  }
+  // One filter, not two: a circle's own label already names its teacher, so
+  // offering both a circle picker and a teacher picker just duplicated each
+  // other. The teacher list narrows to whoever actually teaches the selected
+  // circle type, so picking "تسميع حر" only offers its teachers to filter by.
+  const teachersForType = circleType
+    ? teachers.filter((teacher) =>
+        circles.some((circle) => circle.teacher_id === teacher.id && circle.type === circleType),
+      )
+    : teachers;
 
   const totals = rows.reduce(
     (acc, row) => ({
@@ -138,9 +138,8 @@ export default async function ReportsPage({
     printParams.set("to", range.to);
   }
   if (gender) printParams.set("gender", gender);
-  if (circleId) printParams.set("circle", circleId);
   if (circleType) printParams.set("type", circleType);
-  if (teacherId) printParams.set("teacher", teacherId);
+  teacherIds.forEach((id) => printParams.append("teacher", id));
   const printHref = `/${academySlug}/admin/reports/print?${printParams.toString()}`;
 
   return (
@@ -301,60 +300,31 @@ export default async function ReportsPage({
             </select>
           </div>
 
-          <div>
-            <label className="field-label" htmlFor="circle">
-              {t("filters.circle")}
-            </label>
-            <select
-              id="circle"
-              name="circle"
-              className="input"
-              defaultValue={circleId ?? ""}
-            >
-              <option value="">{t("filters.all")}</option>
-              {/*
-                Circles are grouped under their type and labelled with the
-                teacher, because a circle's `name` is free text — in practice
-                it is often just the teacher's name, which made the bare list
-                impossible to tell apart from the teacher filter below.
-              */}
-              {circleTypes.map((option) => {
-                const inType = circles.filter((circle) => circle.type === option.slug);
-                if (inType.length === 0) return null;
-                const label = locale === "ar" ? option.name_ar : option.name_en;
-                return (
-                  <optgroup key={option.slug} label={label}>
-                    {inType.map((circle) => (
-                      <option key={circle.id} value={circle.id}>
-                        {t("filters.circleOption", {
-                          name: circle.name,
-                          teacher: teacherName(circle.teacher_id),
-                        })}
-                      </option>
-                    ))}
-                  </optgroup>
-                );
-              })}
-            </select>
-          </div>
-
-          <div>
-            <label className="field-label" htmlFor="teacher">
-              {t("filters.teacher")}
-            </label>
-            <select
-              id="teacher"
-              name="teacher"
-              className="input"
-              defaultValue={teacherId ?? ""}
-            >
-              <option value="">{t("filters.all")}</option>
-              {teachers.map((teacher) => (
-                <option key={teacher.id} value={teacher.id}>
+          <div className="sm:col-span-2">
+            <label className="field-label">{t("filters.teacher")}</label>
+            <p className="mb-2 text-sm text-muted-foreground">
+              {t("filters.teacherHint")}
+            </p>
+            <div className="scroll-list flex max-h-56 flex-col gap-1 rounded-xl border border-border-subtle bg-surface p-2">
+              {teachersForType.map((teacher) => (
+                <label
+                  key={teacher.id}
+                  className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2
+                             text-sm transition-colors hover:bg-surface-muted
+                             has-checked:bg-brand-50 has-checked:text-brand-800
+                             dark:has-checked:bg-brand-900 dark:has-checked:text-brand-100"
+                >
+                  <input
+                    type="checkbox"
+                    name="teacher"
+                    value={teacher.id}
+                    defaultChecked={teacherIds.includes(teacher.id)}
+                    className="accent-brand-600"
+                  />
                   {getTeacherDisplayLabel(teacher, academySlug, locale)}
-                </option>
+                </label>
               ))}
-            </select>
+            </div>
           </div>
         </div>
 

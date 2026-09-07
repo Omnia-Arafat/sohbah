@@ -694,12 +694,11 @@
       "from": "From",
       "to": "To",
       "gender": "Section",
-      "circle": "Circle",
       "teacher": "Teacher",
+      "teacherHint": "Leave all unchecked to include every teacher — check one or more to narrow it down.",
       "all": "All",
       "apply": "Show the report",
       "type": "Circle type",
-      "circleOption": "{name} — {teacher}",
       "unknownTeacher": "Unassigned",
       "downloadPdf": "Download PDF"
     },
