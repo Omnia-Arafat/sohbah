@@ -696,6 +696,7 @@
       "gender": "Section",
       "teacher": "Teacher",
       "teacherHint": "Leave all unchecked to include every teacher — check one or more to narrow it down.",
+      "done": "Done",
       "all": "All",
       "apply": "Show the report",
       "type": "Circle type",

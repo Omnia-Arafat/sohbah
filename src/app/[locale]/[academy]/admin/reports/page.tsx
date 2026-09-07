@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BackLink } from "@/components/back-link";
+import { MultiSelectDropdown } from "@/components/multi-select";
 import { Link } from "@/i18n/navigation";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { getTeacherDisplayLabel } from "@/lib/academy-display";
@@ -67,11 +68,8 @@ export default async function ReportsPage({
   // forwarding it into the RPC.
   const gender: GenderCategory | null =
     query.gender === "male" || query.gender === "female" ? query.gender : null;
-  // "" is the "الكل" option — its whole point is to override any teacher ids
-  // also selected alongside it, since a plain multi-select cannot enforce
-  // that the two stay mutually exclusive on its own.
-  const teacherRaw = Array.isArray(query.teacher) ? query.teacher : query.teacher ? [query.teacher] : [];
-  const teacherIds = teacherRaw.includes("") ? [] : teacherRaw.filter((id) => UUID.test(id));
+  const teacherIds = (Array.isArray(query.teacher) ? query.teacher : query.teacher ? [query.teacher] : [])
+    .filter((id) => UUID.test(id));
 
   const supabase = await createClient();
   const [circleTypesResult, circlesResult, teachersResult] = await Promise.all([
@@ -307,21 +305,17 @@ export default async function ReportsPage({
             <label className="field-label" htmlFor="teacher">
               {t("filters.teacher")}
             </label>
-            <select
+            <MultiSelectDropdown
               id="teacher"
               name="teacher"
-              multiple
-              size={6}
-              className="input"
-              defaultValue={teacherIds.length > 0 ? teacherIds : [""]}
-            >
-              <option value="">{t("filters.all")}</option>
-              {teachersForType.map((teacher) => (
-                <option key={teacher.id} value={teacher.id}>
-                  {getTeacherDisplayLabel(teacher, academySlug, locale)}
-                </option>
-              ))}
-            </select>
+              options={teachersForType.map((teacher) => ({
+                value: teacher.id,
+                label: getTeacherDisplayLabel(teacher, academySlug, locale),
+              }))}
+              defaultValues={teacherIds}
+              allLabel={t("filters.all")}
+              doneLabel={t("filters.done")}
+            />
             <p className="mt-1.5 text-sm text-muted-foreground">
               {t("filters.teacherHint")}
             </p>
