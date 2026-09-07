@@ -114,8 +114,8 @@
       "free_recitation": "Free recitation"
     },
     "startsAt": "Starts at {time}",
-    "openSession": "Open the session",
-    "openSessionHint": "You are on the list. Enter the session when it is your turn.",
+    "openSession": "Open the circle",
+    "openSessionHint": "You are on the list.",
     "openSessionLockedHint": "Register your name first to unlock this.",
     "notToday": "This circle is not scheduled to meet today.",
     "search": {

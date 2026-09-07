@@ -114,8 +114,8 @@
       "free_recitation": "تسميع حر"
     },
     "startsAt": "تبدأ الساعة {time}",
-    "openSession": "الدخول إلى الجلسة",
-    "openSessionHint": "تم تسجيل دورك. ادخل الجلسة عندما يحين دورك.",
+    "openSession": "الدخول إلى الحلقة",
+    "openSessionHint": "تم تسجيل دورك.",
     "openSessionLockedHint": "سجّل اسمك أولاً حتى يُفتح هذا الزر.",
     "notToday": "هذه الحلقة لا تُعقد اليوم حسب جدولها.",
     "search": {
