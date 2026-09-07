@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Star } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BackLink } from "@/components/back-link";
 import { MultiSelectDropdown } from "@/components/multi-select";
@@ -55,7 +56,6 @@ export default async function ReportsPage({
 
   const t = await getTranslations("reports");
   const tDashboard = await getTranslations("dashboard");
-  const tCircle = await getTranslations("circle");
 
   await requireStaffSession(`/${academySlug}/admin/reports`);
 
@@ -378,62 +378,82 @@ export default async function ReportsPage({
         {rows.length === 0 ? (
           <p className="card text-muted-foreground">{t("results.empty")}</p>
         ) : (
-          <>
-            {/* Labels the same three numbers every row ends in, so reading
-                them doesn't depend on hovering a `title` — which a touch
-                screen cannot do anyway. */}
-            <div className="mb-1.5 flex items-center gap-3 px-4 text-xs text-muted-foreground">
-              <span className="w-8 shrink-0" aria-hidden="true" />
-              <span className="min-w-0 flex-1" aria-hidden="true" />
-              <div className="flex shrink-0 gap-3">
-                <span className="w-8 text-center">{t("columns.joined")}</span>
-                <span className="w-8 text-center">{t("columns.recited")}</span>
-                <span className="w-8 text-center">{t("columns.notRecited")}</span>
-              </div>
-            </div>
+          <ol className="scroll-list flex flex-col gap-2">
+            {rows.map((row, index) => {
+              // A ranked list, not just a table: rank 1 gets a star and the
+              // next four a lighter version of the same treatment, so the
+              // strongest attendance in the period reads at a glance.
+              const isFirst = index === 0;
+              const isTopFive = index < 5;
 
-            <ol className="scroll-list flex flex-col gap-2">
-              {rows.map((row, index) => (
+              return (
                 <li
                   key={row.student_id}
-                  className="card flex items-center gap-3 py-3"
+                  className={`card flex items-center gap-3 py-3 ${
+                    isFirst
+                      ? "border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/40"
+                      : isTopFive
+                        ? "border-brand-200 dark:border-brand-800"
+                        : ""
+                  }`}
                 >
                   <span
-                    className="flex h-8 w-8 shrink-0 items-center justify-center
-                               rounded-full bg-surface-muted text-xs font-bold"
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                      isFirst
+                        ? "bg-amber-400 text-amber-950"
+                        : isTopFive
+                          ? "bg-brand-100 text-brand-800 dark:bg-brand-900 dark:text-brand-100"
+                          : "bg-surface-muted"
+                    }`}
                   >
-                    {index + 1}
+                    {isFirst ? (
+                      <Star className="h-4 w-4" fill="currentColor" aria-label="1" />
+                    ) : (
+                      index + 1
+                    )}
                   </span>
 
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold">{row.student_name}</p>
                     <p className="truncate text-sm text-muted-foreground">
-                      {tCircle("search.fatherLabel", { name: row.father_name })} ·{" "}
                       {tDashboard(`gender.${row.gender_category}`)}
                     </p>
                   </div>
 
                   <div className="flex shrink-0 gap-3 text-sm tabular-nums">
-                    <span className="w-8 text-center text-muted-foreground">
-                      {row.sessions_joined}
-                    </span>
-                    <span className="w-8 text-center text-present">
-                      {row.sessions_recited}
-                    </span>
-                    <span
-                      className={`w-8 text-center ${
-                        Number(row.sessions_not_recited) > 0
-                          ? "font-semibold text-accent-700 dark:text-accent-300"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {row.sessions_not_recited}
-                    </span>
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span className="font-semibold">{row.sessions_joined}</span>
+                      <span className="text-[10px] leading-none text-muted-foreground">
+                        {t("columns.joined")}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span className="font-semibold text-present">
+                        {row.sessions_recited}
+                      </span>
+                      <span className="text-[10px] leading-none text-muted-foreground">
+                        {t("columns.recited")}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span
+                        className={`font-semibold ${
+                          Number(row.sessions_not_recited) > 0
+                            ? "text-accent-700 dark:text-accent-300"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {row.sessions_not_recited}
+                      </span>
+                      <span className="text-[10px] leading-none text-muted-foreground">
+                        {t("columns.notRecited")}
+                      </span>
+                    </div>
                   </div>
                 </li>
-              ))}
-            </ol>
-          </>
+              );
+            })}
+          </ol>
         )}
 
         <p className="mt-3 text-xs text-muted-foreground">
