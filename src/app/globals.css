@@ -229,17 +229,21 @@
     background-color: var(--color-brand-500);
   }
 
-  /* The report's from/to dates matter only for the "custom" range preset, so
-     they stay hidden until it is selected.
+  /* The report form shows only the picker(s) that match the selected report
+     type — a month+week pair, a single month, a single year, or a from/to
+     pair — and hides the rest.
 
      Done with `:has()` rather than a client component because the whole report
      form is a plain GET form that works without JavaScript, and revealing the
      fields only after a submit would be worse than always showing them.
 
-     The rule is written to *hide* rather than to *show*: a browser without
-     `:has()` support matches nothing, leaves the fields visible, and the form
-     behaves exactly as it did before. */
-  .range-form:has(#range option[value="custom"]:not(:checked)) .range-custom-only {
+     Each rule is written to *hide* rather than to *show*: a browser without
+     `:has()` support matches nothing, leaves every picker visible, and the
+     form still works — it just shows more fields than it needs to. */
+  .range-form:has(#mode option[value="week"]:not(:checked)) .mode-week-only,
+  .range-form:has(#mode option[value="month"]:not(:checked)) .mode-month-only,
+  .range-form:has(#mode option[value="year"]:not(:checked)) .mode-year-only,
+  .range-form:has(#mode option[value="custom"]:not(:checked)) .mode-custom-only {
     display: none;
   }
 

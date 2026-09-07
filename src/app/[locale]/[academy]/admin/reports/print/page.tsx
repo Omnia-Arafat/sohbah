@@ -13,7 +13,11 @@ import { PrintButton } from "./print-button";
 type PrintReportPageProps = {
   params: Promise<{ locale: string; academy: string }>;
   searchParams: Promise<{
-    range?: string;
+    mode?: string;
+    month?: string;
+    weekMonth?: string;
+    week?: string;
+    year?: string;
     from?: string;
     to?: string;
     gender?: string;
@@ -123,7 +127,7 @@ export default async function PrintReportPage({
   // page alone documents exactly what it covers — nobody has to remember or
   // guess after the fact what "40" meant.
   const filterLines: string[] = [
-    `${t("filters.range")}: ${t(`ranges.${range.preset}`)} (${range.from} – ${range.to})`,
+    `${t("filters.mode")}: ${t(`filters.modes.${range.mode}`)} (${range.from} – ${range.to})`,
   ];
   if (circle) {
     filterLines.push(

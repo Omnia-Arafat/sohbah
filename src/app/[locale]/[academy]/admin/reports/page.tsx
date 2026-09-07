@@ -12,13 +12,16 @@ import type {
   Teacher,
 } from "@/lib/database.types";
 import { loadCircleTypes } from "@/lib/circle-types";
-import { RANGE_PRESETS, resolveRange } from "@/lib/report-range";
+import { REPORT_MODES, resolveRange } from "@/lib/report-range";
 import { createClient } from "@/lib/supabase/server";
 
 type ReportsPageProps = {
   params: Promise<{ locale: string; academy: string }>;
   searchParams: Promise<{
-    range?: string;
+    mode?: string;
+    month?: string;
+    week?: string;
+    year?: string;
     from?: string;
     to?: string;
     gender?: string;
@@ -118,14 +121,22 @@ export default async function ReportsPage({
     { joined: 0, recited: 0, notRecited: 0 },
   );
 
-  // Explicit range bounds, not just the preset — the print page re-resolves
-  // "today" independently, and a from/to a few seconds apart from this
-  // render should never be visible to whoever opens the PDF.
-  const printParams = new URLSearchParams({
-    range: range.preset,
-    from: range.from,
-    to: range.to,
-  });
+  // The print page resolves its own range from these same picker values
+  // rather than trusting from/to directly — mode "week"/"month"/"year" only
+  // recompute from/to out of month/week/year, so those have to come along
+  // too or the PDF would silently fall back to the current period.
+  const printParams = new URLSearchParams({ mode: range.mode });
+  if (range.mode === "week") {
+    printParams.set("weekMonth", range.month);
+    printParams.set("week", String(range.week));
+  } else if (range.mode === "month") {
+    printParams.set("month", range.month);
+  } else if (range.mode === "year") {
+    printParams.set("year", range.year);
+  } else if (range.mode === "custom") {
+    printParams.set("from", range.from);
+    printParams.set("to", range.to);
+  }
   if (gender) printParams.set("gender", gender);
   if (circleId) printParams.set("circle", circleId);
   if (circleType) printParams.set("type", circleType);
@@ -147,25 +158,114 @@ export default async function ReportsPage({
         be bookmarked or shared and needs no client-side JavaScript.
       */}
       <form className="range-form card flex flex-col gap-4">
+        <div>
+          <label className="field-label" htmlFor="mode">
+            {t("filters.mode")}
+          </label>
+          <select id="mode" name="mode" className="input" defaultValue={range.mode}>
+            {REPORT_MODES.map((mode) => (
+              <option key={mode} value={mode}>
+                {t(`filters.modes.${mode}`)}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Exactly one of these four shows at a time, driven purely by which
+            option in #mode is selected — see `.range-form` in globals.css. */}
         <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="field-label" htmlFor="range">
-              {t("filters.range")}
+          {/* A separate field name from the month-mode picker below, even
+              though both mean "month" — two inputs sharing one `name` would
+              both submit, since CSS `display: none` hides an input without
+              removing it from the form. */}
+          <div className="mode-week-only">
+            <label className="field-label" htmlFor="weekMonth">
+              {t("filters.month")}
             </label>
-            <select
-              id="range"
-              name="range"
-              className="input"
-              defaultValue={range.preset}
-            >
-              {RANGE_PRESETS.map((preset) => (
-                <option key={preset} value={preset}>
-                  {t(`ranges.${preset}`)}
+            <input
+              id="weekMonth"
+              name="weekMonth"
+              type="month"
+              dir="ltr"
+              className="input text-start"
+              defaultValue={range.month}
+            />
+          </div>
+
+          <div className="mode-week-only">
+            <label className="field-label" htmlFor="week">
+              {t("filters.week")}
+            </label>
+            <select id="week" name="week" className="input" defaultValue={range.week}>
+              {[1, 2, 3, 4, 5].map((week) => (
+                <option key={week} value={week}>
+                  {t(`filters.weekOptions.${week}`)}
                 </option>
               ))}
             </select>
           </div>
 
+          <div className="mode-month-only">
+            <label className="field-label" htmlFor="month">
+              {t("filters.month")}
+            </label>
+            <input
+              id="month"
+              name="month"
+              type="month"
+              dir="ltr"
+              className="input text-start"
+              defaultValue={range.month}
+            />
+          </div>
+
+          <div className="mode-year-only">
+            <label className="field-label" htmlFor="year">
+              {t("filters.year")}
+            </label>
+            <input
+              id="year"
+              name="year"
+              type="number"
+              inputMode="numeric"
+              min="2020"
+              max="2100"
+              dir="ltr"
+              className="input text-start"
+              defaultValue={range.year}
+            />
+          </div>
+
+          <div className="mode-custom-only">
+            <label className="field-label" htmlFor="from">
+              {t("filters.from")}
+            </label>
+            <input
+              id="from"
+              name="from"
+              type="date"
+              dir="ltr"
+              className="input text-start"
+              defaultValue={range.from}
+            />
+          </div>
+
+          <div className="mode-custom-only">
+            <label className="field-label" htmlFor="to">
+              {t("filters.to")}
+            </label>
+            <input
+              id="to"
+              name="to"
+              type="date"
+              dir="ltr"
+              className="input text-start"
+              defaultValue={range.to}
+            />
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="field-label" htmlFor="gender">
               {t("filters.gender")}
@@ -180,36 +280,6 @@ export default async function ReportsPage({
               <option value="male">{tDashboard("gender.male")}</option>
               <option value="female">{tDashboard("gender.female")}</option>
             </select>
-          </div>
-
-          {/* Shown only when the range preset is "custom" — see `.range-form`
-              in globals.css. */}
-          <div className="range-custom-only">
-            <label className="field-label" htmlFor="from">
-              {t("filters.from")}
-            </label>
-            <input
-              id="from"
-              name="from"
-              type="date"
-              dir="ltr"
-              className="input text-start"
-              defaultValue={range.from}
-            />
-          </div>
-
-          <div className="range-custom-only">
-            <label className="field-label" htmlFor="to">
-              {t("filters.to")}
-            </label>
-            <input
-              id="to"
-              name="to"
-              type="date"
-              dir="ltr"
-              className="input text-start"
-              defaultValue={range.to}
-            />
           </div>
 
           <div>

@@ -673,16 +673,25 @@
     "subtitle": "Ranking over any date range. Only records marked present count as attendance.",
     "back": "Back to the admin dashboard",
     "appliedRange": "Range: {from} to {to}",
-    "ranges": {
-      "today": "Today",
-      "week": "Last 7 days",
-      "month": "This month",
-      "year": "This year",
-      "all": "Since the start",
-      "custom": "Custom range"
-    },
     "filters": {
-      "range": "Period",
+      "mode": "Report type",
+      "modes": {
+        "week": "Weekly",
+        "month": "Monthly",
+        "year": "Yearly",
+        "all": "Since the start",
+        "custom": "Custom dates"
+      },
+      "month": "Month",
+      "week": "Week",
+      "weekOptions": {
+        "1": "Week 1",
+        "2": "Week 2",
+        "3": "Week 3",
+        "4": "Week 4",
+        "5": "Week 5"
+      },
+      "year": "Year",
       "from": "From",
       "to": "To",
       "gender": "Section",
