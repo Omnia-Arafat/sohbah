@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronUp, ChevronDown, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -35,10 +35,10 @@ export function SessionClient({
   const [error, setError] = useState<string | null>(null);
 
   /**
-   * Seeded from the server render and then left alone. The query defaults
-   * (see `QueryProvider`) switch off every automatic refetch, so this list is
-   * a snapshot: students who join mid-session, and edits made by anyone else,
-   * appear only when the page is refreshed.
+   * Seeded from the server render. The query defaults (see `QueryProvider`)
+   * switch off every automatic refetch — TanStack Query itself never polls
+   * this — but the Realtime subscription below calls `refreshQueue()` on
+   * every change, so the list still stays live.
    */
   const { data: queue = [] } = useQuery({
     queryKey: queueKey,
@@ -52,15 +52,47 @@ export function SessionClient({
     initialData: initialQueue,
   });
 
-  /** Writes the authoritative list into the cache after a failed mutation. */
-  const refreshQueue = async () => {
+  /**
+   * Writes the authoritative list into the cache — after a failed mutation
+   * of our own, and (via the Realtime subscription below) whenever another
+   * device changes this circle's attendance.
+   */
+  const refreshQueue = useCallback(async () => {
     const { data, error: queueError } = await supabase.rpc("circle_queue", {
       p_slug: slug,
     });
     if (!queueError && data) {
       queryClient.setQueryData(queueKey, data as QueueEntry[]);
     }
-  };
+  }, [supabase, slug, queryClient, queueKey]);
+
+  /**
+   * Live updates: any insert/update/delete on this circle's attendance
+   * refetches the whole queue — a join needs the new student's name and
+   * father's name, which `circle_queue()` joins in and the bare
+   * `attendance_records` payload does not carry.
+   */
+  useEffect(() => {
+    const channel = supabase
+      .channel(`attendance-records:${circleId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "attendance_records",
+          filter: `circle_id=eq.${circleId}`,
+        },
+        () => {
+          refreshQueue();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, circleId, refreshQueue]);
 
   /** Applies a local edit. The user's own action is reflected immediately. */
   const setQueue = (

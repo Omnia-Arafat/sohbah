@@ -286,7 +286,7 @@
     "notToday": "This circle is not scheduled to meet today. You are looking at today's records.",
     "queue": {
       "title": "Today's queue",
-      "hint": "Reorder with the arrows. Refresh to see students who joined since this page loaded.",
+      "hint": "Reorder with the arrows. The list updates live on its own.",
       "empty": "Nobody has joined yet."
     },
     "summary": {

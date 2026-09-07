@@ -24,6 +24,7 @@ import { createClient } from "@/lib/supabase/client";
 type CircleClientProps = {
   academySlug: string;
   slug: string;
+  circleId: string;
   sessionDate: string;
   sessionLink: string;
   initialQueue: QueueEntry[];
@@ -80,6 +81,7 @@ function MotionSection({
 export function CircleClient({
   academySlug,
   slug,
+  circleId,
   sessionDate,
   sessionLink,
   initialQueue,
@@ -127,12 +129,10 @@ export function CircleClient({
   );
 
   /**
-   * Refetches the queue on demand. Called after *this* student joins, so they
-   * see their own place in the order straight away.
-   *
-   * Nothing calls it on a timer or a Realtime event: the query defaults (see
-   * `QueryProvider`) disable background refetching, so students who join later
-   * appear only when the page is refreshed.
+   * Refetches the queue. Called after *this* student joins, so they see
+   * their own place in the order straight away — and by the Realtime
+   * subscription below, for everyone else's joins, removals, and status
+   * changes.
    */
   const refreshQueue = useCallback(async () => {
     const { data, error: queueError } = await supabase.rpc("circle_queue", {
@@ -140,6 +140,35 @@ export function CircleClient({
     });
     if (!queueError && data) setQueue(data as QueueEntry[]);
   }, [supabase, slug, setQueue]);
+
+  /**
+   * Live updates: any insert/update/delete on this circle's attendance for
+   * *any* student refetches the whole queue, rather than trying to patch the
+   * one row the payload names — a join needs the new student's name and
+   * father's name, which `circle_queue()` already joins in and the bare
+   * `attendance_records` payload does not carry.
+   */
+  useEffect(() => {
+    const channel = supabase
+      .channel(`attendance-records:${circleId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "attendance_records",
+          filter: `circle_id=eq.${circleId}`,
+        },
+        () => {
+          refreshQueue();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, circleId, refreshQueue]);
 
   const trimmed = query.trim();
   useEffect(() => {
