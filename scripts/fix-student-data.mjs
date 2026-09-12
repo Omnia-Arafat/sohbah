@@ -199,4 +199,24 @@ for (const s of unresolved) {
   const d = (s.phone ?? "").replace(/\D/g, "");
   console.log(`  ${s.name.trim()}: ${s.phone}  (${d.length} رقم)`);
 }
-console.log(`\n${APPLY ? "تم" : "معاينة"}: ${fixed} رقم يتصلح · ${unresolved.length} محتاج قرار`);
+
+// Re-read rather than reasoning from the list above: after --apply the table has
+// moved, and what she actually wants to know is how many students are still
+// unreachable.
+const { data: after } = await db
+  .from("students")
+  .select("id, name, phone")
+  .eq("academy_id", SOHBAH);
+const stillMissing = (after ?? [])
+  .filter((s) => !s.phone || !String(s.phone).trim())
+  // On a dry run nothing was written, so discount the numbers this run would
+  // have filled in — otherwise the count reads worse than the outcome.
+  .filter((s) => APPLY || !SUPPLIED.some(([prefix]) => s.id.startsWith(prefix)));
+
+console.log("\n=== لسه من غير رقم ===");
+for (const s of stillMissing) console.log(`  ${s.name.trim()}`);
+console.log(
+  `\n${APPLY ? "تم" : "معاينة"}: ${fixed} رقم يتصلح · ${SUPPLIED.length} رقم وصل منك · ` +
+    `${unresolved.length} محتاج قرار · ${stillMissing.length} لسه بدون رقم` +
+    (APPLY ? "" : "\nشغّليه بـ --apply لما تخلصي تجميع الأرقام."),
+);
