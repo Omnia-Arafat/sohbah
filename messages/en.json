@@ -67,6 +67,29 @@
       "title": "Today’s circles",
       "fullWeek": "Weekly schedule",
       "none": "No circles scheduled today. See the weekly schedule."
+    },
+    "live": {
+      "label": "{count, plural, one{Running now} other{# circles running now}}",
+      "turnNow": "Reciting now",
+      "openQueue": "Queue is open",
+      "waiting": "{count, plural, zero{nobody waiting} one{# waiting} other{# waiting}}",
+      "done": "{count, plural, one{# finished} other{# finished}}",
+      "join": "Join and take your turn",
+      "open": "Open"
+    },
+    "rest": {
+      "title": "The rest of today",
+      "ended": "Ended"
+    },
+    "me": {
+      "title": "Your page",
+      "body": "See your memorisation and recitation record — your name and phone, no password.",
+      "cta": "Open my page"
+    },
+    "staff": {
+      "line": "A teacher or supervisor?",
+      "login": "Sign in",
+      "register": "Register"
     }
   },
   "register": {
@@ -1127,7 +1150,8 @@
     "groupSupervision": "Supervision",
     "curricula": "Curricula",
     "quizzes": "Quizzes",
-    "progress": "Progress"
+    "progress": "Progress",
+    "myPage": "My page"
   },
   "lesson": {
     "today": "Today's lesson",

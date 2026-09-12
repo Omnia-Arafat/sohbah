@@ -4,6 +4,7 @@ import { CalendarDays, LogIn } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 import { BottomNav } from "@/components/bottom-nav";
+import { PublicNav } from "@/components/public-nav";
 import { BrandMark } from "@/components/brand-mark";
 import { LanguageToggle } from "@/components/language-toggle";
 import { SideNav } from "@/components/side-nav";
@@ -136,12 +137,15 @@ export default async function AcademyLayout({
               */}
               {!teacher && (
                 <>
+                  {/* Phones now have الجدول as a tab in `<PublicNav>`, so the
+                      header icon would be the same destination twice in one
+                      screen. Kept from `sm` up, where there is no bottom bar. */}
                   <Link
                     href={`/${academySlug}/schedule`}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-border-subtle
+                    className="hidden items-center gap-1.5 rounded-xl border border-border-subtle
                                px-3 py-1.5 text-sm font-medium text-muted-foreground
                                transition-colors hover:border-brand-600 hover:text-brand-700
-                               dark:hover:text-brand-300 whitespace-nowrap"
+                               dark:hover:text-brand-300 whitespace-nowrap sm:inline-flex"
                   >
                     <CalendarDays className="h-4 w-4" aria-hidden="true" />
                     <span className="hidden sm:inline">{tNav("schedule")}</span>
@@ -171,6 +175,11 @@ export default async function AcademyLayout({
         </main>
 
       </div>
+
+      {/* A student is never signed in, so until now she had no bottom bar at
+          all — she arrived on a circle link and the browser's back button was
+          the only way anywhere. */}
+      {!teacher && <PublicNav academySlug={academySlug} />}
 
       {teacher && (
         <BottomNav

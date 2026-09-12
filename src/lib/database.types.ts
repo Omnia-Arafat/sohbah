@@ -283,6 +283,29 @@ export type ScheduleCircle = {
   teacher_name: string;
 };
 
+/**
+ * A circle running at this moment, from `academy_live_circles`.
+ *
+ * Carries no `session_link` by design: the home page is public, and listing
+ * every running circle's door would hand a stranger all of them at once.
+ */
+export type LiveCircle = {
+  circle_id: string;
+  circle_name: string;
+  circle_type: CircleType;
+  gender_category: GenderCategory;
+  teacher_name: string;
+  registration_slug: string;
+  start_time: string;
+  timezone: string;
+  session_date: string;
+  /** Whoever is reciting right now, or null between turns. */
+  reciting_name: string | null;
+  waiting_count: number;
+  done_count: number;
+  joined_count: number;
+};
+
 export type ScheduleBoard = {
   id: string;
   academy_id: string;
@@ -739,6 +762,10 @@ export type Database = {
       academy_schedule: {
         Args: { p_academy_id: string };
         Returns: ScheduleCircle[];
+      };
+      academy_live_circles: {
+        Args: { p_academy_id: string };
+        Returns: LiveCircle[];
       };
       search_students: {
         Args: { p_slug: string; p_query: string };
