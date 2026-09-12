@@ -87,25 +87,47 @@ export async function loadBoardsWithCircles(
         withinWindow(circle.start_time, board.start_from, board.start_to),
     );
 
-    const days = WEEK_DAYS.map((day) => ({
-      day,
-      entries: matching
-        .filter((circle) => circle.days_of_week.includes(day))
-        .map((circle) => ({
-          circleId: circle.id,
-          circleName: circle.name,
-          teacherName: circle.teacher_name,
-          startTime: String(circle.start_time).slice(0, 5),
-          timezone: circle.timezone,
-          genderCategory: circle.gender_category,
-          registrationSlug: circle.registration_slug,
-        })),
-    })).filter((entry) => entry.entries.length > 0);
+    /*
+      The week starts today, not on Sunday.
+
+      A timetable is read to answer "what is on now, and what is next" — so on
+      a Saturday the Saturday row belongs at the top, followed by Sunday,
+      Monday and round to Friday. Fixing the order to Sunday-first pushes
+      today's circles into the middle of the list on most days of the week,
+      which is the one row a reader is looking for.
+
+      `todayIndex` is resolved in the circles' own timezone, so it is what is
+      true where the circles actually run — an academy on Riyadh time has
+      already started Sunday while much of the world is still on Saturday.
+    */
+    const todayIndex = matching.length > 0 ? weekdayIn(matching[0]?.timezone) : null;
+    const startAt = todayIndex ?? 0;
+
+    const days = WEEK_DAYS
+      // Rotate: today, today+1, … wrapping back round to yesterday.
+      .map((offset) => (startAt + offset) % WEEK_DAYS.length)
+      .map((day) => ({
+        day,
+        entries: matching
+          .filter((circle) => circle.days_of_week.includes(day))
+          .map((circle) => ({
+            circleId: circle.id,
+            circleName: circle.name,
+            teacherName: circle.teacher_name,
+            startTime: String(circle.start_time).slice(0, 5),
+            timezone: circle.timezone,
+            genderCategory: circle.gender_category,
+            registrationSlug: circle.registration_slug,
+          })),
+      }))
+      // A day nobody teaches on is dropped, exactly as before — which is also
+      // why the rotation happens before this filter rather than after it.
+      .filter((entry) => entry.entries.length > 0);
 
     return {
       board,
       days,
-      todayIndex: days.length > 0 ? weekdayIn(matching[0]?.timezone) : null,
+      todayIndex: days.length > 0 ? todayIndex : null,
     };
   });
 }
