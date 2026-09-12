@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { PhoneField } from "@/components/phone-field";
 import { registerStudent } from "./actions";
 import { initialRegisterState, type RegisterState } from "./state";
 
@@ -147,33 +148,13 @@ export function RegisterForm({
         )}
       </fieldset>
 
-      <div>
-        <label className="field-label" htmlFor="phone">
-          {t("fields.phone")}
-        </label>
-        <input
-          id="phone"
-          name="phone"
-          type="tel"
-          inputMode="tel"
-          dir="ltr"
-          required
-          className="input text-start"
-          defaultValue={values?.phone}
-          autoComplete="tel"
-          aria-invalid={Boolean(fieldErrors.phone)}
-          aria-describedby={fieldErrors.phone ? "phone-error" : "phone-hint"}
-        />
-        {fieldErrors.phone ? (
-          <p id="phone-error" className="mt-1.5 text-sm text-absent">
-            {t(`errors.${fieldErrors.phone}`)}
-          </p>
-        ) : (
-          <p id="phone-hint" className="mt-1.5 text-sm text-muted-foreground">
-            {t("fields.phoneHint")}
-          </p>
-        )}
-      </div>
+      <PhoneField
+        label={t("fields.phone")}
+        hint={t("fields.phoneHint")}
+        error={fieldErrors.phone ? t(`errors.${fieldErrors.phone}`) : undefined}
+        defaultCountry={values?.phoneCountry}
+        defaultValue={values?.phone}
+      />
 
       {isDuplicate && (
         <div className="rounded-xl border border-accent-300 bg-accent-100 p-4 text-accent-700">

@@ -5,11 +5,14 @@ import { isActiveTeacher, getTeacherSession } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import type { GenderCategory } from "@/lib/database.types";
+import { toE164, validatePhone } from "@/lib/phone";
 
 type StudentFormValues = {
   name: string;
   father_name: string;
   phone: string | null;
+  /** ISO code the picker was left on, so an invalid save re-renders as typed. */
+  phone_country: string;
   gender_category: string;
 };
 
@@ -47,6 +50,7 @@ export async function updateStudent(
   const name = formData.get("name")?.toString().trim() || "";
   const father_name = formData.get("father_name")?.toString().trim() || "";
   const phone = formData.get("phone")?.toString().trim() || "";
+  const phone_country = formData.get("phoneCountry")?.toString().trim() || "";
   const gender = formData.get("gender")?.toString() || "";
 
   // Validate
@@ -62,19 +66,29 @@ export async function updateStudent(
     fieldErrors.gender = "genderRequired";
   }
 
-  // Matches `public.normalize_phone()`: the DB rejects the same values through
-  // `students_phone_required`, so catch them here with a usable message.
-  if (!phone) fieldErrors.phone = "phoneRequired";
-  else if (phone.length > 32) fieldErrors.phone = "tooLong";
-  else if (phone.replace(/^00/, "").replace(/\D/g, "").length < 7) {
-    fieldErrors.phone = "phoneInvalid";
+  // Validated against the picked country, then stored as E.164 — see
+  // `@/lib/phone`. The DB still rejects an empty number through
+  // `students_phone_required`, so catch that here with a usable message.
+  if (phone.length > 32) fieldErrors.phone = "tooLong";
+  else {
+    const phoneError = validatePhone(phone_country, phone);
+    if (phoneError) fieldErrors.phone = phoneError;
   }
 
   if (Object.keys(fieldErrors).length > 0) {
     return {
       status: "invalid",
-      values: { name, father_name, phone, gender_category: gender },
+      values: { name, father_name, phone, phone_country, gender_category: gender },
       fieldErrors,
+    };
+  }
+
+  const storedPhone = toE164(phone_country, phone);
+  if (!storedPhone) {
+    return {
+      status: "invalid",
+      values: { name, father_name, phone, phone_country, gender_category: gender },
+      fieldErrors: { phone: "phoneInvalid" },
     };
   }
 
@@ -86,7 +100,7 @@ export async function updateStudent(
     .update({
       name,
       father_name,
-      phone,
+      phone: storedPhone,
       gender_category: gender as GenderCategory,
     })
     .eq("id", studentId)
@@ -99,7 +113,7 @@ export async function updateStudent(
     if (error?.code === "23505") {
       return {
         status: "invalid",
-        values: { name, father_name, phone, gender_category: gender },
+        values: { name, father_name, phone, phone_country, gender_category: gender },
         fieldErrors: { phone: "phoneTaken" },
       };
     }
