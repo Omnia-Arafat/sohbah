@@ -884,7 +884,11 @@ function MutashabihQuestionCard({
                 key={at}
                 className={
                   picked === null
-                    ? "mx-1 inline-block min-w-20 rounded-lg border-b-2 border-dashed border-accent-500 align-middle"
+                    ? // `align-baseline`, not middle: the rule has to sit on the
+                      // line the words sit on, or it floats between them and
+                      // reads as a mark on the page rather than a gap in the
+                      // ayah.
+                      "mx-1 inline-block min-w-20 border-b-2 border-dashed border-accent-500 align-baseline"
                     : `mx-1 inline-block rounded-lg px-2 ${
                         right
                           ? "bg-brand-100 text-brand-900 dark:bg-brand-900 dark:text-brand-100"
