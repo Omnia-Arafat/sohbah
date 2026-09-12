@@ -50,10 +50,15 @@ export async function generateMetadata({
  * exists because it was broken once — an earlier mockup "added" them and
  * produced ۩۩ — and the general form is: rendering styles what is there.
  *
- * WHAT THIS IS NOT: the real KFGQPC per-page font, where each page has its own
- * font file and every line ends exactly where the printed mushaf's does. That
- * needs 604 font files and the Complex's permission. Amiri carries the Uthmani
- * text correctly; the line breaks are ours, the page breaks are theirs.
+ * THE HAND IS THE MUSHAF'S OWN: DigitalKhatt, drawn after the Madinah mushaf
+ * and licensed SIL OFL, so it needs nobody's permission. Both it and the text
+ * are رواية حفص عن عاصم — the text verified at the places the readings differ
+ * («مَٰلِكِ» with the dagger alef, «نُنشِزُهَا» with the zay) and by the count,
+ * 6236, which is the Kufan count Hafs uses.
+ *
+ * WHAT IS STILL NOT THE PRINTED PAGE: the LINE BREAKS. Reproducing those needs
+ * either the Complex's per-page fonts or its layout data. The page breaks are
+ * the real ones; where each line ends inside a page is ours.
  */
 export default async function MushafReaderPage({ params }: MushafPageProps) {
   const { locale, academy: academySlug, page: pageParam } = await params;
@@ -124,7 +129,7 @@ export default async function MushafReaderPage({ params }: MushafPageProps) {
           <p
             dir="rtl"
             lang="ar"
-            className="font-display text-center text-[1.35rem] leading-[2.6]"
+            className="font-quran text-center text-[1.35rem] leading-[2.6]"
           >
             {ayahs.map((entry) => (
               <Ayah key={`${entry.surah}:${entry.ayah}`} entry={entry} />

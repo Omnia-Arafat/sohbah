@@ -537,7 +537,7 @@ export function SelfTestClient({
         <p
           dir="rtl"
           lang="ar"
-          className="mt-3 text-center font-display text-[1.4rem] leading-[2.1]"
+          className="mt-3 text-center font-quran text-[1.4rem] leading-[2.1]"
         >
           {question.prompt}
           {mode === "complete" && (
@@ -571,7 +571,7 @@ export function SelfTestClient({
             <p
               dir="rtl"
               lang="ar"
-              className="mt-2 text-center font-display text-[1.2rem] leading-[2.1]"
+              className="mt-2 text-center font-quran text-[1.2rem] leading-[2.1]"
             >
               {question.answer}
             </p>
@@ -876,7 +876,7 @@ function MutashabihQuestionCard({
         <p
           dir="rtl"
           lang="ar"
-          className="mt-3 text-center font-display text-[1.35rem] leading-[2.2]"
+          className="mt-3 text-center font-quran text-[1.35rem] leading-[2.2]"
         >
           {question.words.map((word, at) =>
             at === question.blankAt ? (
@@ -913,7 +913,7 @@ function MutashabihQuestionCard({
                 dir="rtl"
                 lang="ar"
                 className="rounded-xl border-2 border-border-subtle bg-surface px-3 py-3
-                           font-display text-lg transition-colors hover:border-brand-600
+                           font-quran text-lg transition-colors hover:border-brand-600
                            focus-visible:outline-2 focus-visible:outline-offset-2
                            focus-visible:outline-brand-600"
               >
@@ -1068,7 +1068,7 @@ function HiddenPageCard({
           <p
             dir="rtl"
             lang="ar"
-            className="text-center font-display text-[1.25rem] leading-[2.4]"
+            className="font-quran text-center text-[1.25rem] leading-[2.4]"
           >
             {question.lines.map((line, lineAt) => (
               <span key={`${line.surah}:${line.ayah}`}>

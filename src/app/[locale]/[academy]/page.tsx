@@ -194,15 +194,31 @@ export default async function AcademyHome({ params }: AcademyHomeProps) {
               </span>
             </header>
 
+            {/*
+              INFORMATION, NOT AN INVITATION.
+
+              This card used to say «تقدري تدخلي دلوقتي وتحجزي دورك قبل ما
+              تبدأ» over a full-width join button, which told students to queue
+              up before the circle opened. That is not how these circles run:
+              they join at the circle's own time, and a queue that fills an
+              hour early is a queue the معلمة has to sort out.
+
+              So the card keeps the prominence — it is still the answer to
+              "what is next" — and gives up the call to action. The link is
+              secondary and goes to the circle's page, where joining is her
+              own decision at the right moment.
+            */}
             <div className="p-4">
               <p className="pb-3 text-sm text-muted-foreground">
-                {t("next.body")}
+                {t("next.body", {
+                  time: formatTime(next.startTime, locale),
+                })}
               </p>
               <Link
                 href={`/${academySlug}/circle/${next.registrationSlug}`}
-                className="btn-primary w-full"
+                className="btn-secondary w-full"
               >
-                {t("live.join")}
+                {t("next.cta")}
               </Link>
             </div>
           </article>

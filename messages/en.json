@@ -93,7 +93,8 @@
     },
     "next": {
       "label": "Next circle",
-      "body": "You can join now and take your place in the queue before it starts."
+      "body": "The circle starts at {time} — join at its time.",
+      "cta": "Circle page"
     },
     "greeting": "Welcome to Sohbah",
     "mushaf": {
@@ -1316,7 +1317,7 @@
       "sajda": "Place of prostration",
       "hizb": "Start of a hizb quarter"
     },
-    "attribution": "Uthmani text from the Tanzil project (tanzil.net) — unmodified.",
+    "attribution": "Uthmani text in the Hafs reading from the Tanzil project (tanzil.net) — unmodified. Typeface: DigitalKhatt, SIL OFL.",
     "notFound": "No such page. The mushaf runs from 1 to 604.",
     "ayahCount": "{count, plural, one{# ayah} other{# ayat}}"
   },

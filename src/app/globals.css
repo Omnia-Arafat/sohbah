@@ -63,9 +63,42 @@
   }
 }
 
+/*
+ * DigitalKhatt — the mushaf's own hand.
+ *
+ * Based on the Madinah mushaf and licensed SIL OFL 1.1 (the licence ships
+ * beside it at public/fonts/DigitalKhattV2.LICENSE.txt, which the OFL
+ * requires). That licence is the whole reason it is here: the King Fahd
+ * Complex's own per-page fonts would reproduce the printed page exactly, and
+ * they need a permission this academy cannot go and get. This needs none.
+ *
+ * `swap` rather than `block`: half a megabyte over a phone connection is not
+ * a reason to show a student nothing. She reads in Amiri for a moment and the
+ * page settles into the Madinah hand — the text is identical either way.
+ */
+@font-face {
+  font-family: "DigitalKhatt";
+  src: url("/fonts/DigitalKhattV2.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme inline {
   --font-sans: var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-amiri), var(--font-cairo), ui-serif, serif;
+
+  /*
+   * For Quranic text ONLY — the mushaf reader and the self-test's ayat.
+   *
+   * Amiri sits behind it deliberately, and is not decoration: DigitalKhatt
+   * covers 90 codepoints and our text uses 69 of them, but TWO are missing —
+   * U+06EA in هود ٤١ («مَجْر۪ىٰهَا», the إمالة) and U+06EB in يوسف ١١
+   * («تَأْمَ۫نَّا», the إشمام). Each appears exactly once in the whole Quran.
+   * The browser falls back per character, so those two marks come from Amiri
+   * and the reader never sees an empty box where a recitation mark belongs.
+   */
+  --font-quran: "DigitalKhatt", var(--font-amiri), ui-serif, serif;
 
   /* Surfaces adapt to the colour scheme */
   --color-background: var(--background);
