@@ -438,15 +438,24 @@ export function CircleClient({
                 <li
                   key={entry.attendance_id}
                   data-flip-id={entry.attendance_id}
+                  /*
+                    Tinted by status, the same way the معلمة's queue is: the
+                    student scanning this list wants to see who is reciting now
+                    and how far the queue has got without reading three words
+                    on every row.
+
+                    "This is me" still wins over the status tint — finding your
+                    own place is the first thing you look for, and it is the
+                    one row you already know the status of.
+                  */
                   className={`motion-queue-item card flex items-center gap-3 py-3 transition-colors duration-300 ${
-                    isMe ? "border-brand-400 bg-brand-50 dark:bg-brand-950" : ""
+                    isMe
+                      ? "border-brand-400 bg-brand-50 dark:bg-brand-950"
+                      : queueRowClass(entry.recitation_status)
                   }`}
                   style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
                 >
-                  <span
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full
-                               bg-surface-muted text-sm font-bold"
-                  >
+                  <span className={queueNumberClass(entry.recitation_status)}>
                     {entry.queue_order}
                   </span>
                   <span className="min-w-0 flex-1">
@@ -475,6 +484,33 @@ export function CircleClient({
       </section>
     </div>
   );
+}
+
+/**
+ * The row's own tint. Mirrors `cardToneClass` on the معلمة's screen so the
+ * same status is the same colour on both sides of the circle — a student and
+ * her teacher looking at the same queue should not be reading two colour
+ * schemes.
+ */
+function queueRowClass(status: QueueEntry["recitation_status"]) {
+  if (status === "reciting") {
+    return "border-accent-400 bg-accent-100/40 shadow-md dark:bg-accent-700/15";
+  }
+  if (status === "done") {
+    return "border-brand-200 bg-brand-50/60 dark:border-brand-800 dark:bg-brand-950/50";
+  }
+  return "";
+}
+
+/** The queue number doubles as a status light, as it does for the معلمة. */
+function queueNumberClass(status: QueueEntry["recitation_status"]) {
+  const base =
+    "flex h-9 w-9 shrink-0 items-center justify-center rounded-full " +
+    "text-sm font-bold tabular-nums transition-colors";
+
+  if (status === "reciting") return `${base} bg-accent-500 text-white shadow-sm`;
+  if (status === "done") return `${base} bg-brand-600 text-white`;
+  return `${base} bg-surface-muted text-muted-foreground`;
 }
 
 function badgeClass(status: QueueEntry["recitation_status"]) {

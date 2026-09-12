@@ -328,6 +328,18 @@
            text-xs font-semibold;
   }
 
+  /*
+    The three recitation states, and they must be three different colours.
+
+    `badge-done` used to be byte-for-byte identical to `badge-waiting` — both
+    grey — so on the student's queue "أنهى" and "بالانتظار" were
+    indistinguishable and only "يسمّع الآن" stood out. The whole point of the
+    list is telling at a glance who has finished and who is still waiting.
+
+    The tones follow the meaning the rest of the app already gives them: grey
+    is "nothing happening yet", accent gold is "happening right now" (the same
+    gold that marks today's row on the timetable), and brand green is "done".
+  */
   .badge-waiting {
     @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
            text-xs font-semibold bg-surface-muted text-muted-foreground;
@@ -335,12 +347,14 @@
 
   .badge-reciting {
     @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
-           text-xs font-semibold bg-accent-100 text-accent-700;
+           text-xs font-semibold bg-accent-100 text-accent-700
+           dark:bg-accent-700/30 dark:text-accent-200;
   }
 
   .badge-done {
     @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1
-           text-xs font-semibold bg-surface-muted text-muted-foreground;
+           text-xs font-semibold bg-brand-100 text-brand-800
+           dark:bg-brand-800/40 dark:text-brand-100;
   }
 
   /* Circle page — smooth section enter/exit when joining the queue */
