@@ -218,7 +218,21 @@
       "emailRequired": "Email is required."
     },
     "noAccountYet": "No account yet?",
-    "registerAccount": "Teacher / supervisor registration"
+    "registerAccount": "Teacher / supervisor registration",
+    "pageTitle": "Sign in",
+    "tabs": {
+      "staff": "Teacher or supervisor",
+      "student": "Student"
+    },
+    "student": {
+      "notice": "Students have no account and no password. Register once, then open your circle's link and find your name.",
+      "register": "Register a new student",
+      "myPage": "My page — memorisation and recitation",
+      "today": "Today's circles",
+      "returningTitle": "Already registered?",
+      "returningBody": "Open the circle link your teacher sent you — or pick your circle from today's list."
+    },
+    "adminSignIn": "Sign in as admin"
   },
   "dashboard": {
     "title": "Teacher dashboard",

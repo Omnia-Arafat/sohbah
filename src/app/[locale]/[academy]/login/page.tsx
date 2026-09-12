@@ -8,6 +8,8 @@ import { getAcademyBySlug } from "@/lib/academy-dal";
 import { notFound } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { TeacherLoginForm } from "./teacher-login-form";
+import { SignInTabs } from "./sign-in-tabs";
+import { getLocalizedAcademyName } from "@/lib/academy-display";
 
 type LoginPageProps = {
   params: Promise<{ locale: string; academy: string }>;
@@ -19,7 +21,8 @@ export async function generateMetadata({
 }: Pick<LoginPageProps, "params">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "auth" });
-  return { title: t("title") };
+  // Matches the heading: the page is sign-in, not staff sign-in.
+  return { title: t("pageTitle") };
 }
 
 export default async function LoginPage({
@@ -37,6 +40,7 @@ export default async function LoginPage({
 
   const { next } = await searchParams;
   const t = await getTranslations("auth");
+  const academyName = await getLocalizedAcademyName(academySlug, locale, academy);
 
   // Nothing to do here for someone who can already work.
   const session = await getTeacherSession();
@@ -46,20 +50,29 @@ export default async function LoginPage({
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-6">
+      {/*
+        "تسجيل الدخول", not "دخول المعلمين والمشرفين". The old heading answered
+        the tab that is open rather than the page, and a student who arrives
+        here — which she does, from the header icon — was told in the first
+        line that this screen was not for her before she saw the tab that is.
+      */}
       <section>
         <h1 className="font-display text-2xl font-bold sm:text-3xl">
-          {t("title")}
+          {t("pageTitle")}
         </h1>
-        <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
+        <p className="mt-2 text-muted-foreground">{academyName}</p>
       </section>
 
       {!isSupabaseConfigured() && <SetupNotice />}
 
-      <TeacherLoginForm academySlug={academySlug} next={next ?? null} />
-
-      <p className="text-center text-sm text-muted-foreground">
-        {t("studentsNote")}
-      </p>
+      {/* The staff form is passed through unchanged — same component, same
+          server action, same fields. Only what surrounds it is new. */}
+      <SignInTabs
+        academySlug={academySlug}
+        staffForm={
+          <TeacherLoginForm academySlug={academySlug} next={next ?? null} />
+        }
+      />
 
       {/* The only route to the registration form — someone registering has no
           account yet, so the sign-in page is where they will look. */}

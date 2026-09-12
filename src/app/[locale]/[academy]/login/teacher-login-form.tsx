@@ -37,7 +37,9 @@ export function TeacherLoginForm({
   const fieldErrors = state.status === "invalid" ? state.fieldErrors : {};
 
   return (
-    <form action={formAction} className="card flex flex-col gap-4" noValidate>
+    // The panel around it is the card now (see sign-in-tabs.tsx); a second
+    // border and padding here made a card inside a card.
+    <form action={formAction} className="flex flex-col gap-4" noValidate>
       <input type="hidden" name="academySlug" value={academySlug} />
       {next && <input type="hidden" name="next" value={next} />}
 
