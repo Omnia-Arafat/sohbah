@@ -20,12 +20,17 @@ import { supabaseUrl } from "./config";
  * browser. Never import it from a `"use client"` file, and never pass the
  * client or the key out of a server action.
  */
+/** Trimmed for the same reason the publishable key is — see ./config.ts. */
+function serviceRoleKey(): string {
+  return (process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim();
+}
+
 export function isServiceRoleConfigured(): boolean {
-  return Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY) && supabaseUrl.length > 0;
+  return serviceRoleKey().length > 0 && supabaseUrl.length > 0;
 }
 
 export function createAdminClient() {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = serviceRoleKey();
   if (!key) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set");
 
   return createClient<Database>(supabaseUrl, key, {
