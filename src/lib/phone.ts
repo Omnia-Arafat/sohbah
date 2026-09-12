@@ -15,11 +15,15 @@
  * +20, is now rejected at the form instead of sitting in the table.
  */
 
+/**
+ * `iso` doubles as the flag: `public/flags/<iso lowercased>.svg`, from the
+ * flag-icons set. Not an emoji flag — Windows ships no font that draws those,
+ * so a معلمة on a laptop would see the two letters "EG" where a phone shows 🇪🇬.
+ */
 export type Country = {
   iso: string;
   /** Dial code without '+'. */
   dial: string;
-  flag: string;
   nameAr: string;
   nameEn: string;
   /**
@@ -37,36 +41,36 @@ export type Country = {
  * her own country without scrolling.
  */
 export const COUNTRIES: readonly Country[] = [
-  { iso: "EG", dial: "20", flag: "🇪🇬", nameAr: "مصر", nameEn: "Egypt", mobile: /^1[0125]\d{8}$/, example: "10 1234 5678" },
-  { iso: "SA", dial: "966", flag: "🇸🇦", nameAr: "السعودية", nameEn: "Saudi Arabia", mobile: /^5\d{8}$/, example: "50 123 4567" },
-  { iso: "YE", dial: "967", flag: "🇾🇪", nameAr: "اليمن", nameEn: "Yemen", mobile: /^7[01378]\d{7}$/, example: "73 123 4567" },
-  { iso: "SD", dial: "249", flag: "🇸🇩", nameAr: "السودان", nameEn: "Sudan", mobile: /^9\d{8}$/, example: "91 234 5678" },
-  { iso: "MA", dial: "212", flag: "🇲🇦", nameAr: "المغرب", nameEn: "Morocco", mobile: /^[67]\d{8}$/, example: "66 123 4567" },
-  { iso: "AE", dial: "971", flag: "🇦🇪", nameAr: "الإمارات", nameEn: "UAE", mobile: /^5[024568]\d{7}$/, example: "50 123 4567" },
-  { iso: "KW", dial: "965", flag: "🇰🇼", nameAr: "الكويت", nameEn: "Kuwait", mobile: /^[569]\d{7}$/, example: "500 12345" },
-  { iso: "QA", dial: "974", flag: "🇶🇦", nameAr: "قطر", nameEn: "Qatar", mobile: /^[3567]\d{7}$/, example: "3312 3456" },
-  { iso: "BH", dial: "973", flag: "🇧🇭", nameAr: "البحرين", nameEn: "Bahrain", mobile: /^[36]\d{7}$/, example: "3600 1234" },
-  { iso: "OM", dial: "968", flag: "🇴🇲", nameAr: "عُمان", nameEn: "Oman", mobile: /^[79]\d{7}$/, example: "9212 3456" },
-  { iso: "JO", dial: "962", flag: "🇯🇴", nameAr: "الأردن", nameEn: "Jordan", mobile: /^7[789]\d{7}$/, example: "79 012 3456" },
-  { iso: "PS", dial: "970", flag: "🇵🇸", nameAr: "فلسطين", nameEn: "Palestine", mobile: /^5[69]\d{7}$/, example: "59 123 4567" },
-  { iso: "LB", dial: "961", flag: "🇱🇧", nameAr: "لبنان", nameEn: "Lebanon", mobile: /^(3\d{6}|7[0189]\d{6})$/, example: "71 123 456" },
-  { iso: "SY", dial: "963", flag: "🇸🇾", nameAr: "سوريا", nameEn: "Syria", mobile: /^9\d{8}$/, example: "944 567 890" },
-  { iso: "IQ", dial: "964", flag: "🇮🇶", nameAr: "العراق", nameEn: "Iraq", mobile: /^7[3-9]\d{8}$/, example: "770 123 4567" },
-  { iso: "LY", dial: "218", flag: "🇱🇾", nameAr: "ليبيا", nameEn: "Libya", mobile: /^9[1-6]\d{7}$/, example: "91 234 5678" },
-  { iso: "TN", dial: "216", flag: "🇹🇳", nameAr: "تونس", nameEn: "Tunisia", mobile: /^[2459]\d{7}$/, example: "20 123 456" },
-  { iso: "DZ", dial: "213", flag: "🇩🇿", nameAr: "الجزائر", nameEn: "Algeria", mobile: /^[567]\d{8}$/, example: "551 23 45 67" },
-  { iso: "MR", dial: "222", flag: "🇲🇷", nameAr: "موريتانيا", nameEn: "Mauritania", mobile: /^[234]\d{7}$/, example: "22 12 34 56" },
-  { iso: "SO", dial: "252", flag: "🇸🇴", nameAr: "الصومال", nameEn: "Somalia", mobile: /^[6-9]\d{7,8}$/, example: "61 234 5678" },
-  { iso: "DJ", dial: "253", flag: "🇩🇯", nameAr: "جيبوتي", nameEn: "Djibouti", mobile: /^77\d{6}$/, example: "77 12 34 56" },
-  { iso: "KM", dial: "269", flag: "🇰🇲", nameAr: "جزر القمر", nameEn: "Comoros", mobile: /^3\d{6}$/, example: "321 2345" },
-  { iso: "TR", dial: "90", flag: "🇹🇷", nameAr: "تركيا", nameEn: "Türkiye", mobile: /^5\d{9}$/, example: "532 123 4567" },
-  { iso: "GB", dial: "44", flag: "🇬🇧", nameAr: "بريطانيا", nameEn: "UK", mobile: /^7\d{9}$/, example: "7400 123456" },
-  { iso: "US", dial: "1", flag: "🇺🇸", nameAr: "أمريكا", nameEn: "USA", mobile: /^[2-9]\d{9}$/, example: "202 555 0134" },
-  { iso: "CA", dial: "1", flag: "🇨🇦", nameAr: "كندا", nameEn: "Canada", mobile: /^[2-9]\d{9}$/, example: "416 555 0134" },
-  { iso: "DE", dial: "49", flag: "🇩🇪", nameAr: "ألمانيا", nameEn: "Germany", mobile: /^1[5-7]\d{8,9}$/, example: "1512 3456789" },
-  { iso: "FR", dial: "33", flag: "🇫🇷", nameAr: "فرنسا", nameEn: "France", mobile: /^[67]\d{8}$/, example: "6 12 34 56 78" },
-  { iso: "NL", dial: "31", flag: "🇳🇱", nameAr: "هولندا", nameEn: "Netherlands", mobile: /^6\d{8}$/, example: "6 12345678" },
-  { iso: "SE", dial: "46", flag: "🇸🇪", nameAr: "السويد", nameEn: "Sweden", mobile: /^7[0236]\d{7}$/, example: "70 123 45 67" },
+  { iso: "EG", dial: "20", nameAr: "مصر", nameEn: "Egypt", mobile: /^1[0125]\d{8}$/, example: "10 1234 5678" },
+  { iso: "SA", dial: "966", nameAr: "السعودية", nameEn: "Saudi Arabia", mobile: /^5\d{8}$/, example: "50 123 4567" },
+  { iso: "YE", dial: "967", nameAr: "اليمن", nameEn: "Yemen", mobile: /^7[01378]\d{7}$/, example: "73 123 4567" },
+  { iso: "SD", dial: "249", nameAr: "السودان", nameEn: "Sudan", mobile: /^9\d{8}$/, example: "91 234 5678" },
+  { iso: "MA", dial: "212", nameAr: "المغرب", nameEn: "Morocco", mobile: /^[67]\d{8}$/, example: "66 123 4567" },
+  { iso: "AE", dial: "971", nameAr: "الإمارات", nameEn: "UAE", mobile: /^5[024568]\d{7}$/, example: "50 123 4567" },
+  { iso: "KW", dial: "965", nameAr: "الكويت", nameEn: "Kuwait", mobile: /^[569]\d{7}$/, example: "500 12345" },
+  { iso: "QA", dial: "974", nameAr: "قطر", nameEn: "Qatar", mobile: /^[3567]\d{7}$/, example: "3312 3456" },
+  { iso: "BH", dial: "973", nameAr: "البحرين", nameEn: "Bahrain", mobile: /^[36]\d{7}$/, example: "3600 1234" },
+  { iso: "OM", dial: "968", nameAr: "عُمان", nameEn: "Oman", mobile: /^[79]\d{7}$/, example: "9212 3456" },
+  { iso: "JO", dial: "962", nameAr: "الأردن", nameEn: "Jordan", mobile: /^7[789]\d{7}$/, example: "79 012 3456" },
+  { iso: "PS", dial: "970", nameAr: "فلسطين", nameEn: "Palestine", mobile: /^5[69]\d{7}$/, example: "59 123 4567" },
+  { iso: "LB", dial: "961", nameAr: "لبنان", nameEn: "Lebanon", mobile: /^(3\d{6}|7[0189]\d{6})$/, example: "71 123 456" },
+  { iso: "SY", dial: "963", nameAr: "سوريا", nameEn: "Syria", mobile: /^9\d{8}$/, example: "944 567 890" },
+  { iso: "IQ", dial: "964", nameAr: "العراق", nameEn: "Iraq", mobile: /^7[3-9]\d{8}$/, example: "770 123 4567" },
+  { iso: "LY", dial: "218", nameAr: "ليبيا", nameEn: "Libya", mobile: /^9[1-6]\d{7}$/, example: "91 234 5678" },
+  { iso: "TN", dial: "216", nameAr: "تونس", nameEn: "Tunisia", mobile: /^[2459]\d{7}$/, example: "20 123 456" },
+  { iso: "DZ", dial: "213", nameAr: "الجزائر", nameEn: "Algeria", mobile: /^[567]\d{8}$/, example: "551 23 45 67" },
+  { iso: "MR", dial: "222", nameAr: "موريتانيا", nameEn: "Mauritania", mobile: /^[234]\d{7}$/, example: "22 12 34 56" },
+  { iso: "SO", dial: "252", nameAr: "الصومال", nameEn: "Somalia", mobile: /^[6-9]\d{7,8}$/, example: "61 234 5678" },
+  { iso: "DJ", dial: "253", nameAr: "جيبوتي", nameEn: "Djibouti", mobile: /^77\d{6}$/, example: "77 12 34 56" },
+  { iso: "KM", dial: "269", nameAr: "جزر القمر", nameEn: "Comoros", mobile: /^3\d{6}$/, example: "321 2345" },
+  { iso: "TR", dial: "90", nameAr: "تركيا", nameEn: "Türkiye", mobile: /^5\d{9}$/, example: "532 123 4567" },
+  { iso: "GB", dial: "44", nameAr: "بريطانيا", nameEn: "UK", mobile: /^7\d{9}$/, example: "7400 123456" },
+  { iso: "US", dial: "1", nameAr: "أمريكا", nameEn: "USA", mobile: /^[2-9]\d{9}$/, example: "202 555 0134" },
+  { iso: "CA", dial: "1", nameAr: "كندا", nameEn: "Canada", mobile: /^[2-9]\d{9}$/, example: "416 555 0134" },
+  { iso: "DE", dial: "49", nameAr: "ألمانيا", nameEn: "Germany", mobile: /^1[5-7]\d{8,9}$/, example: "1512 3456789" },
+  { iso: "FR", dial: "33", nameAr: "فرنسا", nameEn: "France", mobile: /^[67]\d{8}$/, example: "6 12 34 56 78" },
+  { iso: "NL", dial: "31", nameAr: "هولندا", nameEn: "Netherlands", mobile: /^6\d{8}$/, example: "6 12345678" },
+  { iso: "SE", dial: "46", nameAr: "السويد", nameEn: "Sweden", mobile: /^7[0236]\d{7}$/, example: "70 123 45 67" },
 ] as const;
 
 /** Most students are Egyptian; the picker opens there and they change it if not. */
