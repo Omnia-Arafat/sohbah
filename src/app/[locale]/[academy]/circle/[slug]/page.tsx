@@ -7,6 +7,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { formatTime } from "@/lib/format-time";
 import { createClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/navigation";
+import { withSignedUrls } from "@/lib/materials";
 import { LessonCard } from "@/components/lesson-card";
 import { CircleClient } from "./circle-client";
 
@@ -45,6 +46,7 @@ export default async function CirclePage({ params }: CirclePageProps) {
 
   const t = await getTranslations("circle");
   const tQuiz = await getTranslations("quiz");
+  const tLesson = await getTranslations("lesson");
 
   if (!isSupabaseConfigured()) {
     return (
@@ -59,18 +61,26 @@ export default async function CirclePage({ params }: CirclePageProps) {
   if (!circle) notFound();
 
   const supabase = await createClient();
-  const [{ data: queue }, { data: lessonRows }, { data: quizRows }, circleTypes] =
-    await Promise.all([
+  const [
+    { data: queue },
+    { data: lessonRows },
+    { data: quizRows },
+    { data: materialRows },
+    circleTypes,
+  ] = await Promise.all([
       supabase.rpc("circle_queue", { p_slug: slug }),
       // The day's lesson, through the same SECURITY DEFINER function the
       // teacher's screen reads — a student is anonymous and never touches
       // `curriculum_units` directly.
       supabase.rpc("circle_lesson", { p_slug: slug }),
       supabase.rpc("circle_quizzes", { p_slug: slug }),
+      supabase.rpc("circle_materials", { p_slug: slug }),
       // `activeOnly: false` — the circle's own type must still show a real
       // label here even if a supervisor has since deactivated it.
       loadCircleTypes(supabase, circle.academy_id, { activeOnly: false }),
     ]);
+
+  const materials = await withSignedUrls(materialRows ?? []);
 
   return (
     <div className="flex flex-col gap-6">
@@ -93,6 +103,44 @@ export default async function CirclePage({ params }: CirclePageProps) {
       </section>
 
       {lessonRows?.[0] && <LessonCard lesson={lessonRows[0]} locale={locale} />}
+
+      {/*
+        The day's attachments. Stored images arrive as short-lived signed URLs
+        — the bucket is private, so lesson images for an academy of girls are
+        never on a permanent, shareable address.
+      */}
+      {materials.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-lg font-semibold">{tLesson("materials")}</h2>
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {materials.map((material) => (
+              <li key={material.id} className="card flex flex-col gap-2">
+                {material.kind === "image" && material.href && (
+                  // eslint-disable-next-line @next/next/no-img-element -- a
+                  // signed URL changes every render; next/image would re-fetch
+                  // and re-cache it each time.
+                  <img
+                    src={material.href}
+                    alt={material.title}
+                    className="max-h-72 w-full rounded-xl object-contain"
+                  />
+                )}
+                <p className="font-medium">{material.title}</p>
+                {material.kind !== "image" && material.href && (
+                  <a
+                    href={material.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-secondary px-4 py-2 text-sm"
+                  >
+                    {t("openSession")}
+                  </a>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/*
         Only quizzes that are published, in scope for this circle, and inside

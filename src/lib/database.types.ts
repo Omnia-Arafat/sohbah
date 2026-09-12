@@ -709,6 +709,15 @@ export type Database = {
         Args: { p_attempt_id: string };
         Returns: SubmitAttemptRow[];
       };
+      grade_written_answer: {
+        Args: {
+          p_attempt_id: string;
+          p_question_id: string;
+          p_is_correct: boolean;
+          p_points?: number | null;
+        };
+        Returns: { auto_score: number; max_score: number; pending_count: number }[];
+      };
     };
     Enums: Empty;
     CompositeTypes: Empty;

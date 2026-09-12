@@ -10,6 +10,7 @@ import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import { loadScheduleBoards } from "@/lib/schedule-boards";
 import { createClient } from "@/lib/supabase/server";
 import {
+  createBoardForType,
   createScheduleBoard,
   deleteScheduleBoard,
   setScheduleBoardPublished,
@@ -42,9 +43,14 @@ export default async function SchedulesAdminPage({ params }: PageProps) {
   const tDashboard = await getTranslations("dashboard");
 
   const supabase = await createClient();
-  const [boards, types] = await Promise.all([
+  const [boards, types, { data: activeCircles }] = await Promise.all([
     loadScheduleBoards(supabase, academy.id, { publishedOnly: false }),
     loadCircleTypes(supabase, academy.id, { activeOnly: false }),
+    supabase
+      .from("circles")
+      .select("type")
+      .eq("academy_id", academy.id)
+      .eq("is_active", true),
   ]);
 
   const typeOptions = types.map((type) => ({
@@ -52,12 +58,85 @@ export default async function SchedulesAdminPage({ params }: PageProps) {
     label: locale === "ar" ? type.name_ar : type.name_en,
   }));
 
+  /*
+    The public timetable renders *boards*. A circle whose type has no published
+    board is therefore invisible on it — no error, no empty row, just absent.
+    That is easy to cause (add a type, add circles, forget the board) and
+    impossible to notice from this screen, which until now only listed the
+    boards that did exist.
+
+    So count the circles that are currently falling through, per type, and say
+    so at the top of the page with the one-tap fix next to it.
+  */
+  const circlesByType = new Map<string, number>();
+  for (const circle of activeCircles ?? []) {
+    circlesByType.set(circle.type, (circlesByType.get(circle.type) ?? 0) + 1);
+  }
+
+  const coveredTypes = new Set(
+    boards.filter((board) => board.is_published).map((board) => board.circle_type),
+  );
+
+  const uncovered = [...circlesByType.entries()]
+    .filter(([slug]) => !coveredTypes.has(slug))
+    .map(([slug, count]) => ({
+      slug,
+      count,
+      label: circleTypeLabel(types, slug, locale),
+      // A board exists but is still a draft — publishing it is the fix, not
+      // creating another one.
+      hasDraft: boards.some((board) => board.circle_type === slug),
+    }))
+    .sort((a, b) => b.count - a.count);
+
+  const hiddenCount = uncovered.reduce((sum, entry) => sum + entry.count, 0);
+
   return (
     <div className="flex flex-col gap-6">
       <section>
         <BackLink href={`/${academySlug}/admin`}>{t("back")}</BackLink>
         <h1 className="font-display mt-2 text-2xl font-bold sm:text-3xl">{t("title")}</h1>
         <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
+
+        {uncovered.length > 0 && (
+          <div className="card mt-4 border-accent-300 bg-accent-50 dark:border-accent-700 dark:bg-surface">
+            <p className="font-semibold text-accent-800 dark:text-accent-200">
+              {t("uncovered.title", { count: String(hiddenCount) })}
+            </p>
+            <p className="mt-1 text-sm text-accent-800 dark:text-accent-200">
+              {t("uncovered.hint")}
+            </p>
+
+            <ul className="mt-3 flex flex-col gap-2">
+              {uncovered.map((entry) => (
+                <li
+                  key={entry.slug}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-surface px-4 py-3"
+                >
+                  <span className="text-sm">
+                    <span className="font-medium">{entry.label}</span>
+                    {" — "}
+                    {t("uncovered.circleCount", { count: String(entry.count) })}
+                  </span>
+
+                  {entry.hasDraft ? (
+                    <span className="text-sm text-muted-foreground">
+                      {t("uncovered.draftExists")}
+                    </span>
+                  ) : (
+                    <form action={createBoardForType}>
+                      <input type="hidden" name="academySlug" value={academySlug} />
+                      <input type="hidden" name="circleType" value={entry.slug} />
+                      <button type="submit" className="btn-primary px-4 py-2 text-sm">
+                        {t("uncovered.create")}
+                      </button>
+                    </form>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <Link
           href={`/${academySlug}/schedule`}
           className="btn-secondary mt-3 inline-flex px-4 py-2 text-sm"

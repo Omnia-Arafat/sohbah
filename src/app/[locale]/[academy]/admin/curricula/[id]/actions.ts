@@ -5,6 +5,11 @@ import { getAcademyBySlug } from "@/lib/academy-dal";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { canSupervise } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
+import {
+  MAX_PER_OWNER,
+  removeStoredObject,
+  uploadMaterialImage,
+} from "@/lib/materials";
 
 const MAX_TITLE = 200;
 
@@ -243,4 +248,127 @@ export async function deleteUnit(formData: FormData) {
   if (error) console.error("unit delete failed", error);
 
   revalidatePath(`/${academySlug}/admin/curricula/${curriculumId}`);
+}
+
+/**
+ * Attaches a material to a unit: an uploaded image, or a link to something
+ * that lives elsewhere (Drive, Canva, YouTube).
+ *
+ * Both go in the same table and appear in the same list — a معلمة should not
+ * have to care which kind she added, and the student's page does not either.
+ */
+export type MaterialState =
+  | { status: "idle" }
+  | { status: "error"; reason: string };
+
+export async function addUnitMaterial(
+  _previous: MaterialState,
+  formData: FormData,
+): Promise<MaterialState> {
+  const academySlug = String(formData.get("academySlug") ?? "").trim();
+  const curriculumId = String(formData.get("curriculumId") ?? "").trim();
+  const unitId = String(formData.get("unitId") ?? "").trim();
+  const title = String(formData.get("title") ?? "").trim();
+  const link = String(formData.get("link") ?? "").trim();
+  const file = formData.get("file");
+
+  if (!title) return { status: "error", reason: "titleRequired" };
+
+  const hasFile = file instanceof File && file.size > 0;
+  if (!hasFile && !link) return { status: "error", reason: "needFileOrLink" };
+  if (hasFile && link) return { status: "error", reason: "notBoth" };
+
+  const session = await requireStaffSession(
+    `/${academySlug}/admin/curricula/${curriculumId}`,
+  );
+  const academy = await getAcademyBySlug(academySlug);
+  if (!academy) return { status: "error", reason: "generic" };
+
+  const supabase = await createClient();
+
+  // The unit must belong to a curriculum of this academy. The `materials`
+  // policies check `academy_id` on the row itself, which would not by itself
+  // stop a unit id from another academy being written in beside it.
+  const { data: unit } = await supabase
+    .from("curriculum_units")
+    .select("id, curricula!inner(academy_id)")
+    .eq("id", unitId)
+    .eq("curriculum_id", curriculumId)
+    .maybeSingle();
+
+  if (!unit) return { status: "error", reason: "generic" };
+
+  const existing = await supabase
+    .from("materials")
+    .select("id", { count: "exact", head: true })
+    .eq("unit_id", unitId);
+
+  if ((existing.count ?? 0) >= MAX_PER_OWNER) {
+    return { status: "error", reason: "tooMany" };
+  }
+
+  let storagePath: string | null = null;
+  let kind: "image" | "link" = "link";
+
+  if (hasFile) {
+    const outcome = await uploadMaterialImage({
+      file,
+      academyId: academy.id,
+      ownerId: unitId,
+    });
+    if ("error" in outcome) return { status: "error", reason: outcome.error };
+    storagePath = outcome.path;
+    kind = "image";
+  }
+
+  const { error } = await supabase.from("materials").insert({
+    academy_id: academy.id,
+    unit_id: unitId,
+    kind,
+    title,
+    url: storagePath ? null : link,
+    storage_path: storagePath,
+    uploaded_by: session.teacher.id,
+  });
+
+  if (error) {
+    console.error("material insert failed", error);
+    // The object is already in the bucket; without the row nothing will ever
+    // reference it again, so take it back out rather than leak storage.
+    await removeStoredObject(storagePath);
+    return { status: "error", reason: "generic" };
+  }
+
+  revalidatePath(`/${academySlug}/admin/curricula/${curriculumId}/units/${unitId}`);
+  return { status: "idle" };
+}
+
+export async function deleteMaterial(formData: FormData) {
+  const academySlug = String(formData.get("academySlug") ?? "");
+  const curriculumId = String(formData.get("curriculumId") ?? "");
+  const unitId = String(formData.get("unitId") ?? "");
+  const materialId = String(formData.get("materialId") ?? "");
+
+  await requireStaffSession(`/${academySlug}/admin/curricula/${curriculumId}`);
+
+  const supabase = await createClient();
+
+  // Read the path before deleting the row — afterwards there is nothing left
+  // pointing at the object, and it would sit in the bucket forever.
+  const { data: material } = await supabase
+    .from("materials")
+    .select("storage_path")
+    .eq("id", materialId)
+    .maybeSingle();
+
+  const { error } = await supabase.from("materials").delete().eq("id", materialId);
+
+  if (error) {
+    console.error("material delete failed", error);
+    return;
+  }
+
+  await removeStoredObject(material?.storage_path ?? null);
+
+  revalidatePath(`/${academySlug}/admin/curricula/${curriculumId}/units/${unitId}`);
 }

@@ -197,3 +197,68 @@ export async function deleteScheduleBoard(formData: FormData) {
 
   refresh(academySlug);
 }
+
+/**
+ * Publishes a board covering one circle type, titled with that type's own
+ * bilingual name.
+ *
+ * This exists because of a failure mode the board model makes easy and silent:
+ * the public timetable renders *boards*, and a circle whose type has no
+ * published board simply does not appear on it. Nothing warned anyone. On this
+ * academy that meant 20 of 25 active circles — every تصحيح التلاوة, the
+ * تجويد circle and the حديث circle — were missing from the published schedule
+ * while the page itself looked perfectly healthy.
+ *
+ * The page now names the types in that state and offers this button, so the
+ * fix is one tap and the title comes from `circle_types` rather than being
+ * invented. A مشرفة can rename it afterwards like any other board.
+ */
+export async function createBoardForType(formData: FormData) {
+  const academySlug = String(formData.get("academySlug") ?? "");
+  const circleType = String(formData.get("circleType") ?? "");
+
+  await requireAdminSession(`/${academySlug}/admin/schedules`);
+  const academy = await getAcademyBySlug(academySlug);
+  if (!academy || !circleType) return;
+
+  const supabase = await createClient();
+
+  const { data: type } = await supabase
+    .from("circle_types")
+    .select("name_ar, name_en")
+    .eq("academy_id", academy.id)
+    .eq("slug", circleType)
+    .maybeSingle();
+
+  if (!type) return;
+
+  // Guard against a double submit creating two identical boards: the table
+  // deliberately allows several boards per type (a boys' one and a girls' one),
+  // so there is no unique constraint to lean on here.
+  const { count } = await supabase
+    .from("schedule_boards")
+    .select("id", { count: "exact", head: true })
+    .eq("academy_id", academy.id)
+    .eq("circle_type", circleType);
+
+  if (count) return;
+
+  const { error } = await supabase.from("schedule_boards").insert({
+    academy_id: academy.id,
+    circle_type: circleType,
+    // No gender and no time window: the widest board, covering every circle
+    // of the type. Narrowing it is a later edit, not a thing to guess at now.
+    gender_category: null,
+    start_from: null,
+    start_to: null,
+    title_ar: type.name_ar,
+    title_en: type.name_en,
+    note_ar: null,
+    note_en: null,
+    display_order: 0,
+  });
+
+  if (error) console.error("board for type insert failed", error);
+
+  refresh(academySlug);
+}

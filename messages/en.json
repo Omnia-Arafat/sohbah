@@ -679,7 +679,14 @@
         "generic": "Something went wrong. Try again.",
         "timeOrder": "\"To\" must not be earlier than \"From\"."
       },
-      "windowLabel": "{from} – {to}"
+      "windowLabel": "{from} – {to}",
+      "uncovered": {
+        "title": "{count, plural, one {1 circle is missing} other {# circles are missing}} from the published schedule",
+        "hint": "The public timetable shows boards only. A circle whose type has no published board does not appear to students at all.",
+        "circleCount": "{count, plural, one {1 circle} other {# circles}}",
+        "create": "Create a board for this type",
+        "draftExists": "A board exists as a draft — publish it from the list below."
+      }
     },
     "curricula": {
       "title": "Curricula",
@@ -749,6 +756,44 @@
         "errors": {
           "required": "This field is required.",
           "tooLong": "That text is too long.",
+          "generic": "Could not save. Please try again."
+        }
+      },
+      "materials": {
+        "listTitle": "Attachments ({count})",
+        "addTitle": "Add an attachment",
+        "empty": "This lesson has no attachments yet.",
+        "fields": {
+          "title": "Attachment name",
+          "file": "Upload an image",
+          "link": "Or an external link"
+        },
+        "placeholders": {
+          "title": "Explanation slide"
+        },
+        "fileHint": "Images only for now (JPG, PNG or WEBP), up to 5 MB each.",
+        "linkHint": "For PDFs, decks or video: upload to Google Drive or Canva and paste the link here.",
+        "kinds": {
+          "image": "Image",
+          "pdf": "PDF",
+          "slides": "Slides",
+          "audio": "Audio",
+          "video": "Video",
+          "link": "Link"
+        },
+        "open": "Open",
+        "add": "Add attachment",
+        "uploading": "Uploading…",
+        "delete": "Delete",
+        "confirmDelete": "Delete “{name}”? This cannot be undone.",
+        "errors": {
+          "titleRequired": "The attachment name is required.",
+          "needFileOrLink": "Pick an image or paste a link.",
+          "notBoth": "Pick an image or a link, not both.",
+          "tooLarge": "That image is larger than 5 MB.",
+          "badType": "Images only: JPG, PNG or WEBP.",
+          "tooMany": "This lesson has reached the attachment limit (10).",
+          "notConfigured": "Uploads are not configured on the server. Use an external link for now.",
           "generic": "Could not save. Please try again."
         }
       }
@@ -854,7 +899,9 @@
         "notSubmitted": "Not submitted yet",
         "attemptNo": "Attempt {n}",
         "awaitingMarking": "awaiting manual marking",
-        "manualNote": "Written answers are not graded automatically. Marking them from this page is not built yet — the score shown is the auto-graded portion only."
+        "markCorrect": "Correct",
+        "markWrong": "Wrong",
+        "blankAnswer": "(left blank)"
       }
     }
   },
@@ -1015,7 +1062,8 @@
   },
   "lesson": {
     "today": "Today's lesson",
-    "explanation": "Explanation"
+    "explanation": "Explanation",
+    "materials": "Lesson attachments"
   },
   "quiz": {
     "title": "Quiz",
