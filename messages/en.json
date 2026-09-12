@@ -1180,5 +1180,62 @@
       "closed": "The quiz closed — that answer was not saved.",
       "generic": "Something went wrong. Please try again."
     }
+  },
+  "me": {
+    "title": "My page",
+    "subtitle": "Your memorisation and recitation record in one place.",
+    "signIn": {
+      "title": "Who are you?",
+      "hint": "Your name and the phone number you registered with — no password.",
+      "name": "Name",
+      "namePlaceholder": "e.g. Sara Mahmoud",
+      "phone": "Phone number",
+      "phonePlaceholder": "01000000000",
+      "submit": "Open my page",
+      "submitting": "Searching…",
+      "notFound": "No student matches that name and phone number. Check both, or ask your teacher.",
+      "error": "Could not connect. Please try again.",
+      "privacy": "Your phone number is what confirms it is you, so nobody else can open your record."
+    },
+    "signOut": "Sign out",
+    "memorised": {
+      "title": "Your memorisation",
+      "span": "{juz, plural, one{# juz} other{# juz}} and {pages, plural, one{# page} other{# pages}}",
+      "spanJuzOnly": "{juz, plural, one{# juz} other{# juz}}",
+      "spanPagesOnly": "{pages, plural, one{# page} other{# pages}}",
+      "none": "No recitation recorded yet",
+      "juz": "Juz {number}",
+      "legend": {
+        "solid": "Solid",
+        "fading": "Fading",
+        "learning": "In progress"
+      }
+    },
+    "review": {
+      "detail": "{count, plural, one{Juz} other{Juz}} {list} — {days, plural, one{last reviewed # day ago} other{last reviewed # days ago}}.",
+      "test": "Test yourself",
+      "read": "Read",
+      "clear": "Everything is reviewed",
+      "clearHint": "No juz has gone a month without review. Keep it up.",
+      "count": "{count, plural, one{One juz needs review} other{# juz need review}}"
+    },
+    "recent": {
+      "title": "Latest recitation",
+      "empty": "Your teacher has not logged a recitation yet. It will appear here after your next turn.",
+      "line": "{kind} · {circle}",
+      "withErrors": "{kind} · {errors}",
+      "errorsMajor": "{count, plural, one{# major mistake} other{# major mistakes}}",
+      "errorsMinor": "{count, plural, one{# minor mistake} other{# minor mistakes}}",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "daysAgo": "{days, plural, one{# day ago} other{# days ago}}",
+      "noRating": "—"
+    },
+    "circles": {
+      "title": "Your circles",
+      "empty": "Not in any circle yet.",
+      "open": "Open circle"
+    },
+    "footnote": "This comes from your recitation in the circle — your teacher records it."
   }
 }

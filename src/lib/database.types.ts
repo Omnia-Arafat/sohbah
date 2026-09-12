@@ -224,6 +224,37 @@ export type CircleRecitationLog = Pick<
   | "note"
 >;
 
+/**
+ * A student's own view of one recorded turn, from `my_recitations`.
+ *
+ * Carries the circle and the معلمة's name and NOT the teacher's phone or the
+ * attendance row — a student sees what she recited and who heard it, nothing
+ * about the running of the circle.
+ */
+export type MyRecitation = {
+  session_date: string;
+  kind: RecitationKind;
+  from_surah: number;
+  from_ayah: number;
+  to_surah: number;
+  to_ayah: number;
+  rating: RecitationRating | null;
+  major_errors: number;
+  minor_errors: number;
+  circle_name: string;
+  teacher_name: string | null;
+};
+
+/** One circle a student has attended, from `my_circles`. */
+export type MyCircle = {
+  circle_id: string;
+  circle_name: string;
+  circle_type: CircleType;
+  registration_slug: string;
+  teacher_name: string;
+  last_attended: string;
+};
+
 /** Where a student stopped last time, so the next turn can prefill "من". */
 export type LastRecitation = {
   to_surah: number;
@@ -761,6 +792,19 @@ export type Database = {
       circle_recitation_logs: {
         Args: { p_circle_id: string; p_session_date: string };
         Returns: CircleRecitationLog[];
+      };
+      find_me: {
+        Args: { p_academy_slug: string; p_name: string; p_phone: string };
+        /** At most one row — never a list. See the migration for why. */
+        Returns: StudentSearchResult[];
+      };
+      my_recitations: {
+        Args: { p_student_id: string; p_phone: string };
+        Returns: MyRecitation[];
+      };
+      my_circles: {
+        Args: { p_student_id: string; p_phone: string };
+        Returns: MyCircle[];
       };
       teacher_login: {
         Args: { p_academy_id: string; p_name: string; p_phone: string };
