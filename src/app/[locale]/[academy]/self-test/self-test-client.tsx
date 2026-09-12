@@ -430,7 +430,17 @@ export function SelfTestClient({
 function buildQuestions(ayahs: QuranRangeAyah[], mode: Mode): Question[] {
   const usable =
     mode === "complete"
-      ? ayahs.filter((ayah) => wordsOf(ayah.text).length >= 6)
+      ? ayahs.filter(
+          (ayah) =>
+            wordsOf(ayah.text).length >= 6 &&
+            // The first ayah of a surah opens with the البسملة in this
+            // edition, so its opening third IS the البسملة — a cue that is
+            // identical for 112 surahs and tells her nothing about which one
+            // she is being asked for. Excluded rather than trimmed: trimming
+            // would mean deciding where scripture ends and a prefix begins,
+            // and that is not a decision this app gets to make.
+            !(ayah.ayah === 1 && ayah.surah !== 9),
+        )
       : ayahs.slice(0, -1);
 
   const picked = sample(usable, QUESTION_COUNT);
