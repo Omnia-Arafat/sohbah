@@ -324,6 +324,58 @@
       "error": "Could not save. Please try again.",
       "noCurriculum": "No curriculum exists for this circle type yet.",
       "noCurriculumCta": "Add a curriculum"
+    },
+    "log": {
+      "title": "Recitation log",
+      "open": "Log the recitation",
+      "edit": "Edit log",
+      "subtitle": "Turn {order} · {circle}",
+      "kind": {
+        "label": "Kind",
+        "new": "New memorisation",
+        "near_review": "Recent review",
+        "far_review": "Distant review",
+        "consolidation": "Consolidation"
+      },
+      "range": {
+        "label": "From → to",
+        "from": "From",
+        "to": "To",
+        "surah": "Surah",
+        "ayah": "Ayah",
+        "continued": "Continuing from last time",
+        "lastTime": "Last time she stopped at {ref}",
+        "count": "{count} ayat",
+        "backwards": "“To” must come after “from”."
+      },
+      "rating": {
+        "label": "Rating",
+        "excellent": "Excellent",
+        "very_good": "Very good",
+        "good": "Good",
+        "repeat": "Repeat",
+        "none": "No rating"
+      },
+      "errors": {
+        "label": "Mistakes",
+        "hint": "Counting the two kinds apart is what later shows a problem is tajweed, not memorisation.",
+        "major": "Lahn jali",
+        "majorHint": "Changes the word or the meaning",
+        "minor": "Lahn khafi",
+        "minorHint": "A tajweed slip that keeps the meaning",
+        "increase": "Increase",
+        "decrease": "Decrease"
+      },
+      "note": {
+        "label": "Note",
+        "placeholder": "e.g. needs to revise the rules of madd"
+      },
+      "save": "Save and finish the turn",
+      "saveOnly": "Save changes",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "saveError": "Could not save the log. Please try again.",
+      "summary": "{range} · {count} ayat"
     }
   },
   "admin": {
@@ -993,7 +1045,8 @@
     "copyLink": "Copy link",
     "copied": "Copied",
     "showPassword": "Show password",
-    "hidePassword": "Hide password"
+    "hidePassword": "Hide password",
+    "noResults": "No results"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",

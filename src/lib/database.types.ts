@@ -167,7 +167,69 @@ export type CircleTypeOption = {
   name_ar: string;
   name_en: string;
   is_active: boolean;
+  /**
+   * Whether a circle of this kind keeps a سجل تسميع — a mushaf range per
+   * student. True for تصحيح التلاوة، تجويد and تسميع حر; false for حديث,
+   * where the unit is a hadith and `student_unit_progress` records it.
+   */
+  records_recitation: boolean;
   created_at: string;
+};
+
+/**
+ * The four kinds a حفظ circle distinguishes. مراجعة قريبة is recently
+ * memorised ground, مراجعة بعيدة is old ground, تثبيت is the pass that makes
+ * it permanent — collapsing them loses the only signal about retention.
+ */
+export type RecitationKind = "new" | "near_review" | "far_review" | "consolidation";
+
+export type RecitationRating = "excellent" | "very_good" | "good" | "repeat";
+
+/** One recorded turn: see supabase/migrations/20260913090000_recitation_log.sql. */
+export type RecitationLog = {
+  id: string;
+  attendance_id: string | null;
+  student_id: string;
+  circle_id: string;
+  session_date: string;
+  teacher_id: string | null;
+  kind: RecitationKind;
+  from_surah: number;
+  from_ayah: number;
+  to_surah: number;
+  to_ayah: number;
+  rating: RecitationRating | null;
+  /** لحن جلي — changes the word or the meaning. */
+  major_errors: number;
+  /** لحن خفي — a tajweed slip that does not change the meaning. */
+  minor_errors: number;
+  note: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/** What `circle_recitation_logs` returns: today's logs, keyed by queue row. */
+export type CircleRecitationLog = Pick<
+  RecitationLog,
+  | "attendance_id"
+  | "student_id"
+  | "kind"
+  | "from_surah"
+  | "from_ayah"
+  | "to_surah"
+  | "to_ayah"
+  | "rating"
+  | "major_errors"
+  | "minor_errors"
+  | "note"
+>;
+
+/** Where a student stopped last time, so the next turn can prefill "من". */
+export type LastRecitation = {
+  to_surah: number;
+  to_ayah: number;
+  kind: RecitationKind;
+  session_date: string;
 };
 
 /**
@@ -521,9 +583,22 @@ export type Database = {
         >;
         Relationships: [];
       };
+      recitation_logs: {
+        Row: RecitationLog;
+        // Rows are written only by record_recitation(); the policies allow a
+        // direct insert, but nothing in the app takes that path — the RPC is
+        // what derives student/circle/date from the queue row instead of
+        // trusting the browser.
+        Insert: Insert<RecitationLog, "id" | "created_at" | "updated_at">;
+        Update: Partial<RecitationLog>;
+        Relationships: [];
+      };
       circle_types: {
         Row: CircleTypeOption;
-        Insert: Insert<CircleTypeOption, "id" | "created_at" | "is_active">;
+        Insert: Insert<
+          CircleTypeOption,
+          "id" | "created_at" | "is_active" | "records_recitation"
+        >;
         Update: Partial<CircleTypeOption>;
         Relationships: [];
       };
@@ -661,6 +736,31 @@ export type Database = {
           p_student_ids: string[];
         };
         Returns: undefined;
+      };
+      record_recitation: {
+        Args: {
+          p_attendance_id: string;
+          p_kind: RecitationKind;
+          p_from_surah: number;
+          p_from_ayah: number;
+          p_to_surah: number;
+          p_to_ayah: number;
+          p_rating?: RecitationRating | null;
+          p_major_errors?: number;
+          p_minor_errors?: number;
+          p_note?: string | null;
+          p_finish_turn?: boolean;
+        };
+        /** The log's id. */
+        Returns: string;
+      };
+      last_recitation: {
+        Args: { p_student_id: string };
+        Returns: LastRecitation[];
+      };
+      circle_recitation_logs: {
+        Args: { p_circle_id: string; p_session_date: string };
+        Returns: CircleRecitationLog[];
       };
       teacher_login: {
         Args: { p_academy_id: string; p_name: string; p_phone: string };

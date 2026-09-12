@@ -3,7 +3,20 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { matchesSearch } from "@/lib/arabic-search";
 
-type Option = { value: string; label: string };
+type Option = {
+  value: string;
+  label: string;
+  /**
+   * Extra text the option can also be found by, never shown.
+   *
+   * Added for the surah picker: the label is Uthmani orthography (ٱلْكَهۡفِ)
+   * and a معلمة types الكهف. `matchesSearch` folds the marks that appear in
+   * names, not the ones that appear in the mushaf, and widening it there
+   * would desync it from the database's own `normalize_ar()` — so the
+   * stripped form travels with the option instead.
+   */
+  keywords?: string;
+};
 
 /**
  * A single-select combobox: type to filter, arrow keys to move, enter to
@@ -33,6 +46,7 @@ export function SearchableSelect({
   placeholder,
   noMatches,
   required,
+  onValueChange,
 }: {
   id: string;
   name: string;
@@ -42,6 +56,15 @@ export function SearchableSelect({
   /** Shown in the panel when typing matches nothing. */
   noMatches: string;
   required?: boolean;
+  /**
+   * Optional: told about each pick, for callers that need to react to it
+   * rather than only read it on submit — the recitation log narrows its ayah
+   * bound to the chosen surah, and shows the ayah count live.
+   *
+   * The component stays uncontrolled either way: this reports the value, it
+   * does not receive it, so every existing caller is unaffected.
+   */
+  onValueChange?: (value: string) => void;
 }) {
   const listboxId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -58,7 +81,13 @@ export function SearchableSelect({
   // together and a title in front of the name is ignored, so "معلمه وسام"
   // still finds "وسام لطفي".
   const filtered = useMemo(
-    () => options.filter((option) => matchesSearch(option.label, draft)),
+    () =>
+      options.filter((option) =>
+        matchesSearch(
+          option.keywords ? `${option.label} ${option.keywords}` : option.label,
+          draft,
+        ),
+      ),
     [options, draft],
   );
 
@@ -80,6 +109,7 @@ export function SearchableSelect({
     setValue(option.value);
     setOpen(false);
     inputRef.current?.blur();
+    onValueChange?.(option.value);
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {

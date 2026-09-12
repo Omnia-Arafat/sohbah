@@ -128,6 +128,25 @@ export default async function TeacherSessionPage({ params }: SessionPageProps) {
 
   const info = infoResult.data?.[0] ?? null;
 
+  // Whether this kind of circle keeps a سجل تسميع at all. A حلقة حديث does
+  // not — its unit is a hadith, which `student_unit_progress` already records
+  // from the lesson picker above. Read from the type rather than a hardcoded
+  // list, since an academy can add a new type at any time.
+  const recordsRecitation =
+    circleTypes.find((type) => type.slug === circle.type)?.records_recitation ??
+    true;
+
+  // Today's logs, so the queue can show which turns are already recorded
+  // without a request per student. Skipped entirely for a type that keeps no
+  // log — the RPC would return nothing and the round trip would be waste.
+  const { data: logRows } =
+    recordsRecitation && info
+      ? await supabase.rpc("circle_recitation_logs", {
+          p_circle_id: circle.id,
+          p_session_date: info.session_date,
+        })
+      : { data: [] };
+
   return (
     <div className="flex flex-col gap-6">
       <section>
@@ -231,6 +250,9 @@ export default async function TeacherSessionPage({ params }: SessionPageProps) {
             sessionDate={info.session_date}
             initialQueue={queueResult.data ?? []}
             maxStudents={circle.max_students}
+            circleName={circle.name}
+            recordsRecitation={recordsRecitation}
+            initialLogs={logRows ?? []}
           />
         ) : (
           <p className="card text-muted-foreground">{t("errors.generic")}</p>
