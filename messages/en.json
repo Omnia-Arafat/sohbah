@@ -1345,7 +1345,9 @@
       "nextAyah": "The next ayah",
       "nextAyahHint": "We show an ayah, you recall the one after it",
       "mutashabihat": "Near-identical ayat",
-      "mutashabihatHint": "Almost the same ayah in two different places"
+      "mutashabihatHint": "Almost the same ayah in two different places",
+      "hidden": "Hidden words",
+      "hiddenHint": "A mushaf page with more of it hidden each time"
     },
     "start": "Start",
     "loading": "Preparing the test…",
@@ -1377,6 +1379,13 @@
       "right": "Right",
       "wrong": "That is the other ayah’s word",
       "twin": "The near-twin is {surah} ayah {ayah}"
+    },
+    "hidden": {
+      "instruction": "Read the page aloud and fill the hidden words from memory.",
+      "tapHint": "Tap any hidden word if you get stuck.",
+      "revealAll": "Reveal the page",
+      "pageLabel": "Page {page} · {surah}",
+      "hiddenCount": "{count, plural, one{# word hidden} other{# words hidden}}"
     }
   },
   "quizzes": {

@@ -11,12 +11,14 @@ import { BookOpen, EyeOff, RotateCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type {
+  MushafAyah,
   MutashabihQuestion,
   MyRecitation,
   QuranRangeAyah,
 } from "@/lib/database.types";
 import { getMe, meKey, subscribeMe } from "@/lib/me-store";
 import { buildProgress } from "@/lib/quran/progress";
+import { pageOf } from "@/lib/quran/reference";
 import { JUZ_STARTS, JUZ_COUNT } from "@/lib/quran/structure";
 import { surahByNumber } from "@/lib/quran/surahs";
 import { createClient } from "@/lib/supabase/client";
@@ -36,14 +38,14 @@ import { createClient } from "@/lib/supabase/client";
  *   أكملي الآية   — the opening words are shown, the rest is covered
  *   الآية التالية — one ayah is shown, the next is covered
  *   المتشابهات    — a near-identical pair, and the word they part on
+ *   إخفاء الكلمات — a mushaf page with more of it covered each time
  *
  * The first two are recall-and-self-grade: there is no way to check what she
  * said out loud, and asking her to TYPE an ayah would be asking her to type
  * scripture. المتشابهات is different — it has a right answer and is marked,
  * because the failure it trains is confident wrongness and self-grading would
  * grade the confidence.
- *
- * The canvas also draws إخفاء الكلمات, which is not built yet.
+
  *
  * NOTHING IS TYPED. The prompt and the hidden half are the real text, split at
  * a word boundary. The split never falls inside a word, so the visible part is
@@ -51,7 +53,20 @@ import { createClient } from "@/lib/supabase/client";
  */
 
 const QUESTION_COUNT = 10;
-type Mode = "complete" | "nextAyah" | "mutashabihat";
+
+/**
+ * إخفاء الكلمات hides this share of each page, ramping across the run.
+ *
+ * It starts gentle enough to be readable — a quarter covered still leaves the
+ * shape of the page — and ends where she is reciting most of it from memory
+ * with the page as a prompt rather than a text. Five pages, not ten: a page is
+ * a long piece of work next to a single ayah.
+ */
+const HIDDEN_PAGES = 5;
+const HIDDEN_FROM = 0.25;
+const HIDDEN_TO = 0.6;
+
+type Mode = "complete" | "nextAyah" | "mutashabihat" | "hidden";
 type Grade = "got" | "shaky" | "lost";
 
 /**
@@ -96,7 +111,26 @@ type ChoiceQuestion = {
   twin: { surah: number; ayah: number };
 };
 
-type Question = RecallQuestion | ChoiceQuestion;
+/**
+ * إخفاء الكلمات — a mushaf page with a share of its words covered, and more
+ * covered on each question than the last.
+ *
+ * The page is the unit because that is how the drill is done on paper: a
+ * حافظة lays a card over part of the page and reads through it. Doing it to a
+ * single ayah would be the same exercise as أكملي الآية, and doing it to a
+ * reflowing list would destroy the page layout the memory is hung on.
+ */
+type HiddenPageQuestion = {
+  kind: "hidden";
+  page: number;
+  surah: number;
+  /** The page's ayat, each already split into verbatim words. */
+  lines: { surah: number; ayah: number; words: string[] }[];
+  /** Which words are covered, as "lineIndex:wordIndex". */
+  hidden: Set<string>;
+};
+
+type Question = RecallQuestion | ChoiceQuestion | HiddenPageQuestion;
 
 export function SelfTestClient({
   academySlug,
@@ -201,6 +235,45 @@ export function SelfTestClient({
       }
 
       const built = buildChoiceQuestions((data ?? []) as MutashabihQuestion[]);
+      if (built.length === 0) {
+        setError(true);
+        return;
+      }
+
+      setQuestions(built);
+      setIndex(0);
+      setRevealed(false);
+      setGrades([]);
+      return;
+    }
+
+    // إخفاء الكلمات works a page at a time, so it asks for pages rather than a
+    // range of ayat. The page numbers come from the juz boundaries through the
+    // generated structure table — no extra round trip to find out which pages
+    // a جزء covers.
+    if (mode === "hidden") {
+      const firstPage = pageOf(refOf(JUZ_STARTS[from - 1]));
+      const lastPage = pageOf(
+        to < JUZ_COUNT ? refOf(previousAyah(JUZ_STARTS[to])) : { surah: 114, ayah: 6 },
+      );
+
+      const pages = samplePages(firstPage, lastPage, HIDDEN_PAGES);
+      const loaded = await Promise.all(
+        pages.map((page) => supabase.rpc("mushaf_page", { p_page: page })),
+      );
+
+      setBusy(false);
+
+      const failed = loaded.find((result) => result.error);
+      if (failed) {
+        console.error("mushaf_page failed", failed.error);
+        setError(true);
+        return;
+      }
+
+      const built = pages.flatMap((page, at) =>
+        buildHiddenPage(page, (loaded[at].data ?? []) as MushafAyah[], at),
+      );
       if (built.length === 0) {
         setError(true);
         return;
@@ -333,6 +406,12 @@ export function SelfTestClient({
               title={t("mode.mutashabihat")}
               hint={t("mode.mutashabihatHint")}
             />
+            <ScopeOption
+              selected={mode === "hidden"}
+              onSelect={() => setMode("hidden")}
+              title={t("mode.hidden")}
+              hint={t("mode.hiddenHint")}
+            />
           </div>
         </section>
 
@@ -401,21 +480,42 @@ export function SelfTestClient({
   const question = questions[index];
   const surahNumber =
     question.kind === "recall" ? question.ayah.surah : question.surah;
-  const ayahNumber = question.kind === "recall" ? question.ayah.ayah : question.ayah;
   const surah = surahByNumber(surahNumber);
+  const surahLabel = (locale === "ar" ? surah?.name : surah?.englishName) ?? "";
+  const progressLabel = t("progress", {
+    current: index + 1,
+    total: questions.length,
+  });
 
   if (question.kind === "choice") {
     return (
       <MutashabihQuestionCard
         question={question}
-        surahLabel={(locale === "ar" ? surah?.name : surah?.englishName) ?? ""}
+        surahLabel={surahLabel}
         academySlug={academySlug}
-        progress={t("progress", { current: index + 1, total: questions.length })}
+        progress={progressLabel}
         onAnswered={(right) => grade(right ? "got" : "lost")}
         t={t}
       />
     );
   }
+
+  if (question.kind === "hidden") {
+    return (
+      <HiddenPageCard
+        question={question}
+        surahLabel={surahLabel}
+        academySlug={academySlug}
+        progress={progressLabel}
+        revealed={revealed}
+        onReveal={() => setRevealed(true)}
+        onGrade={grade}
+        t={t}
+      />
+    );
+  }
+
+  const ayahNumber = question.ayah.ayah;
 
   return (
     <div className="flex flex-col gap-4">
@@ -860,5 +960,202 @@ function MutashabihQuestionCard({
         )}
       </section>
     </div>
+  );
+}
+
+// =============================================================================
+// إخفاء الكلمات
+// =============================================================================
+
+/** `[surah, ayah]` from the structure tables, as the shape the helpers take. */
+function refOf([surah, ayah]: readonly [number, number]) {
+  return { surah, ayah };
+}
+
+/** Distinct pages from a range, in reading order — the drill moves forward. */
+function samplePages(first: number, last: number, count: number): number[] {
+  const span = Math.max(1, last - first + 1);
+  const wanted = Math.min(count, span);
+  const picked = new Set<number>();
+  while (picked.size < wanted) {
+    picked.add(first + Math.floor(Math.random() * span));
+  }
+  return [...picked].sort((a, b) => a - b);
+}
+
+/**
+ * Covers a share of the page's words, more on each successive page.
+ *
+ * WHAT IS NEVER HIDDEN: the first word of an ayah. It is the cue the whole
+ * page hangs on — a حافظة finds her place by the openings, and covering them
+ * turns a memory drill into a guessing game. Everything after it is fair.
+ *
+ * The words themselves are the verbatim tokens; nothing is rewritten, and a
+ * covered word is covered in the DOM rather than replaced, so revealing it
+ * shows the real text and not a reconstruction.
+ */
+function buildHiddenPage(
+  page: number,
+  ayahs: MushafAyah[],
+  order: number,
+): HiddenPageQuestion[] {
+  if (ayahs.length === 0) return [];
+
+  const lines = ayahs.map((entry) => ({
+    surah: entry.surah,
+    ayah: entry.ayah,
+    words: entry.text.split(/\s+/).filter(Boolean),
+  }));
+
+  // Every position that may be covered: not the opening word of an ayah.
+  const candidates: string[] = [];
+  lines.forEach((line, lineAt) => {
+    line.words.forEach((_, wordAt) => {
+      if (wordAt === 0) return;
+      candidates.push(`${lineAt}:${wordAt}`);
+    });
+  });
+
+  const step = HIDDEN_PAGES > 1 ? order / (HIDDEN_PAGES - 1) : 0;
+  const share = HIDDEN_FROM + (HIDDEN_TO - HIDDEN_FROM) * step;
+  const hidden = new Set(sample(candidates, Math.round(candidates.length * share)));
+
+  return [{ kind: "hidden", page, surah: ayahs[0].surah, lines, hidden }];
+}
+
+/**
+ * One page with words covered.
+ *
+ * A covered word can be tapped on its own. That is not a convenience — it is
+ * how the drill is done on paper: you lift the card off one word, not the
+ * whole page, and the point is to get unstuck without giving up the rest.
+ * «اكشفي الصفحة» is the give-up, and it is the one that ends the question.
+ */
+function HiddenPageCard({
+  question,
+  surahLabel,
+  academySlug,
+  progress,
+  revealed,
+  onReveal,
+  onGrade,
+  t,
+}: {
+  question: HiddenPageQuestion;
+  surahLabel: string;
+  academySlug: string;
+  progress: string;
+  revealed: boolean;
+  onReveal: () => void;
+  onGrade: (grade: Grade) => void;
+  t: ReturnType<typeof useTranslations<"selfTest">>;
+}) {
+  const [peeked, setPeeked] = useState<Set<string>>(new Set());
+
+  return (
+    <div className="flex flex-col gap-4">
+      <header className="flex items-center justify-between gap-3">
+        <h1 className="font-display text-lg font-bold">{t("title")}</h1>
+        <span className="text-sm text-muted-foreground tabular-nums">{progress}</span>
+      </header>
+
+      <section className="rounded-2xl border border-accent-300 bg-accent-100/25 p-1.5 dark:border-accent-700 dark:bg-accent-700/10">
+        <div className="rounded-xl border border-accent-200 px-3 py-4 dark:border-accent-700/60">
+          <p className="pb-2 text-center text-xs text-accent-700 dark:text-accent-300">
+            {t("hidden.pageLabel", { page: question.page, surah: surahLabel })}
+          </p>
+
+          <p
+            dir="rtl"
+            lang="ar"
+            className="text-center font-display text-[1.25rem] leading-[2.4]"
+          >
+            {question.lines.map((line, lineAt) => (
+              <span key={`${line.surah}:${line.ayah}`}>
+                {line.words.map((word, wordAt) => {
+                  const at = `${lineAt}:${wordAt}`;
+                  const covered =
+                    question.hidden.has(at) && !revealed && !peeked.has(at);
+
+                  if (!covered) return <span key={at}>{word} </span>;
+
+                  return (
+                    <button
+                      key={at}
+                      type="button"
+                      onClick={() =>
+                        setPeeked((current) => new Set(current).add(at))
+                      }
+                      aria-label={t("hidden.tapHint")}
+                      className="mx-0.5 inline-block h-5 rounded bg-accent-200/80 align-middle
+                                 dark:bg-accent-700/40"
+                      // Sized to the word it covers, so the line keeps its
+                      // rhythm and she can still see how long the word is —
+                      // which is a legitimate part of the cue on paper too.
+                      style={{ width: `${Math.max(2, word.length * 0.55)}ch` }}
+                    />
+                  );
+                })}
+                <span className="mx-1 inline-block align-middle text-xs text-accent-600 dark:text-accent-400">
+                  ﴿{toArabicDigits(line.ayah)}﴾
+                </span>{" "}
+              </span>
+            ))}
+          </p>
+        </div>
+      </section>
+
+      {!revealed ? (
+        <>
+          <p className="text-center text-sm leading-relaxed text-muted-foreground">
+            {t("hidden.instruction")}
+            <br />
+            <span className="text-xs">{t("hidden.tapHint")}</span>
+          </p>
+          <button type="button" onClick={onReveal} className="btn-primary w-full">
+            {t("hidden.revealAll")}
+          </button>
+        </>
+      ) : (
+        <div className="card">
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={() => onGrade("got")}
+              className="btn-primary px-2 py-2.5 text-sm"
+            >
+              {t("grade.got")}
+            </button>
+            <button
+              type="button"
+              onClick={() => onGrade("shaky")}
+              className="btn-secondary px-2 py-2.5 text-sm"
+            >
+              {t("grade.shaky")}
+            </button>
+            <button
+              type="button"
+              onClick={() => onGrade("lost")}
+              className="btn-secondary px-2 py-2.5 text-sm"
+            >
+              {t("grade.lost")}
+            </button>
+          </div>
+          <Link
+            href={`/${academySlug}/mushaf/${question.page}`}
+            className="mt-3 block text-center text-xs font-semibold text-brand-700 dark:text-brand-300"
+          >
+            {t("openInMushaf")}
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Ayah numbers are Arabic-Indic inside the ۝, as on the page itself. */
+function toArabicDigits(value: number): string {
+  return String(value).replace(/\d/g, (digit) =>
+    String.fromCharCode(0x0660 + Number(digit)),
   );
 }
