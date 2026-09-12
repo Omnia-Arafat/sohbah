@@ -52,17 +52,32 @@ function MotionSection({
 }) {
   const [mounted, setMounted] = useState(show);
   const [visible, setVisible] = useState(show);
+  const [lastShow, setLastShow] = useState(show);
+
+  /*
+    The two instant halves of the transition are adjusted DURING RENDER, which
+    is React's documented way to react to a changed prop — not in an effect.
+
+    They have to be instant to work at all: a section must be in the tree
+    before it can fade in, and must lose its visible class before it can fade
+    out. Doing that in an effect means one painted frame in the wrong state,
+    and it is the cascading-render pattern the lint rule is there to catch.
+
+    What genuinely belongs in the effect below is only the two DELAYED halves —
+    the next frame, and the end of the animation.
+  */
+  if (lastShow !== show) {
+    setLastShow(show);
+    if (show) setMounted(true);
+    else setVisible(false);
+  }
 
   useEffect(() => {
     if (show) {
-      setMounted(true);
-      const frame = requestAnimationFrame(() => {
-        setVisible(true);
-      });
+      const frame = requestAnimationFrame(() => setVisible(true));
       return () => cancelAnimationFrame(frame);
     }
 
-    setVisible(false);
     const timer = window.setTimeout(() => setMounted(false), MOTION_MS);
     return () => window.clearTimeout(timer);
   }, [show]);
