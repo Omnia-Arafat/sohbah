@@ -1364,5 +1364,34 @@
       "read": "Read in the mushaf"
     },
     "openInMushaf": "Open it in the mushaf"
+  },
+  "quizzes": {
+    "title": "Quizzes",
+    "tabs": {
+      "fromTeacher": "From your teacher",
+      "selfTest": "Test yourself"
+    },
+    "signInPrompt": "Open your page first, so we know whose quizzes to show.",
+    "signInCta": "Open my page",
+    "openNow": "Open now",
+    "closesAt": "Closes {date}",
+    "noClose": "Open",
+    "minutes": "{count, plural, one{# minute} other{# minutes}}",
+    "questions": "{count, plural, one{# question} other{# questions}}",
+    "attempts": "{count, plural, one{# attempt} other{# attempts}}",
+    "identityNote": "You will need your name and phone number so we know it is you.",
+    "start": "Start the quiz",
+    "retake": "Try again",
+    "usedUp": "No attempts left",
+    "empty": "No open quizzes from your teacher right now.",
+    "emptyHint": "One will appear here when your teacher opens it.",
+    "results": "Your results",
+    "resultsEmpty": "You have not taken a quiz yet.",
+    "awaiting": "Waiting for your teacher to mark it",
+    "passed": "Passed",
+    "score": "{score}%",
+    "selfIntro": "Your own tests, whenever you like and as often as you like — not recorded with your teacher.",
+    "selfCta": "Start a self-test",
+    "myPage": "My page"
   }
 }

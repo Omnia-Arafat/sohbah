@@ -1,6 +1,12 @@
 "use client";
 
-import { BookOpen, CalendarDays, CircleCheckBig, House, UserRound } from "lucide-react";
+import {
+  BookOpen,
+  CalendarDays,
+  CircleCheckBig,
+  ClipboardCheck,
+  House,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 
@@ -24,10 +30,14 @@ import { Link, usePathname } from "@/i18n/navigation";
  * اختبري حفظك is available every hour, from any screen, and it is the single
  * highest-value thing she can do for her حفظ.
  *
- * The canvas's fifth slot is الاختبارات (her معلمة's quizzes). Those live on a
- * circle's own page today, and they only exist for a student who is in a
- * circle that has one — so صفحتي takes the slot until there is a screen that
- * gathers them.
+ * The fifth slot is الاختبارات, as drawn. It gathers what her معلمة set across
+ * every circle she attends — before that screen existed, quizzes lived only on
+ * a circle's page and a student in three circles had to open three links to
+ * find out whether anything was set.
+ *
+ * صفحتي loses its tab to it and keeps a full-width card on the home screen,
+ * plus a link in this screen's own header. That follows the canvas, and it is
+ * also the right order: a quiz has a closing time and her record does not.
  *
  * Every value here is copied from `bottom-nav.tsx` rather than re-invented —
  * 68px tabs, a 23px icon, a 10.5px label, and the same 3×20px mark above the
@@ -41,7 +51,7 @@ export function PublicNav({ academySlug }: { academySlug: string }) {
   const schedule = `/${academySlug}/schedule`;
   const selfTest = `/${academySlug}/self-test`;
   const mushaf = `/${academySlug}/mushaf`;
-  const me = `/${academySlug}/me`;
+  const quizzes = `/${academySlug}/quizzes`;
 
   return (
     <nav
@@ -93,10 +103,10 @@ export function PublicNav({ academySlug }: { academySlug: string }) {
           Icon={BookOpen}
         />
         <PublicTab
-          href={me}
-          label={t("myPage")}
-          active={pathname.startsWith(me)}
-          Icon={UserRound}
+          href={quizzes}
+          label={t("quizzes")}
+          active={pathname.startsWith(quizzes)}
+          Icon={ClipboardCheck}
         />
       </div>
     </nav>

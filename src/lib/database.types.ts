@@ -245,6 +245,37 @@ export type MyRecitation = {
   teacher_name: string | null;
 };
 
+/** One quiz her معلمة has open, from `my_quizzes`. */
+export type MyQuiz = {
+  quiz_id: string;
+  title: string;
+  instructions: string | null;
+  duration_minutes: number | null;
+  closes_at: string | null;
+  max_attempts: number;
+  question_count: number;
+  circle_id: string;
+  circle_name: string;
+  registration_slug: string;
+  teacher_name: string;
+  attempts_used: number;
+  last_status: 'in_progress' | 'submitted' | 'graded' | null;
+  last_score: number | null;
+  last_max_score: number | null;
+  last_submitted_at: string | null;
+};
+
+/** One finished attempt, from `my_quiz_results`. */
+export type MyQuizResult = {
+  quiz_id: string;
+  title: string;
+  circle_name: string | null;
+  status: 'submitted' | 'graded';
+  score: number | null;
+  max_score: number | null;
+  submitted_at: string | null;
+};
+
 /** One circle a student has attended, from `my_circles`. */
 export type MyCircle = {
   circle_id: string;
@@ -871,6 +902,14 @@ export type Database = {
       my_circles: {
         Args: { p_student_id: string; p_phone: string };
         Returns: MyCircle[];
+      };
+      my_quizzes: {
+        Args: { p_student_id: string; p_phone: string };
+        Returns: MyQuiz[];
+      };
+      my_quiz_results: {
+        Args: { p_student_id: string; p_phone: string };
+        Returns: MyQuizResult[];
       };
       teacher_login: {
         Args: { p_academy_id: string; p_name: string; p_phone: string };
