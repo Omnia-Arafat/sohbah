@@ -62,6 +62,11 @@
     "teacher": {
       "title": "Teacher or supervisor?",
       "cta": "Sign in"
+    },
+    "today": {
+      "title": "Today’s circles",
+      "fullWeek": "Weekly schedule",
+      "none": "No circles scheduled today. See the weekly schedule."
     }
   },
   "register": {
