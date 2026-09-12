@@ -81,15 +81,47 @@ const SUPPLIED = [
   ["12053f56", "+201551353791", "عبير محمد عبد المنعم"],
 ];
 
-// --- 3. The merge -----------------------------------------------------------
-// أم كريم (18 جلسة) is the row that survives; it takes the real name and the
-// number the user confirmed. The other two rows carry no attendance.
-const MERGE = {
-  keep: "f6c6781a",
-  name: "سيدة محمد الصادق",
-  phone: "+201012154836",
-  drop: ["dbabb299", "65bcbb44"],
-};
+// --- 3. Merges --------------------------------------------------------------
+// One woman, several rows. The surviving row keeps the attendance and takes the
+// name she is actually called by — no kunyas, and not her child's name.
+const MERGES = [
+  {
+    // أم كريم (18 جلسة) survives; the other two carry no attendance at all.
+    keep: "f6c6781a",
+    name: "سيدة محمد الصادق",
+    phone: "+201012154836",
+    drop: ["dbabb299", "65bcbb44"],
+  },
+  {
+    // افكار محمد registered four times: twice as ام ياسين, and once under her
+    // son's name — which is what let him open her صفحتي before find_me was
+    // fixed. All four rows are female, and all attendance is in female circles.
+    // Five of the moved rows collide with افكار's own: the same circle on the
+    // same day under two names, i.e. one session counted twice. Merging drops
+    // the copies, so her total lands at 15 sessions, not 20.
+    keep: "98a52662",
+    name: "افكار محمد",
+    phone: "+201001120043",
+    drop: ["1edff32d", "6ea10be2", "a4742d6e"],
+  },
+  {
+    // Registered twice a minute apart on the same number — the later row
+    // corrects the surname, and it is also the one that went on to attend.
+    keep: "47f46f0b",
+    name: "علياء العمراوي",
+    phone: "+201038287286",
+    drop: ["c79138b5"],
+  },
+  {
+    // Same number, two rows: her own name registered on 2026-08-29 with no
+    // attendance, and a kunya from 2026-09-02 carrying all eight sessions. The
+    // attendance decides which row survives; her name decides what it is called.
+    keep: "970b616b",
+    name: "عزه عفيفي احمد",
+    phone: "+201141649134",
+    drop: ["bdaa2749"],
+  },
+];
 
 const { data: students, error } = await db
   .from("students")
@@ -147,12 +179,16 @@ for (const [prefix, phone, label] of SUPPLIED) {
   }
 }
 
-console.log("\n=== ٣. دمج أم كريم / سيدة محمد الصادق ===");
-const keep = byPrefix(MERGE.keep);
-if (!keep) {
-  console.log("!! الصف الأساسي مش موجود — تخطّي");
-} else {
-  const removed = [];
+console.log("\n=== ٣. الدمج ===");
+const removed = [];
+for (const MERGE of MERGES) {
+  const keep = byPrefix(MERGE.keep);
+  if (!keep) {
+    console.log(`!! ${MERGE.name}: الصف الأساسي مش موجود — تخطّي`);
+    continue;
+  }
+  let moved = 0;
+  let dropped = 0;
   for (const p of MERGE.drop) {
     const drop = byPrefix(p);
     if (!drop) {
@@ -167,12 +203,16 @@ if (!keep) {
     const { data: dupRecs } = await db.from("attendance_records").select("*").eq("student_id", drop.id);
     for (const r of dupRecs ?? []) {
       const clash = taken.has(`${r.circle_id}|${r.session_date}`);
+      if (clash) dropped++;
+      else {
+        moved++;
+        taken.add(`${r.circle_id}|${r.session_date}`);
+      }
       if (!APPLY) continue;
       const { error: e } = clash
         ? await db.from("attendance_records").delete().eq("id", r.id)
         : await db.from("attendance_records").update({ student_id: keep.id }).eq("id", r.id);
       if (e) throw e;
-      if (!clash) taken.add(`${r.circle_id}|${r.session_date}`);
     }
     console.log(`${tag} اتشال "${drop.name.trim()}" (${dupRecs?.length ?? 0} صف حضور)`);
     if (APPLY) {
