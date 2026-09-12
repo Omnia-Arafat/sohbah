@@ -10,7 +10,11 @@ import {
 import { BookOpen, EyeOff, RotateCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import type { MyRecitation, QuranRangeAyah } from "@/lib/database.types";
+import type {
+  MutashabihQuestion,
+  MyRecitation,
+  QuranRangeAyah,
+} from "@/lib/database.types";
 import { getMe, meKey, subscribeMe } from "@/lib/me-store";
 import { buildProgress } from "@/lib/quran/progress";
 import { JUZ_STARTS, JUZ_COUNT } from "@/lib/quran/structure";
@@ -25,17 +29,21 @@ import { createClient } from "@/lib/supabase/client";
  * after a week. So the answer is never on screen first. She recalls, then
  * reveals, then grades herself.
  *
- * NO QUESTION BANK, AND NO معلمة IN THE LOOP. Every question is generated from
- * the text itself over the range she picks, which is what makes this available
- * at any hour without anyone writing anything. Two drills are built here:
+ * NO QUESTION BANK, AND NO معلمة IN THE LOOP. Every question comes from the
+ * text itself, which is what makes this available at any hour without anyone
+ * writing anything. Three drills:
  *
  *   أكملي الآية   — the opening words are shown, the rest is covered
  *   الآية التالية — one ayah is shown, the next is covered
+ *   المتشابهات    — a near-identical pair, and the word they part on
  *
- * The canvas also draws إخفاء الكلمات and المتشابهات. المتشابهات in particular
- * is the one worth building next — near-identical ayat in different places are
- * the hardest obstacle in serious حفظ — but it needs a similarity pass over
- * the whole text rather than a range, so it is not here yet.
+ * The first two are recall-and-self-grade: there is no way to check what she
+ * said out loud, and asking her to TYPE an ayah would be asking her to type
+ * scripture. المتشابهات is different — it has a right answer and is marked,
+ * because the failure it trains is confident wrongness and self-grading would
+ * grade the confidence.
+ *
+ * The canvas also draws إخفاء الكلمات, which is not built yet.
  *
  * NOTHING IS TYPED. The prompt and the hidden half are the real text, split at
  * a word boundary. The split never falls inside a word, so the visible part is
@@ -43,10 +51,17 @@ import { createClient } from "@/lib/supabase/client";
  */
 
 const QUESTION_COUNT = 10;
-type Mode = "complete" | "nextAyah";
+type Mode = "complete" | "nextAyah" | "mutashabihat";
 type Grade = "got" | "shaky" | "lost";
 
-type Question = {
+/**
+ * A recall question: she is shown a cue, recites the rest to herself, reveals,
+ * and grades her own answer. There is no objective mark because there is no
+ * way to check what she said out loud — and asking her to type an ayah would
+ * be asking her to type scripture.
+ */
+type RecallQuestion = {
+  kind: "recall";
   ayah: QuranRangeAyah;
   /** What she is shown. */
   prompt: string;
@@ -55,6 +70,33 @@ type Question = {
   /** Where the answer lives, for "open it in the mushaf". */
   answerRef: { surah: number; ayah: number; page: number };
 };
+
+/**
+ * A المتشابهات question: one word of a known ayah is blanked, and the two
+ * candidates are the word that really belongs there and the word from its
+ * near-twin elsewhere in the mushaf.
+ *
+ * This one DOES have a right answer, so it is marked rather than self-graded.
+ * That is the difference the drill needs: the whole failure being trained is
+ * confident wrongness, and a student grading herself on it would grade the
+ * confidence.
+ */
+type ChoiceQuestion = {
+  kind: "choice";
+  surah: number;
+  ayah: number;
+  page: number;
+  /** The ayah's words, verbatim, with `blankAt` to be covered. */
+  words: string[];
+  blankAt: number;
+  correct: string;
+  /** The correct and the decoy, already shuffled. */
+  options: string[];
+  /** Where the decoy comes from, revealed after she answers. */
+  twin: { surah: number; ayah: number };
+};
+
+type Question = RecallQuestion | ChoiceQuestion;
 
 export function SelfTestClient({
   academySlug,
@@ -139,6 +181,37 @@ export function SelfTestClient({
       scope === "review" && fading.length > 0
         ? [Math.min(...fading), Math.max(...fading)]
         : [Math.min(fromJuz, toJuz), Math.max(fromJuz, toJuz)];
+
+    // المتشابهات is asked from a precomputed table rather than from the text,
+    // because finding a near-twin means comparing an ayah with every other in
+    // the mushaf — not something to do while she waits.
+    if (mode === "mutashabihat") {
+      const { data, error: rpcError } = await supabase.rpc("mutashabihat_questions", {
+        p_from_juz: from,
+        p_to_juz: to,
+        p_limit: QUESTION_COUNT,
+      });
+
+      setBusy(false);
+
+      if (rpcError) {
+        console.error("mutashabihat_questions failed", rpcError);
+        setError(true);
+        return;
+      }
+
+      const built = buildChoiceQuestions((data ?? []) as MutashabihQuestion[]);
+      if (built.length === 0) {
+        setError(true);
+        return;
+      }
+
+      setQuestions(built);
+      setIndex(0);
+      setRevealed(false);
+      setGrades([]);
+      return;
+    }
 
     const [fromSurah, fromAyah] = JUZ_STARTS[from - 1];
     const [toSurah, toAyah] =
@@ -254,6 +327,12 @@ export function SelfTestClient({
               title={t("mode.nextAyah")}
               hint={t("mode.nextAyahHint")}
             />
+            <ScopeOption
+              selected={mode === "mutashabihat"}
+              onSelect={() => setMode("mutashabihat")}
+              title={t("mode.mutashabihat")}
+              hint={t("mode.mutashabihatHint")}
+            />
           </div>
         </section>
 
@@ -284,12 +363,20 @@ export function SelfTestClient({
       <div className="flex flex-col gap-4">
         <section className="card text-center">
           <h1 className="font-display text-2xl font-bold">{t("results.title")}</h1>
+          {/* A marked drill does not get the self-grading words. "٧ نسيتيها"
+              is what a student says about her own recall; a multiple-choice
+              miss is just wrong, and calling it forgetting overstates it. */}
           <p className="mt-2 text-muted-foreground">
-            {t("results.line", {
-              got: count("got"),
-              shaky: count("shaky"),
-              lost: count("lost"),
-            })}
+            {mode === "mutashabihat"
+              ? t("results.marked", {
+                  right: count("got"),
+                  total: questions.length,
+                })
+              : t("results.line", {
+                  got: count("got"),
+                  shaky: count("shaky"),
+                  lost: count("lost"),
+                })}
           </p>
         </section>
 
@@ -312,7 +399,23 @@ export function SelfTestClient({
   // ------------------------------------------------------------- question --
 
   const question = questions[index];
-  const surah = surahByNumber(question.ayah.surah);
+  const surahNumber =
+    question.kind === "recall" ? question.ayah.surah : question.surah;
+  const ayahNumber = question.kind === "recall" ? question.ayah.ayah : question.ayah;
+  const surah = surahByNumber(surahNumber);
+
+  if (question.kind === "choice") {
+    return (
+      <MutashabihQuestionCard
+        question={question}
+        surahLabel={(locale === "ar" ? surah?.name : surah?.englishName) ?? ""}
+        academySlug={academySlug}
+        progress={t("progress", { current: index + 1, total: questions.length })}
+        onAnswered={(right) => grade(right ? "got" : "lost")}
+        t={t}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -327,7 +430,7 @@ export function SelfTestClient({
         <p className="text-xs text-accent-700 dark:text-accent-300">
           {t("ayahRef", {
             surah: (locale === "ar" ? surah?.name : surah?.englishName) ?? "",
-            ayah: question.ayah.ayah,
+            ayah: ayahNumber,
           })}
         </p>
 
@@ -427,7 +530,49 @@ export function SelfTestClient({
  * herself, so leaving them in would fill her test with questions that ask
  * nothing.
  */
-function buildQuestions(ayahs: QuranRangeAyah[], mode: Mode): Question[] {
+/**
+ * Turns each pair into one question: the ayah with its distinguishing word
+ * covered, and the two candidates shuffled.
+ *
+ * The blank is drawn over `a_word_index`, which the generator computed on a
+ * token list with the standalone waqf signs removed from BOTH the real and the
+ * folded form together — so the same filtering has to happen here, or the
+ * blank lands on a pause mark. That is the one detail this function has to get
+ * right and it is why it splits the same way the generator did.
+ */
+function buildChoiceQuestions(rows: MutashabihQuestion[]): ChoiceQuestion[] {
+  const MARKS_ONLY = /^[ؐ-ًؚ-ٰٟۖ-ۭـ]+$/u;
+
+  return rows.flatMap((row) => {
+    const words = row.a_text
+      .split(/\s+/)
+      .filter((token) => token && !MARKS_ONLY.test(token));
+
+    if (row.a_word_index >= words.length) return [];
+    // The stored word must still be the word at that index. If it is not, the
+    // two sides have drifted and the question would be drawn over something
+    // else — drop it rather than ask it.
+    if (words[row.a_word_index] !== row.a_word) return [];
+
+    return [
+      {
+        kind: "choice" as const,
+        surah: row.a_surah,
+        ayah: row.a_ayah,
+        page: row.a_page,
+        words,
+        blankAt: row.a_word_index,
+        correct: row.a_word,
+        options: Math.random() < 0.5
+          ? [row.a_word, row.b_word]
+          : [row.b_word, row.a_word],
+        twin: { surah: row.b_surah, ayah: row.b_ayah },
+      },
+    ];
+  });
+}
+
+function buildQuestions(ayahs: QuranRangeAyah[], mode: Mode): RecallQuestion[] {
   const usable =
     mode === "complete"
       ? ayahs.filter(
@@ -446,34 +591,36 @@ function buildQuestions(ayahs: QuranRangeAyah[], mode: Mode): Question[] {
   const picked = sample(usable, QUESTION_COUNT);
 
   return picked.flatMap((ayah) => {
-    if (mode === "complete") {
-      const words = wordsOf(ayah.text);
-      // Cue with roughly the first third, always at a word boundary and always
-      // at least two words — one word is a hint, not a cue.
-      const cut = Math.max(2, Math.round(words.length / 3));
+    if (mode === "nextAyah") {
+      const position = ayahs.indexOf(ayah);
+      const following = ayahs[position + 1];
+      if (!following) return [];
       return [
         {
+          kind: "recall" as const,
           ayah,
-          prompt: words.slice(0, cut).join(" "),
-          answer: words.slice(cut).join(" "),
-          answerRef: { surah: ayah.surah, ayah: ayah.ayah, page: ayah.page },
+          prompt: ayah.text,
+          answer: following.text,
+          answerRef: {
+            surah: following.surah,
+            ayah: following.ayah,
+            page: following.page,
+          },
         },
       ];
     }
 
-    const position = ayahs.indexOf(ayah);
-    const following = ayahs[position + 1];
-    if (!following) return [];
+    const words = wordsOf(ayah.text);
+    // Cue with roughly the first third, always at a word boundary and always
+    // at least two words — one word is a hint, not a cue.
+    const cut = Math.max(2, Math.round(words.length / 3));
     return [
       {
+        kind: "recall" as const,
         ayah,
-        prompt: ayah.text,
-        answer: following.text,
-        answerRef: {
-          surah: following.surah,
-          ayah: following.ayah,
-          page: following.page,
-        },
+        prompt: words.slice(0, cut).join(" "),
+        answer: words.slice(cut).join(" "),
+        answerRef: { surah: ayah.surah, ayah: ayah.ayah, page: ayah.page },
       },
     ];
   });
@@ -580,5 +727,138 @@ function JuzSelect({
         ))}
       </select>
     </label>
+  );
+}
+
+/**
+ * One المتشابهات question.
+ *
+ * The ayah is shown with its distinguishing word covered, and the two
+ * candidates are the word that belongs there and the word its near-twin has in
+ * the same place. She picks; the screen marks it and says where the other one
+ * lives, because knowing WHICH ayah she confused it with is most of the fix.
+ *
+ * Marked rather than self-graded, unlike the other two drills: there is a right
+ * answer here, and the failure being trained is confident wrongness — a student
+ * grading herself on it would grade her confidence.
+ */
+function MutashabihQuestionCard({
+  question,
+  surahLabel,
+  academySlug,
+  progress,
+  onAnswered,
+  t,
+}: {
+  question: ChoiceQuestion;
+  surahLabel: string;
+  academySlug: string;
+  progress: string;
+  onAnswered: (right: boolean) => void;
+  t: ReturnType<typeof useTranslations<"selfTest">>;
+}) {
+  const [picked, setPicked] = useState<string | null>(null);
+  const twinSurah = surahByNumber(question.twin.surah);
+  const right = picked === question.correct;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <header className="flex items-center justify-between gap-3">
+        <h1 className="font-display text-lg font-bold">{t("title")}</h1>
+        <span className="text-sm text-muted-foreground tabular-nums">{progress}</span>
+      </header>
+
+      <section className="rounded-2xl border border-accent-300 bg-accent-100/25 p-5 dark:border-accent-700 dark:bg-accent-700/10">
+        <p className="text-xs text-accent-700 dark:text-accent-300">
+          {t("ayahRef", { surah: surahLabel, ayah: question.ayah })}
+        </p>
+
+        <p
+          dir="rtl"
+          lang="ar"
+          className="mt-3 text-center font-display text-[1.35rem] leading-[2.2]"
+        >
+          {question.words.map((word, at) =>
+            at === question.blankAt ? (
+              <span
+                key={at}
+                className={
+                  picked === null
+                    ? "mx-1 inline-block min-w-20 rounded-lg border-b-2 border-dashed border-accent-500 align-middle"
+                    : `mx-1 inline-block rounded-lg px-2 ${
+                        right
+                          ? "bg-brand-100 text-brand-900 dark:bg-brand-900 dark:text-brand-100"
+                          : "bg-surface-muted text-foreground"
+                      }`
+                }
+              >
+                {/* Before she answers: a rule, never a guess at the word. After:
+                    the real one, whatever she picked — the point is to leave her
+                    looking at the correct ayah, not at her own mistake. */}
+                {picked === null ? "\u00A0" : question.correct}
+              </span>
+            ) : (
+              <span key={at}>{word} </span>
+            ),
+          )}
+        </p>
+
+        {picked === null ? (
+          <div className="mt-5 grid grid-cols-2 gap-2">
+            {question.options.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setPicked(option)}
+                dir="rtl"
+                lang="ar"
+                className="rounded-xl border-2 border-border-subtle bg-surface px-3 py-3
+                           font-display text-lg transition-colors hover:border-brand-600
+                           focus-visible:outline-2 focus-visible:outline-offset-2
+                           focus-visible:outline-brand-600"
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-5 rounded-xl border border-border-subtle bg-surface p-4">
+            <p
+              className={`text-center text-base font-bold ${
+                right
+                  ? "text-brand-700 dark:text-brand-300"
+                  : "text-accent-700 dark:text-accent-300"
+              }`}
+            >
+              {right ? t("mutashabihat.right") : t("mutashabihat.wrong")}
+            </p>
+
+            {/* Naming the twin is the lesson. "You confused it with الأعراف
+                ١٤١" is what she can act on; "wrong" on its own is not. */}
+            <p className="mt-2 text-center text-sm leading-relaxed text-muted-foreground">
+              {t("mutashabihat.twin", {
+                surah: twinSurah?.name ?? "",
+                ayah: question.twin.ayah,
+              })}
+            </p>
+
+            <button
+              type="button"
+              onClick={() => onAnswered(right)}
+              className="btn-primary mt-4 w-full"
+            >
+              {t("next")}
+            </button>
+
+            <Link
+              href={`/${academySlug}/mushaf/${question.page}`}
+              className="mt-3 block text-center text-xs font-semibold text-brand-700 dark:text-brand-300"
+            >
+              {t("openInMushaf")}
+            </Link>
+          </div>
+        )}
+      </section>
+    </div>
   );
 }

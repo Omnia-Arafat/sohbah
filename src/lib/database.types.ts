@@ -299,6 +299,27 @@ export type MushafAyah = {
   starts_surah: boolean;
 };
 
+/**
+ * One المتشابهات question, from .
+ *
+ * Carries the ayah being asked about and the word its near-twin has in the
+ * same place — the decoy. No text is duplicated:  is joined from
+ *  at read time.
+ */
+export type MutashabihQuestion = {
+  a_surah: number;
+  a_ayah: number;
+  a_text: string;
+  a_page: number;
+  /** Index of the differing word, counting words only — waqf signs excluded. */
+  a_word_index: number;
+  a_word: string;
+  b_surah: number;
+  b_ayah: number;
+  b_word: string;
+  similarity: number;
+};
+
 /** One ayah of a range, for the self-test. */
 export type QuranRangeAyah = {
   surah: number;
@@ -880,6 +901,10 @@ export type Database = {
       mushaf_page_of: {
         Args: { p_surah: number; p_ayah: number };
         Returns: number;
+      };
+      mutashabihat_questions: {
+        Args: { p_from_juz: number; p_to_juz: number; p_limit?: number };
+        Returns: MutashabihQuestion[];
       };
       quran_range: {
         Args: {

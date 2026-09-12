@@ -1343,7 +1343,9 @@
       "complete": "Complete the ayah",
       "completeHint": "We show the opening, you continue",
       "nextAyah": "The next ayah",
-      "nextAyahHint": "We show an ayah, you recall the one after it"
+      "nextAyahHint": "We show an ayah, you recall the one after it",
+      "mutashabihat": "Near-identical ayat",
+      "mutashabihatHint": "Almost the same ayah in two different places"
     },
     "start": "Start",
     "loading": "Preparing the test…",
@@ -1367,9 +1369,15 @@
       "title": "Done",
       "line": "{got} got · {shaky} shaky · {lost} forgotten",
       "again": "Another test",
-      "read": "Read in the mushaf"
+      "read": "Read in the mushaf",
+      "marked": "{right} of {total} correct"
     },
-    "openInMushaf": "Open it in the mushaf"
+    "openInMushaf": "Open it in the mushaf",
+    "mutashabihat": {
+      "right": "Right",
+      "wrong": "That is the other ayah’s word",
+      "twin": "The near-twin is {surah} ayah {ayah}"
+    }
   },
   "quizzes": {
     "title": "Quizzes",

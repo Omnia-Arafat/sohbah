@@ -1343,7 +1343,9 @@
       "complete": "أكملي الآية",
       "completeHint": "نوريكِ أول الآية وتكمّلي",
       "nextAyah": "الآية التالية",
-      "nextAyahHint": "نوريكِ آية وتجيبي اللي بعدها"
+      "nextAyahHint": "نوريكِ آية وتجيبي اللي بعدها",
+      "mutashabihat": "المتشابهات",
+      "mutashabihatHint": "آيات شبه متطابقة في مواضع مختلفة"
     },
     "start": "ابدأي",
     "loading": "جارٍ تجهيز الاختبار…",
@@ -1367,9 +1369,15 @@
       "title": "خلصتِ",
       "line": "{got} حفظتيها · {shaky} مترددة · {lost} نسيتيها",
       "again": "اختبار تاني",
-      "read": "اقرئي في المصحف"
+      "read": "اقرئي في المصحف",
+      "marked": "{right} من {total} صح"
     },
-    "openInMushaf": "افتحيها في المصحف"
+    "openInMushaf": "افتحيها في المصحف",
+    "mutashabihat": {
+      "right": "صح",
+      "wrong": "دي كلمة الآية التانية",
+      "twin": "الآية الشبيهة في {surah} آية {ayah}"
+    }
   },
   "quizzes": {
     "title": "الاختبارات",
