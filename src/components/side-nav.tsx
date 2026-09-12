@@ -11,6 +11,7 @@ import {
   LogOut,
   Plus,
   Tags,
+  TrendingUp,
   UserCheck,
   Users,
 } from "lucide-react";
@@ -73,8 +74,11 @@ export function SideNav({
     { href: `/${academySlug}/admin/quizzes`, label: t("quizzes"), Icon: ClipboardList, prefix: true },
     { href: `/${academySlug}/admin/teachers`, label: t("teachers"), Icon: UserCheck, prefix: true },
     { href: `/${academySlug}/admin/reports`, label: t("reports"), Icon: BarChart, prefix: true },
+    { href: `/${academySlug}/admin/progress`, label: t("progress"), Icon: TrendingUp, prefix: true },
     { href: `/${academySlug}/admin/circle-types`, label: t("circleTypes"), Icon: Tags, prefix: true, adminOnly: true },
-    { href: `/${academySlug}/admin/schedules`, label: t("schedules"), Icon: CalendarDays, prefix: true, adminOnly: true },
+    // Boards decide what the public timetable shows, so a مشرفة needs this:
+    // she is the one who notices circles missing from the schedule.
+    { href: `/${academySlug}/admin/schedules`, label: t("schedules"), Icon: CalendarDays, prefix: true, adminOnly: false },
     { href: `/${academySlug}/admin`, label: t("adminHome"), Icon: LayoutGrid },
   ].filter((item) => !item.adminOnly || isAdmin);
 

@@ -12,6 +12,7 @@ import {
   LogOut,
   Plus,
   Tags,
+  TrendingUp,
   UserCheck,
   Users,
   X,
@@ -88,8 +89,11 @@ export function BottomNav({
     // The mirror image: already a primary tab for her, so listing it again
     // here would just be clutter.
     { href: reports, label: t("reports"), Icon: BarChart, adminOnly: false, hidden: canSupervise },
+    { href: `/${academySlug}/admin/progress`, label: t("progress"), Icon: TrendingUp, adminOnly: false, hidden: false },
     { href: `/${academySlug}/admin/circle-types`, label: t("circleTypes"), Icon: Tags, adminOnly: true, hidden: false },
-    { href: `/${academySlug}/admin/schedules`, label: t("schedules"), Icon: CalendarDays, adminOnly: true, hidden: false },
+    // Boards decide what the public timetable shows, so a مشرفة needs it:
+    // she is the one who notices circles missing from the schedule.
+    { href: `/${academySlug}/admin/schedules`, label: t("schedules"), Icon: CalendarDays, adminOnly: false, hidden: !canSupervise },
     { href: `/${academySlug}/admin`, label: t("adminHome"), Icon: LayoutGrid, adminOnly: false, hidden: false },
   ].filter((link) => (!link.adminOnly || isAdmin) && !link.hidden);
 

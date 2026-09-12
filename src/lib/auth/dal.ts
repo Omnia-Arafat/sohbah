@@ -1,4 +1,4 @@
-import { isAdminRole } from "./roles";
+import { canSupervise, isAdminRole } from "./roles";
 import { cache } from "react";
 import { notFound } from "next/navigation";
 import { redirect } from "next/navigation";
@@ -124,5 +124,20 @@ export async function requireAdminSession(
 ): Promise<TeacherSession & { teacher: Teacher }> {
   const session = await requireTeacherSession(next);
   if (isAdmin(session)) return session;
+  notFound();
+}
+
+/**
+ * Guard for what a مشرفة may change as well as an admin — the weekly
+ * timetable, for one. A معلمة gets a 404, exactly as a non-admin does above.
+ *
+ * Mirrors `can_supervise()` in the database, which is what actually enforces
+ * it; this decides what to render and fails early.
+ */
+export async function requireSupervisorSession(
+  next?: string,
+): Promise<TeacherSession & { teacher: Teacher }> {
+  const session = await requireTeacherSession(next);
+  if (isActiveTeacher(session) && canSupervise(session.teacher)) return session;
   notFound();
 }

@@ -437,6 +437,26 @@ export type SubmitAttemptRow = {
   show_results: ShowResults;
 };
 
+/**
+ * How far each student has got through a curriculum. Rows are written by the
+ * `trg_attendance_records_progress` trigger when a معلمة marks a recitation
+ * done, so the record is made at the moment it happens rather than inferred
+ * later from a lesson that may since have been edited.
+ */
+export type ProgressReportRow = {
+  student_id: string;
+  student_name: string;
+  father_name: string;
+  gender_category: GenderCategory;
+  curriculum_id: string;
+  curriculum_ar: string;
+  curriculum_en: string;
+  units_done: number;
+  units_total: number;
+  last_unit_ar: string | null;
+  last_at: string | null;
+};
+
 export type AttendanceReportRow = {
   student_id: string;
   student_name: string;
@@ -708,6 +728,15 @@ export type Database = {
       submit_quiz_attempt: {
         Args: { p_attempt_id: string };
         Returns: SubmitAttemptRow[];
+      };
+      curriculum_progress_report: {
+        Args: {
+          p_academy_id: string;
+          p_curriculum_id?: string | null;
+          p_circle_id?: string | null;
+          p_gender?: GenderCategory | null;
+        };
+        Returns: ProgressReportRow[];
       };
       grade_written_answer: {
         Args: {

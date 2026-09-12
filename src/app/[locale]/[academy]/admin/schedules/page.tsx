@@ -5,7 +5,7 @@ import { BackLink } from "@/components/back-link";
 import { ConfirmButton } from "@/components/confirm-button";
 import { Link } from "@/i18n/navigation";
 import { getAcademyBySlug } from "@/lib/academy-dal";
-import { requireAdminSession } from "@/lib/auth/dal";
+import { requireSupervisorSession } from "@/lib/auth/dal";
 import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import { loadScheduleBoards } from "@/lib/schedule-boards";
 import { createClient } from "@/lib/supabase/server";
@@ -34,7 +34,7 @@ export default async function SchedulesAdminPage({ params }: PageProps) {
   const { locale, academy: academySlug } = await params;
   setRequestLocale(locale);
 
-  await requireAdminSession(`/${academySlug}/admin/schedules`);
+  await requireSupervisorSession(`/${academySlug}/admin/schedules`);
 
   const academy = await getAcademyBySlug(academySlug);
   if (!academy) notFound();

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getAcademyBySlug } from "@/lib/academy-dal";
-import { requireAdminSession } from "@/lib/auth/dal";
+import { requireSupervisorSession } from "@/lib/auth/dal";
 import type { ScheduleBoard } from "@/lib/database.types";
 import { createClient } from "@/lib/supabase/server";
 
@@ -98,7 +98,7 @@ export async function createScheduleBoard(
     return { status: "invalid", values, fieldErrors };
   }
 
-  await requireAdminSession(`/${academySlug}/admin/schedules`);
+  await requireSupervisorSession(`/${academySlug}/admin/schedules`);
   const academy = await getAcademyBySlug(academySlug);
   if (!academy) return { status: "failed", values, reason: "generic" };
 
@@ -129,7 +129,7 @@ export async function updateScheduleBoard(
     return { status: "invalid", values, fieldErrors };
   }
 
-  await requireAdminSession(`/${academySlug}/admin/schedules`);
+  await requireSupervisorSession(`/${academySlug}/admin/schedules`);
   const academy = await getAcademyBySlug(academySlug);
   if (!academy) return { status: "failed", values, reason: "generic" };
 
@@ -158,7 +158,7 @@ export async function setScheduleBoardPublished(formData: FormData) {
   const isPublished = formData.get("isPublished") === "1";
   const academySlug = String(formData.get("academySlug") ?? "");
 
-  await requireAdminSession(`/${academySlug}/admin/schedules`);
+  await requireSupervisorSession(`/${academySlug}/admin/schedules`);
   const academy = await getAcademyBySlug(academySlug);
   if (!academy) return;
 
@@ -182,7 +182,7 @@ export async function deleteScheduleBoard(formData: FormData) {
   const boardId = String(formData.get("boardId") ?? "");
   const academySlug = String(formData.get("academySlug") ?? "");
 
-  await requireAdminSession(`/${academySlug}/admin/schedules`);
+  await requireSupervisorSession(`/${academySlug}/admin/schedules`);
   const academy = await getAcademyBySlug(academySlug);
   if (!academy) return;
 
@@ -217,7 +217,7 @@ export async function createBoardForType(formData: FormData) {
   const academySlug = String(formData.get("academySlug") ?? "");
   const circleType = String(formData.get("circleType") ?? "");
 
-  await requireAdminSession(`/${academySlug}/admin/schedules`);
+  await requireSupervisorSession(`/${academySlug}/admin/schedules`);
   const academy = await getAcademyBySlug(academySlug);
   if (!academy || !circleType) return;
 

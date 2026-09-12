@@ -903,6 +903,16 @@
         "markWrong": "Wrong",
         "blankAnswer": "(left blank)"
       }
+    },
+    "progress": {
+      "title": "Memorisation progress",
+      "subtitle": "How far each student has got through each curriculum, counted from what she actually recited in circle.",
+      "back": "Back to the admin panel",
+      "allCurricula": "All curricula",
+      "empty": "No progress recorded yet. It is written automatically the first time a student is marked as having finished reciting in a circle with a lesson set.",
+      "lastUnit": "Last lesson: {unit}",
+      "percentLabel": "{pct}% complete",
+      "howItWorks": "A recitation only counts towards a curriculum if the teacher set the day's lesson. Free-recitation circles record nothing here."
     }
   },
   "reports": {
@@ -1058,7 +1068,8 @@
     "groupTeaching": "Teaching",
     "groupSupervision": "Supervision",
     "curricula": "Curricula",
-    "quizzes": "Quizzes"
+    "quizzes": "Quizzes",
+    "progress": "Progress"
   },
   "lesson": {
     "today": "Today's lesson",

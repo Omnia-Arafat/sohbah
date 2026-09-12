@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BackLink } from "@/components/back-link";
 import { getAcademyBySlug } from "@/lib/academy-dal";
-import { requireAdminSession } from "@/lib/auth/dal";
+import { requireSupervisorSession } from "@/lib/auth/dal";
 import { loadCircleTypes } from "@/lib/circle-types";
 import { createClient } from "@/lib/supabase/server";
 import { updateScheduleBoard } from "../../actions";
@@ -26,7 +26,7 @@ export default async function EditScheduleBoardPage({ params }: PageProps) {
   const { locale, academy: academySlug, id } = await params;
   setRequestLocale(locale);
 
-  await requireAdminSession(`/${academySlug}/admin/schedules/${id}/edit`);
+  await requireSupervisorSession(`/${academySlug}/admin/schedules/${id}/edit`);
 
   const academy = await getAcademyBySlug(academySlug);
   if (!academy) notFound();
