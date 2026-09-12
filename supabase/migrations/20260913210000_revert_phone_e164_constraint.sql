@@ -1,0 +1,32 @@
+-- Drops `students_phone_e164` again, because it reached the live database
+-- before the form that satisfies it.
+--
+-- WHAT HAPPENED: 20260913190000 was written by other work in progress and was
+-- sitting unapplied in the tree. `supabase db push` applies every pending
+-- migration, not only the one you were thinking about, so pushing an unrelated
+-- migration carried it to production with it. That was my mistake, and this
+-- file is the correction, not a disagreement with the constraint.
+--
+-- WHY IT COULD NOT STAY: the constraint requires '+<dial><national>'. The
+-- DEPLOYED app still writes what the student typed — "01141649134" — so from
+-- the moment it applied, registering a new student returned
+--
+--     23514 students_phone_e164
+--
+-- and so did editing any of the 92 existing students whose number is not yet
+-- in E.164. `not valid` protected the rows already stored; it does not protect
+-- the next write to them.
+--
+-- The constraint is right and should come back — it is the fix for أم وائل
+-- being in the system twice. It belongs in the SAME deploy as `PhoneField` and
+-- the converted rows, in this order:
+--
+--   1. ship the country picker, so new numbers are written as E.164
+--   2. convert the legacy rows (scripts/fix-student-data.mjs)
+--   3. re-add the constraint, and then `validate` it
+--
+-- The comment from that migration is left in place: it describes
+-- `normalize_phone()` accurately either way.
+
+alter table public.students
+  drop constraint if exists students_phone_e164;
