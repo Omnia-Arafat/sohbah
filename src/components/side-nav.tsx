@@ -2,6 +2,7 @@
 
 import {
   BarChart,
+  BookOpen,
   CalendarDays,
   GraduationCap,
   House,
@@ -64,6 +65,9 @@ export function SideNav({
   const supervision: NavItem[] = [
     { href: `/${academySlug}/admin/circles`, label: t("circles"), Icon: Users, prefix: true },
     { href: `/${academySlug}/admin/students`, label: t("students"), Icon: GraduationCap, prefix: true },
+    // Open to every معلمة rather than admin-only: she is the one who prepares
+    // the lesson she is about to teach.
+    { href: `/${academySlug}/admin/curricula`, label: t("curricula"), Icon: BookOpen, prefix: true },
     { href: `/${academySlug}/admin/teachers`, label: t("teachers"), Icon: UserCheck, prefix: true },
     { href: `/${academySlug}/admin/reports`, label: t("reports"), Icon: BarChart, prefix: true },
     { href: `/${academySlug}/admin/circle-types`, label: t("circleTypes"), Icon: Tags, prefix: true, adminOnly: true },

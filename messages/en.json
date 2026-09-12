@@ -305,6 +305,20 @@
     },
     "errors": {
       "generic": "That did not work. Please try again."
+    },
+    "lesson": {
+      "title": "Today's lesson",
+      "hint": "Pick the lesson you are teaching today — students see it on the circle page.",
+      "field": "Lesson",
+      "none": "No lesson set",
+      "note": "Note for students (optional)",
+      "notePlaceholder": "General review before the quiz",
+      "save": "Save today's lesson",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "error": "Could not save. Please try again.",
+      "noCurriculum": "No curriculum exists for this circle type yet.",
+      "noCurriculumCta": "Add a curriculum"
     }
   },
   "admin": {
@@ -666,6 +680,78 @@
         "timeOrder": "\"To\" must not be earlier than \"From\"."
       },
       "windowLabel": "{from} – {to}"
+    },
+    "curricula": {
+      "title": "Curricula",
+      "subtitle": "One curriculum per circle type — the Forty Hadith for a hadith circle, Tuhfat al-Atfal for a tajweed circle — that a teacher picks the day's lesson from.",
+      "back": "Back to the admin panel",
+      "backToList": "Back to curricula",
+      "fields": {
+        "circleType": "Circle type",
+        "nameAr": "Curriculum name (Arabic)",
+        "nameEn": "Curriculum name (English)",
+        "description": "Short description (optional)"
+      },
+      "placeholders": {
+        "nameAr": "الأربعون النووية",
+        "nameEn": "Forty Hadith of An-Nawawi"
+      },
+      "add": "Add curriculum",
+      "adding": "Adding…",
+      "empty": "No curricula yet. Add the first one above.",
+      "noTypes": "No active circle types yet. Add one from the circle types page first.",
+      "unitCount": "{count, plural, =0 {No lessons} one {1 lesson} other {# lessons}}",
+      "inactiveTag": "(retired)",
+      "activate": "Activate",
+      "deactivate": "Retire",
+      "delete": "Delete",
+      "confirmDelete": "Delete \"{name}\" and all its lessons? This cannot be undone.",
+      "errors": {
+        "required": "This field is required.",
+        "tooLong": "That text is too long.",
+        "generic": "Could not save. Please try again."
+      },
+      "units": {
+        "listTitle": "Lessons ({count})",
+        "addTitle": "Add a lesson",
+        "editTitle": "Edit lesson",
+        "editSubtitle": "Change the lesson text or its details. Circles that already taught it are unaffected.",
+        "empty": "This curriculum has no lessons yet.",
+        "hadithSection": "Hadith details (optional)",
+        "hadithHint": "Leave blank if this lesson is a chapter of a tajweed text or anything else.",
+        "fields": {
+          "titleAr": "Lesson title (Arabic)",
+          "titleEn": "Lesson title (English)",
+          "body": "Hadith / text",
+          "explanation": "Explanation",
+          "narrator": "Narrator",
+          "sourceBook": "Reported by",
+          "sourceRef": "Reference number",
+          "grade": "Grading"
+        },
+        "placeholders": {
+          "titleAr": "الحديث الأول: إنما الأعمال بالنيات",
+          "titleEn": "Hadith 1: Actions are by intentions",
+          "body": "عن أمير المؤمنين أبي حفص عمر بن الخطاب رضي الله عنه قال…",
+          "narrator": "عمر بن الخطاب رضي الله عنه",
+          "sourceBook": "رواه البخاري ومسلم",
+          "sourceRef": "البخاري ١، مسلم ١٩٠٧",
+          "grade": "صحيح"
+        },
+        "add": "Add lesson",
+        "save": "Save changes",
+        "saving": "Saving…",
+        "edit": "Edit",
+        "delete": "Delete",
+        "confirmDelete": "Delete \"{name}\"? This cannot be undone.",
+        "moveUp": "Move up",
+        "moveDown": "Move down",
+        "errors": {
+          "required": "This field is required.",
+          "tooLong": "That text is too long.",
+          "generic": "Could not save. Please try again."
+        }
+      }
     }
   },
   "reports": {
@@ -819,6 +905,11 @@
     "schedules": "Schedule boards",
     "adminHome": "Admin dashboard",
     "groupTeaching": "Teaching",
-    "groupSupervision": "Supervision"
+    "groupSupervision": "Supervision",
+    "curricula": "Curricula"
+  },
+  "lesson": {
+    "today": "Today's lesson",
+    "explanation": "Explanation"
   }
 }

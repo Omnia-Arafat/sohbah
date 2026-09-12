@@ -6,6 +6,7 @@ import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { formatTime } from "@/lib/format-time";
 import { createClient } from "@/lib/supabase/server";
+import { LessonCard } from "@/components/lesson-card";
 import { CircleClient } from "./circle-client";
 
 type CirclePageProps = {
@@ -56,8 +57,12 @@ export default async function CirclePage({ params }: CirclePageProps) {
   if (!circle) notFound();
 
   const supabase = await createClient();
-  const [{ data: queue }, circleTypes] = await Promise.all([
+  const [{ data: queue }, { data: lessonRows }, circleTypes] = await Promise.all([
     supabase.rpc("circle_queue", { p_slug: slug }),
+    // The day's lesson, through the same SECURITY DEFINER function the
+    // teacher's screen reads — a student is anonymous and never touches
+    // `curriculum_units` directly.
+    supabase.rpc("circle_lesson", { p_slug: slug }),
     // `activeOnly: false` — the circle's own type must still show a real
     // label here even if a supervisor has since deactivated it.
     loadCircleTypes(supabase, circle.academy_id, { activeOnly: false }),
@@ -82,6 +87,8 @@ export default async function CirclePage({ params }: CirclePageProps) {
           </p>
         )}
       </section>
+
+      {lessonRows?.[0] && <LessonCard lesson={lessonRows[0]} locale={locale} />}
 
       <CircleClient
         academySlug={academySlug}

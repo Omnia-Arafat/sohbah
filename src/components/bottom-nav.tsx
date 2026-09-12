@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   BarChart,
+  BookOpen,
   CalendarDays,
   GraduationCap,
   House,
@@ -77,6 +78,9 @@ export function BottomNav({
     // place in the sheet for her.
     { href: schedule, label: t("schedule"), Icon: CalendarDays, adminOnly: false, hidden: !canSupervise },
     { href: `/${academySlug}/admin/students`, label: t("students"), Icon: GraduationCap, adminOnly: false, hidden: false },
+    // Open to every معلمة rather than admin-only: she is the one who prepares
+    // the lesson she is about to teach.
+    { href: `/${academySlug}/admin/curricula`, label: t("curricula"), Icon: BookOpen, adminOnly: false, hidden: false },
     { href: `/${academySlug}/admin/teachers`, label: t("teachers"), Icon: UserCheck, adminOnly: false, hidden: false },
     // The mirror image: already a primary tab for her, so listing it again
     // here would just be clutter.

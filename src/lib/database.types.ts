@@ -212,6 +212,102 @@ export type ScheduleBoard = {
   created_at: string;
 };
 
+/**
+ * A curriculum ("الأربعون النووية") hangs off a circle *type*, not a circle —
+ * so every حلقة حديث in the academy teaches from the same one, and adding
+ * منهج تجويد later needs no new table and no new code.
+ */
+export type Curriculum = {
+  id: string;
+  academy_id: string;
+  circle_type: CircleType;
+  name_ar: string;
+  name_en: string;
+  description: string | null;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+};
+
+/**
+ * One حديث, or one باب من متن. `narrator`, `source_book`, `source_ref` and
+ * `grade` are the Hadith-shaped fields; a tajweed unit leaves them null.
+ */
+export type CurriculumUnit = {
+  id: string;
+  curriculum_id: string;
+  position: number;
+  title_ar: string;
+  title_en: string;
+  body: string | null;
+  explanation: string | null;
+  narrator: string | null;
+  source_book: string | null;
+  source_ref: string | null;
+  grade: string | null;
+  is_active: boolean;
+  created_at: string;
+};
+
+export type MaterialKind = "image" | "pdf" | "slides" | "audio" | "video" | "link";
+
+/**
+ * Attached to a unit (shared by every circle teaching it) or to one circle.
+ * Carries either an external `url` or a `storage_path` in the private
+ * `materials` bucket — never both, enforced by `ck_materials_source`.
+ */
+export type Material = {
+  id: string;
+  academy_id: string;
+  unit_id: string | null;
+  circle_id: string | null;
+  kind: MaterialKind;
+  title: string;
+  url: string | null;
+  storage_path: string | null;
+  position: number;
+  uploaded_by: string | null;
+  created_at: string;
+};
+
+/** What a circle is teaching on one day. The queue itself is unaffected. */
+export type CircleSession = {
+  circle_id: string;
+  session_date: string;
+  unit_id: string | null;
+  note: string | null;
+  updated_by: string | null;
+  updated_at: string;
+};
+
+/** Today's lesson as a student may see it — no session link, no roster. */
+export type CircleLessonRow = {
+  unit_id: string | null;
+  /** Named `unit_position` in SQL: `position` is reserved in RETURNS TABLE. */
+  unit_position: number | null;
+  title_ar: string | null;
+  title_en: string | null;
+  body: string | null;
+  explanation: string | null;
+  narrator: string | null;
+  source_book: string | null;
+  source_ref: string | null;
+  grade: string | null;
+  note: string | null;
+  curriculum_ar: string | null;
+  curriculum_en: string | null;
+};
+
+export type CircleMaterialRow = {
+  id: string;
+  kind: MaterialKind;
+  title: string;
+  url: string | null;
+  storage_path: string | null;
+  /** 'unit' — shared with every circle on this lesson; 'circle' — this one's. */
+  scope: "unit" | "circle";
+};
+
 export type AttendanceReportRow = {
   student_id: string;
   student_name: string;
@@ -291,6 +387,44 @@ export type Database = {
         Update: Partial<ScheduleBoard>;
         Relationships: [];
       };
+      curricula: {
+        Row: Curriculum;
+        Insert: Insert<
+          Curriculum,
+          "id" | "created_at" | "is_active" | "display_order" | "description"
+        >;
+        Update: Partial<Curriculum>;
+        Relationships: [];
+      };
+      curriculum_units: {
+        Row: CurriculumUnit;
+        Insert: Insert<
+          CurriculumUnit,
+          | "id" | "created_at" | "is_active" | "body" | "explanation"
+          | "narrator" | "source_book" | "source_ref" | "grade"
+        >;
+        Update: Partial<CurriculumUnit>;
+        Relationships: [];
+      };
+      materials: {
+        Row: Material;
+        Insert: Insert<
+          Material,
+          | "id" | "created_at" | "position" | "url" | "storage_path"
+          | "unit_id" | "circle_id" | "uploaded_by"
+        >;
+        Update: Partial<Material>;
+        Relationships: [];
+      };
+      circle_sessions: {
+        Row: CircleSession;
+        Insert: Insert<
+          CircleSession,
+          "updated_at" | "unit_id" | "note" | "updated_by"
+        >;
+        Update: Partial<CircleSession>;
+        Relationships: [];
+      };
     };
     Views: Empty;
     Functions: {
@@ -362,6 +496,14 @@ export type Database = {
           p_circle_type?: CircleType | null;
         };
         Returns: AttendanceReportRow[];
+      };
+      circle_lesson: {
+        Args: { p_slug: string };
+        Returns: CircleLessonRow[];
+      };
+      circle_materials: {
+        Args: { p_slug: string };
+        Returns: CircleMaterialRow[];
       };
     };
     Enums: Empty;
