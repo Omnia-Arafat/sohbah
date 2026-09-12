@@ -10,6 +10,7 @@ import { surahByNumber } from "@/lib/quran/surahs";
 import { PAGE_COUNT } from "@/lib/quran/structure";
 import type { MushafAyah } from "@/lib/database.types";
 import { RememberPage } from "./remember-page";
+import { SwipePages } from "./swipe-pages";
 
 type MushafPageProps = {
   params: Promise<{ locale: string; academy: string; page: string }>;
@@ -124,19 +125,21 @@ export default async function MushafReaderPage({ params }: MushafPageProps) {
         paler inner one. It is the one place in this app where gold is not
         "happening now" — here it is not a status at all, it is the page.
       */}
-      <div className="rounded-2xl border border-accent-300 bg-accent-100/25 p-1.5 dark:border-accent-700 dark:bg-accent-700/10">
-        <div className="rounded-xl border border-accent-200 px-4 py-5 dark:border-accent-700/60">
-          <p
-            dir="rtl"
-            lang="ar"
-            className="font-quran text-center text-[1.35rem] leading-[2.6]"
-          >
-            {ayahs.map((entry) => (
-              <Ayah key={`${entry.surah}:${entry.ayah}`} entry={entry} />
-            ))}
-          </p>
+      <SwipePages academySlug={academySlug} page={page} lastPage={PAGE_COUNT}>
+        <div className="rounded-2xl border border-accent-300 bg-accent-100/25 p-1.5 dark:border-accent-700 dark:bg-accent-700/10">
+          <div className="rounded-xl border border-accent-200 px-4 py-5 dark:border-accent-700/60">
+            <p
+              dir="rtl"
+              lang="ar"
+              className="font-quran text-center text-[1.35rem] leading-[2.6]"
+            >
+              {ayahs.map((entry) => (
+                <Ayah key={`${entry.surah}:${entry.ayah}`} entry={entry} />
+              ))}
+            </p>
+          </div>
         </div>
-      </div>
+      </SwipePages>
 
       <nav className="flex items-center justify-between gap-3">
         <PageLink
@@ -155,6 +158,8 @@ export default async function MushafReaderPage({ params }: MushafPageProps) {
           direction="next"
         />
       </nav>
+
+      <p className="text-center text-xs text-muted-foreground">{t("swipeHint")}</p>
 
       <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1.5">

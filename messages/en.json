@@ -1319,7 +1319,22 @@
     },
     "attribution": "Uthmani text in the Hafs reading from the Tanzil project (tanzil.net) — unmodified. Typeface: DigitalKhatt, SIL OFL.",
     "notFound": "No such page. The mushaf runs from 1 to 604.",
-    "ayahCount": "{count, plural, one{# ayah} other{# ayat}}"
+    "ayahCount": "{count, plural, one{# ayah} other{# ayat}}",
+    "indexTitle": "Mushaf index",
+    "tabs": {
+      "surahs": "Surahs",
+      "juz": "Juz"
+    },
+    "searchSurah": "Find a surah…",
+    "noMatch": "No surah by that name.",
+    "surahMeta": "{ayahs} · page {page}",
+    "juzMeta": "page {page}",
+    "ayahs": "{count, plural, one{# ayah} other{# ayat}}",
+    "jumpTitle": "Go to page",
+    "jumpPlaceholder": "1 – 604",
+    "swipeHint": "Swipe to turn the pages.",
+    "meccan": "Meccan",
+    "medinan": "Medinan"
   },
   "phone": {
     "countryLabel": "Country code",
