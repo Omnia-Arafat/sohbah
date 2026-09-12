@@ -1,5 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ChevronLeft, Users } from "lucide-react";
+import { ChevronLeft, Clock, Users } from "lucide-react";
 import { formatTime } from "@/lib/format-time";
 import {
   loadBoardsWithCircles,
@@ -8,6 +8,7 @@ import {
 } from "@/lib/schedule-boards";
 import { createClient } from "@/lib/supabase/server";
 import { BrandMark } from "@/components/brand-mark";
+import { MushafCard } from "@/components/mushaf-card";
 import { Link } from "@/i18n/navigation";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { getLocalizedAcademyName } from "@/lib/academy-display";
@@ -93,10 +94,29 @@ export default async function AcademyHome({ params }: AcademyHomeProps) {
     }
   }
 
-  // The rest of today: everything scheduled that is not on screen above.
-  const rest = [...todayById.values()]
+  const remaining = [...todayById.values()]
     .filter((entry) => !liveIds.has(entry.circleId))
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+  /*
+    When nothing is running, the NEXT circle is promoted to a card of its own.
+
+    The canvas only drew the live state, and a page built from it alone goes
+    flat for most of the day: a plain list of five rows, nothing to look at,
+    nothing to press. Most of the hours a student opens this app, no circle is
+    on air — and "الجاية الساعة ٥" is still the answer she came for.
+
+    It is brand green, not gold. Gold means "happening now" and nothing else;
+    the moment a second thing wears it, it stops meaning that.
+  */
+  const nowMinutes = minutesNow(academyTimezone(remaining));
+  const next =
+    live.length === 0
+      ? remaining.find((entry) => toMinutes(entry.startTime) >= nowMinutes) ?? null
+      : null;
+
+  // The rest of today: everything not already on screen above.
+  const rest = remaining.filter((entry) => entry.circleId !== next?.circleId);
 
   return (
     <div className="flex flex-col gap-5">
@@ -117,7 +137,12 @@ export default async function AcademyHome({ params }: AcademyHomeProps) {
         ) : (
           <BrandMark className="h-14 w-14" />
         )}
-        <h1 className="font-display mt-2 text-2xl font-bold">{academyName}</h1>
+        {/* The canvas greets her by name of place, not by name of product.
+            "مقراءة صحبة الإلكترونية" is already in the header above; repeating
+            it here as the page's only heading told a returning student
+            nothing. */}
+        <h1 className="font-display mt-2 text-2xl font-bold">{t("greeting")}</h1>
+        <p className="mt-0.5 text-sm text-muted-foreground">{academyName}</p>
       </section>
 
       {live.length > 0 && (
@@ -143,11 +168,52 @@ export default async function AcademyHome({ params }: AcademyHomeProps) {
         </section>
       )}
 
+      {next && (
+        <section className="flex flex-col gap-3">
+          <h2 className="flex items-center gap-2 text-sm font-bold text-brand-700 dark:text-brand-300">
+            <Clock aria-hidden="true" className="h-4 w-4" />
+            {t("next.label")}
+          </h2>
+
+          <article className="overflow-hidden rounded-2xl border-2 border-brand-300 bg-surface shadow-sm dark:border-brand-700">
+            <header className="flex items-center justify-between gap-3 bg-brand-50 px-4 py-3 dark:bg-brand-950/50">
+              <div className="min-w-0">
+                <p className="truncate font-display text-lg font-bold">
+                  {next.teacherName}
+                </p>
+                <p className="truncate text-xs text-brand-700 dark:text-brand-300">
+                  {circleTypeLabel(
+                    circleTypes,
+                    typeByCircle.get(next.circleId) ?? "",
+                    locale,
+                  )}
+                </p>
+              </div>
+              <span className="shrink-0 text-sm font-bold text-brand-700 dark:text-brand-300">
+                {formatTime(next.startTime, locale)}
+              </span>
+            </header>
+
+            <div className="p-4">
+              <p className="pb-3 text-sm text-muted-foreground">
+                {t("next.body")}
+              </p>
+              <Link
+                href={`/${academySlug}/circle/${next.registrationSlug}`}
+                className="btn-primary w-full"
+              >
+                {t("live.join")}
+              </Link>
+            </div>
+          </article>
+        </section>
+      )}
+
       {rest.length > 0 && (
         <section className="card p-0">
           <div className="flex items-baseline justify-between gap-3 px-5 pb-1 pt-4">
             <h2 className="text-sm font-bold text-muted-foreground">
-              {live.length > 0 ? t("rest.title") : t("today.title")}
+              {live.length > 0 || next ? t("rest.title") : t("today.title")}
             </h2>
             <Link
               href={`/${academySlug}/schedule`}
@@ -205,6 +271,10 @@ export default async function AcademyHome({ params }: AcademyHomeProps) {
           </Link>
         </section>
       )}
+
+      {/* Full width, and above صفحتك: on a day with no circles this is the one
+          thing on the page a student can actually do. */}
+      <MushafCard academySlug={academySlug} locale={locale} />
 
       {/* Her own record. New, and the reason a student comes back on a day
           with no circle. */}
@@ -291,7 +361,8 @@ function LiveCircleCard({
 }) {
   return (
     <article
-      className="overflow-hidden rounded-2xl border-2 border-accent-400
+      // #c4913a exactly, the canvas's own border — accent-400 was a shade light
+      className="overflow-hidden rounded-2xl border-2 border-accent-500
                  bg-surface shadow-[0_2px_10px_rgba(196,145,58,0.14)]"
     >
       <header className="flex items-center justify-between gap-3 bg-accent-100 px-4 py-3 dark:bg-accent-700/20">
@@ -308,46 +379,99 @@ function LiveCircleCard({
         </span>
       </header>
 
+      {/*
+        Two shapes, exactly as the canvas draws them.
+
+        A circle with somebody reciting gets the tall card: her name, the
+        counts, and a full-width button. A circle between turns gets the short
+        one — one line and a small button — because "الدور مفتوح" is the whole
+        of what there is to say, and giving it the same height as a live turn
+        makes two circles look equally urgent when they are not.
+      */}
       {circle.reciting_name ? (
-        <div className="flex items-center gap-3 px-4 pt-3">
-          {/* Her initial, the same avatar the rest of the app uses for a
-              person. The design has the queue position here; the initial says
-              more at a glance — a student scanning for her own name finds the
-              letter before she finishes reading the row. */}
-          <span
-            aria-hidden="true"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full
-                       bg-accent-500 font-display text-sm font-bold text-white"
-          >
-            {circle.reciting_name.trim().charAt(0)}
-          </span>
-          <div className="min-w-0">
-            <p className="text-xs text-muted-foreground">{t("live.turnNow")}</p>
-            <p className="truncate font-semibold">{circle.reciting_name}</p>
+        <>
+          <div className="flex items-center gap-3 px-4 pt-3">
+            {/* Her initial, the same avatar the rest of the app uses for a
+                person. The canvas has the queue position here; the initial
+                says more at a glance — a student scanning for her own name
+                finds the letter before she finishes reading the row. */}
+            <span
+              aria-hidden="true"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full
+                         bg-accent-500 font-display text-sm font-bold text-white"
+            >
+              {circle.reciting_name.trim().charAt(0)}
+            </span>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground">{t("live.turnNow")}</p>
+              <p className="truncate font-semibold">{circle.reciting_name}</p>
+            </div>
           </div>
-        </div>
+
+          <p className="flex items-center gap-2 px-4 pt-2 text-xs text-muted-foreground">
+            <span>{t("live.waiting", { count: circle.waiting_count })}</span>
+            <span aria-hidden="true" className="text-border-subtle">
+              ·
+            </span>
+            <span>{t("live.done", { count: circle.done_count })}</span>
+          </p>
+
+          <div className="p-4">
+            <Link
+              href={`/${academySlug}/circle/${circle.registration_slug}`}
+              className="btn-primary w-full"
+            >
+              {t("live.join")}
+            </Link>
+          </div>
+        </>
       ) : (
-        <p className="px-4 pt-3 text-sm text-muted-foreground">
-          {t("live.openQueue")}
-        </p>
+        <div className="flex items-center justify-between gap-3 px-4 py-3">
+          <p className="min-w-0 text-sm text-muted-foreground">
+            {t("live.openQueue")} ·{" "}
+            {t("live.waiting", { count: circle.waiting_count })}
+          </p>
+          <Link
+            href={`/${academySlug}/circle/${circle.registration_slug}`}
+            className="btn-primary shrink-0 px-4 py-2 text-sm"
+          >
+            {t("live.open")}
+          </Link>
+        </div>
       )}
-
-      <p className="flex items-center gap-2 px-4 pt-2 text-xs text-muted-foreground">
-        <span>{t("live.waiting", { count: circle.waiting_count })}</span>
-        <span aria-hidden="true" className="text-border-subtle">
-          ·
-        </span>
-        <span>{t("live.done", { count: circle.done_count })}</span>
-      </p>
-
-      <div className="p-4">
-        <Link
-          href={`/${academySlug}/circle/${circle.registration_slug}`}
-          className="btn-primary w-full"
-        >
-          {t("live.join")}
-        </Link>
-      </div>
     </article>
   );
+}
+
+/**
+ * Minutes since midnight, so "which circle is next" is one comparison.
+ *
+ * Resolved in the circle's own timezone rather than the server's. The academy
+ * runs circles in Africa/Cairo and Asia/Riyadh at once, and an hour's
+ * difference is the difference between "الجاية ٥ م" and a circle that started
+ * an hour ago.
+ */
+function minutesNow(timezone: string): number {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: timezone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date());
+  return toMinutes(parts);
+}
+
+function toMinutes(time: string): number {
+  const [hours, minutes] = time.split(":");
+  return Number(hours) * 60 + Number(minutes);
+}
+
+/**
+ * The timezone to read "now" in: the one today's circles actually use.
+ *
+ * Almost all of them share one, so the first is right; the fallback matters
+ * only when today has no circles at all, and then nothing is being compared.
+ */
+function academyTimezone(entries: { timezone: string }[]): string {
+  return entries[0]?.timezone ?? "UTC";
 }

@@ -255,6 +255,28 @@ export type MyCircle = {
   last_attended: string;
 };
 
+/** One ayah as the mushaf reader draws it. */
+export type MushafAyah = {
+  surah: number;
+  ayah: number;
+  juz: number;
+  /** Whether this ayah carries a سجدة. The ۩ is already inside `text`. */
+  sajda: boolean;
+  /** Uthmani, verbatim from Tanzil. Never normalised, never added to. */
+  text: string;
+  /** True on ayah 1 — the reader draws a surah heading before it. */
+  starts_surah: boolean;
+};
+
+/** One ayah of a range, for the self-test. */
+export type QuranRangeAyah = {
+  surah: number;
+  ayah: number;
+  page: number;
+  juz: number;
+  text: string;
+};
+
 /** Where a student stopped last time, so the next turn can prefill "من". */
 export type LastRecitation = {
   to_surah: number;
@@ -819,6 +841,23 @@ export type Database = {
       circle_recitation_logs: {
         Args: { p_circle_id: string; p_session_date: string };
         Returns: CircleRecitationLog[];
+      };
+      mushaf_page: {
+        Args: { p_page: number };
+        Returns: MushafAyah[];
+      };
+      mushaf_page_of: {
+        Args: { p_surah: number; p_ayah: number };
+        Returns: number;
+      };
+      quran_range: {
+        Args: {
+          p_from_surah: number;
+          p_from_ayah: number;
+          p_to_surah: number;
+          p_to_ayah: number;
+        };
+        Returns: QuranRangeAyah[];
       };
       find_me: {
         Args: { p_academy_slug: string; p_name: string; p_phone: string };

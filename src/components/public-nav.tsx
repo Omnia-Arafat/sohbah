@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, House, UserRound } from "lucide-react";
+import { BookOpen, CalendarDays, CircleCheckBig, House, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 
@@ -13,11 +13,21 @@ import { Link, usePathname } from "@/i18n/navigation";
  * the browser's own back button. Now the three things that exist for her are
  * always one thumb away.
  *
- * THREE TABS, NOT FIVE. The design has الرئيسية · الجدول · اختبري حفظك ·
- * المصحف · الاختبارات, and that is the right destination. But the mushaf and
- * the self-tests are not built yet, and a tab that opens nothing is worse than
- * an absent tab: it teaches people that the bar is decoration. The two slots
- * are held open in the design and land with the screens they lead to.
+ * FIVE SLOTS, as the canvas draws them: الرئيسية · الجدول · اختبري حفظك ·
+ * المصحف · صفحتي, with the centre one raised.
+ *
+ * WHY اختبري حفظك GETS THE RAISED SLOT and not "ادخلي الحلقة": joining a live
+ * circle is the loudest thing a student does, but it is already the loudest
+ * thing on the home screen — a gold-bordered card with a full-width button —
+ * and it is only meaningful for the few hours a day a circle is running. A
+ * centre action that is dead most of the day teaches people to ignore it.
+ * اختبري حفظك is available every hour, from any screen, and it is the single
+ * highest-value thing she can do for her حفظ.
+ *
+ * The canvas's fifth slot is الاختبارات (her معلمة's quizzes). Those live on a
+ * circle's own page today, and they only exist for a student who is in a
+ * circle that has one — so صفحتي takes the slot until there is a screen that
+ * gathers them.
  *
  * Every value here is copied from `bottom-nav.tsx` rather than re-invented —
  * 68px tabs, a 23px icon, a 10.5px label, and the same 3×20px mark above the
@@ -29,6 +39,8 @@ export function PublicNav({ academySlug }: { academySlug: string }) {
 
   const home = `/${academySlug}`;
   const schedule = `/${academySlug}/schedule`;
+  const selfTest = `/${academySlug}/self-test`;
+  const mushaf = `/${academySlug}/mushaf`;
   const me = `/${academySlug}/me`;
 
   return (
@@ -51,6 +63,34 @@ export function PublicNav({ academySlug }: { academySlug: string }) {
           label={t("schedule")}
           active={pathname.startsWith(schedule)}
           Icon={CalendarDays}
+        />
+        {/*
+          The raised centre action. Every value is bottom-nav.tsx's «+ حلقة
+          جديدة» slot, to the pixel: a 52px circle lifted 20px, a 3px ring in
+          the surface colour, the same brand shadow, a 24px icon at stroke 2.4
+          and a 10.5px bold label pulled up 2px.
+        */}
+        <Link
+          href={selfTest}
+          className="flex w-[68px] flex-col items-center gap-1"
+        >
+          <span className="-mt-5 flex h-13 w-13 items-center justify-center rounded-full border-[3px] border-surface bg-brand-600 shadow-[0_6px_14px_rgba(30,110,81,0.32)]">
+            <CircleCheckBig
+              className="h-6 w-6 text-white"
+              strokeWidth={2.4}
+              aria-hidden="true"
+            />
+          </span>
+          <span className="-mt-0.5 text-[10.5px] font-bold text-brand-700 dark:text-brand-300">
+            {t("selfTest")}
+          </span>
+        </Link>
+
+        <PublicTab
+          href={mushaf}
+          label={t("mushaf")}
+          active={pathname.startsWith(mushaf)}
+          Icon={BookOpen}
         />
         <PublicTab
           href={me}
