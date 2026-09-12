@@ -18,6 +18,7 @@ import type {
   MyCircle,
   MyRecitation,
   RecitationRating,
+  StudentSearchResult,
 } from "@/lib/database.types";
 
 export function MeClient({
@@ -74,7 +75,17 @@ function SignIn({
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<"notFound" | "error" | null>(null);
+  const [error, setError] = useState<"notFound" | "error" | "tooMany" | null>(null);
+
+  /**
+   * More than one student on this phone matched the name typed.
+   *
+   * A family shares a line here, and a mother's name often contains her
+   * child's — «ام ياسين» and «ياسين طارق». Choosing for her was landing a
+   * student on someone else's record, so when the answer is not unique the
+   * screen asks instead of guessing.
+   */
+  const [choices, setChoices] = useState<StudentSearchResult[] | null>(null);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -95,18 +106,86 @@ function SignIn({
       return;
     }
 
-    const found = data?.[0];
-    if (!found) {
+    const matches = data ?? [];
+
+    if (matches.length === 0) {
       setError("notFound");
       return;
     }
 
+    // Five is the function's own cap. Hitting it means the name was typed too
+    // loosely to identify anybody, not that five sisters share a phone.
+    if (matches.length >= 5) {
+      setError("tooMany");
+      return;
+    }
+
+    if (matches.length > 1) {
+      setChoices(matches);
+      return;
+    }
+
+    pick(matches[0]);
+  }
+
+  function pick(found: StudentSearchResult) {
     onFound({
       studentId: found.id,
       name: found.name,
       fatherName: found.father_name,
       phone,
     });
+  }
+
+  if (choices) {
+    return (
+      <div className="flex flex-col gap-6">
+        <header>
+          <h1 className="font-display text-2xl font-bold">
+            {t("signIn.chooseTitle")}
+          </h1>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            {t("signIn.chooseHint")}
+          </p>
+        </header>
+
+        <div className="card flex flex-col gap-2 p-3">
+          {choices.map((choice) => (
+            <button
+              key={choice.id}
+              type="button"
+              onClick={() => pick(choice)}
+              className="flex items-center gap-3 rounded-xl border border-border-subtle
+                         px-4 py-3 text-start transition-colors hover:border-brand-600
+                         hover:bg-surface-muted"
+            >
+              <span
+                aria-hidden="true"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full
+                           bg-brand-100 text-sm font-bold text-brand-800
+                           dark:bg-brand-900 dark:text-brand-100"
+              >
+                {choice.name.trim().charAt(0)}
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate font-semibold">{choice.name}</span>
+                <span className="block truncate text-xs text-muted-foreground">
+                  {choice.father_name}
+                </span>
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setChoices(null)}
+          className="btn-secondary w-full"
+        >
+          {t("signIn.chooseBack")}
+        </button>
+      </div>
+    );
   }
 
   return (

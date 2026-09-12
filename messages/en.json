@@ -1247,7 +1247,11 @@
       "submitting": "Searching…",
       "notFound": "No student matches that name and phone number. Check both, or ask your teacher.",
       "error": "Could not connect. Please try again.",
-      "privacy": "Your phone number is what confirms it is you, so nobody else can open your record."
+      "privacy": "Your phone number is what confirms it is you, so nobody else can open your record.",
+      "chooseTitle": "Which one are you?",
+      "chooseHint": "That number is registered to more than one person. Pick your name.",
+      "chooseBack": "Back",
+      "tooMany": "That name matches too many people. Type it in full."
     },
     "signOut": "Sign out",
     "memorised": {
