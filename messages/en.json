@@ -752,6 +752,110 @@
           "generic": "Could not save. Please try again."
         }
       }
+    },
+    "quizzes": {
+      "title": "Quizzes",
+      "subtitle": "A quiz for a circle type — or for one specific circle. Everything is graded automatically except written answers.",
+      "back": "Back to the admin panel",
+      "backToList": "Back to quizzes",
+      "newTitle": "New quiz",
+      "listTitle": "Quizzes ({count})",
+      "empty": "No quizzes yet.",
+      "noTypes": "No active circle types yet.",
+      "fields": {
+        "circleType": "Circle type",
+        "curriculum": "Curriculum",
+        "circle": "Circle",
+        "title": "Quiz title",
+        "instructions": "Instructions for students (optional)",
+        "duration": "Duration in minutes",
+        "maxAttempts": "Attempts allowed",
+        "passScore": "Pass mark %"
+      },
+      "placeholders": {
+        "title": "Hadith 1-10 quiz",
+        "duration": "No time limit"
+      },
+      "anyCurriculum": "All curricula",
+      "allCirclesOfType": "All circles of this type ({count})",
+      "allCircles": "All circles of the type",
+      "oneCircle": "One circle",
+      "create": "Create quiz",
+      "creating": "Creating…",
+      "published": "Published",
+      "draft": "Draft",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "needQuestions": "Add at least one question before publishing.",
+      "results": "Results",
+      "delete": "Delete",
+      "confirmDelete": "Delete “{name}” and every attempt on it? This cannot be undone.",
+      "questionCount": "{count, plural, =0 {No questions} one {1 question} other {# questions}}",
+      "totalPoints": "{points} points",
+      "durationLabel": "{minutes} min",
+      "errors": {
+        "required": "This field is required.",
+        "tooLong": "That text is too long.",
+        "range": "Duration must be between 1 and 480 minutes.",
+        "generic": "Could not save. Please try again."
+      },
+      "questions": {
+        "listTitle": "Questions ({count})",
+        "addTitle": "Add a question",
+        "empty": "No questions yet. Add the first one below.",
+        "fields": {
+          "kind": "Question type",
+          "unit": "Related lesson",
+          "prompt": "Question",
+          "points": "Points"
+        },
+        "placeholders": {
+          "prompt": "Who narrated the hadith of intentions?",
+          "option": "Option {n}",
+          "answer": "Accepted answer {n}"
+        },
+        "kinds": {
+          "mcq": "Multiple choice",
+          "multi": "Multiple answers",
+          "true_false": "True or false",
+          "short_text": "Written answer",
+          "fill_blank": "Fill in the blank"
+        },
+        "noUnit": "Not tied to a lesson",
+        "options": "Options",
+        "optionsHint": "Mark the correct answer. Leave any box blank if you do not need it.",
+        "acceptedAnswers": "Accepted answers",
+        "acceptedHint": "List every accepted spelling. Matching ignores tashkeel and hamza forms.",
+        "shortTextHint": "A written answer is not graded automatically — it appears on the results page for you to mark.",
+        "markCorrect": "Correct answer",
+        "true": "True",
+        "false": "False",
+        "points": "{points} points",
+        "manualNote": "Marked by hand",
+        "add": "Add question",
+        "adding": "Adding…",
+        "delete": "Delete question",
+        "confirmDelete": "Delete this question? This cannot be undone.",
+        "errors": {
+          "promptRequired": "The question text is required.",
+          "needTwoOptions": "Write at least two options.",
+          "needCorrect": "Mark the correct answer.",
+          "onlyOneCorrect": "This type accepts a single correct answer — use “Multiple answers” if you need more.",
+          "needAnswer": "Write at least one accepted answer.",
+          "generic": "Could not save. Please try again."
+        }
+      },
+      "resultsPage": {
+        "title": "Quiz results",
+        "back": "Back to the quiz",
+        "attemptCount": "{count, plural, =0 {No attempts} one {1 attempt} other {# attempts}}",
+        "empty": "No student has sat this quiz yet.",
+        "hiddenName": "A student from another circle",
+        "notSubmitted": "Not submitted yet",
+        "attemptNo": "Attempt {n}",
+        "awaitingMarking": "awaiting manual marking",
+        "manualNote": "Written answers are not graded automatically. Marking them from this page is not built yet — the score shown is the auto-graded portion only."
+      }
     }
   },
   "reports": {
@@ -906,10 +1010,58 @@
     "adminHome": "Admin dashboard",
     "groupTeaching": "Teaching",
     "groupSupervision": "Supervision",
-    "curricula": "Curricula"
+    "curricula": "Curricula",
+    "quizzes": "Quizzes"
   },
   "lesson": {
     "today": "Today's lesson",
     "explanation": "Explanation"
+  },
+  "quiz": {
+    "title": "Quiz",
+    "backToCircle": "Back to the circle",
+    "available": "Available quizzes",
+    "open": "Start the quiz",
+    "questionCount": "{count, plural, =0 {No questions} one {1 question} other {# questions}}",
+    "durationLabel": "{minutes} min",
+    "closesAt": "Closes {date}",
+    "progress": "{answered} of {total} answered",
+    "timeUp": "Time is up",
+    "answerPlaceholder": "Type your answer here",
+    "submit": "Submit answers",
+    "submitting": "Submitting…",
+    "gate": {
+      "title": "Confirm who you are",
+      "hint": "Pick your name and enter your registered phone number — so nobody can sit it as you.",
+      "name": "Your name",
+      "namePlaceholder": "Type the first two letters of your name",
+      "noMatch": "No student found with that name.",
+      "change": "Change",
+      "phone": "Phone number",
+      "phonePlaceholder": "01xxxxxxxxx",
+      "phoneHint": "The same number you registered with.",
+      "start": "Start the quiz",
+      "starting": "Opening…"
+    },
+    "done": {
+      "title": "Submitted",
+      "hidden": "Your answers were received. Your teacher will share the result.",
+      "passed": "Passed — {pct}%",
+      "failed": "Scored {pct}% — review the lesson and try again if attempts remain.",
+      "pending": "{count, plural, one {1 question} other {# questions}} awaiting your teacher's marking."
+    },
+    "errors": {
+      "pickName": "Pick your name first.",
+      "phoneRequired": "The phone number is required.",
+      "phone_mismatch": "That number does not match the one registered under this name. Check it, or ask your supervisor.",
+      "phone_missing": "No phone number is on file for you. Ask your supervisor to add one.",
+      "no_attempts_left": "You have used every attempt allowed on this quiz.",
+      "quiz_closed": "This quiz is closed.",
+      "student_not_in_circle": "Your name is not registered in this circle.",
+      "quiz_not_for_this_circle": "This quiz is not for this circle.",
+      "timeUp": "Time is up — that answer was not saved.",
+      "closed": "The quiz closed — that answer was not saved.",
+      "generic": "Something went wrong. Please try again."
+    }
   }
 }

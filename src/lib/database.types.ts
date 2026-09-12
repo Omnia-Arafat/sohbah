@@ -308,6 +308,135 @@ export type CircleMaterialRow = {
   scope: "unit" | "circle";
 };
 
+export type QuestionKind =
+  | "mcq"
+  | "multi"
+  | "true_false"
+  | "short_text"
+  | "fill_blank";
+
+/** Never `never`: a quiz whose results nobody may see is still gradeable. */
+export type ShowResults = "never" | "after_submit" | "after_close";
+
+/**
+ * Scope runs widest to narrowest: `circle_type` is required, `curriculum_id`
+ * and `circle_id` narrow it. A null `circle_id` means every circle of that
+ * type — one quiz for all five حلقات حديث rather than five copies.
+ */
+export type Quiz = {
+  id: string;
+  academy_id: string;
+  circle_type: CircleType;
+  curriculum_id: string | null;
+  circle_id: string | null;
+  title: string;
+  instructions: string | null;
+  opens_at: string | null;
+  closes_at: string | null;
+  duration_minutes: number | null;
+  pass_score: number;
+  max_attempts: number;
+  shuffle_questions: boolean;
+  show_results: ShowResults;
+  is_published: boolean;
+  created_by: string | null;
+  created_at: string;
+};
+
+export type QuizQuestion = {
+  id: string;
+  quiz_id: string;
+  unit_id: string | null;
+  position: number;
+  kind: QuestionKind;
+  prompt: string;
+  media_url: string | null;
+  points: number;
+};
+
+/**
+ * `is_correct` is the answer key. It is readable only by staff — there is no
+ * anon RLS policy on this table at all — and `quiz_for_student()` omits the
+ * column by construction rather than by remembering to exclude it.
+ */
+export type QuizOption = {
+  id: string;
+  question_id: string;
+  position: number;
+  text: string;
+  is_correct: boolean;
+};
+
+export type AttemptStatus = "in_progress" | "submitted" | "graded";
+
+export type QuizAttempt = {
+  id: string;
+  quiz_id: string;
+  student_id: string;
+  circle_id: string | null;
+  attempt_no: number;
+  started_at: string;
+  submitted_at: string | null;
+  auto_score: number | null;
+  manual_score: number | null;
+  max_score: number | null;
+  status: AttemptStatus;
+};
+
+export type QuizAnswer = {
+  attempt_id: string;
+  question_id: string;
+  option_ids: string[] | null;
+  text_answer: string | null;
+  /** Null means not graded yet — the resting state of a written answer. */
+  is_correct: boolean | null;
+  awarded_points: number | null;
+  answered_at: string;
+};
+
+/** A quiz open to this circle right now, as an anonymous student sees it. */
+export type CircleQuizRow = {
+  id: string;
+  title: string;
+  instructions: string | null;
+  duration_minutes: number | null;
+  closes_at: string | null;
+  question_count: number;
+};
+
+export type StartAttemptRow = {
+  attempt_id: string;
+  resumed: boolean;
+  expires_at: string | null;
+};
+
+/**
+ * One row per (question, option) — the paper, flattened. Carries no
+ * `is_correct`: that is the entire point of reading through the function.
+ */
+export type QuizForStudentRow = {
+  question_id: string;
+  /** Named `question_position` in SQL: `position` is reserved there. */
+  question_position: number;
+  kind: QuestionKind;
+  prompt: string;
+  media_url: string | null;
+  points: number;
+  option_id: string | null;
+  option_text: string | null;
+  chosen: boolean;
+  text_answer: string | null;
+};
+
+export type SubmitAttemptRow = {
+  auto_score: number;
+  max_score: number;
+  /** Written answers still waiting for a معلمة to mark them. */
+  pending_count: number;
+  pass_score: number;
+  show_results: ShowResults;
+};
+
 export type AttendanceReportRow = {
   student_id: string;
   student_name: string;
@@ -425,6 +554,51 @@ export type Database = {
         Update: Partial<CircleSession>;
         Relationships: [];
       };
+      quizzes: {
+        Row: Quiz;
+        Insert: Insert<
+          Quiz,
+          | "id" | "created_at" | "is_published" | "pass_score" | "max_attempts"
+          | "shuffle_questions" | "show_results" | "instructions" | "opens_at"
+          | "closes_at" | "duration_minutes" | "curriculum_id" | "circle_id"
+          | "created_by"
+        >;
+        Update: Partial<Quiz>;
+        Relationships: [];
+      };
+      quiz_questions: {
+        Row: QuizQuestion;
+        Insert: Insert<QuizQuestion, "id" | "unit_id" | "media_url" | "points">;
+        Update: Partial<QuizQuestion>;
+        Relationships: [];
+      };
+      quiz_options: {
+        Row: QuizOption;
+        Insert: Insert<QuizOption, "id" | "is_correct">;
+        Update: Partial<QuizOption>;
+        Relationships: [];
+      };
+      quiz_attempts: {
+        Row: QuizAttempt;
+        // Created only by start_quiz_attempt(); no policy allows a direct
+        // insert. Present to satisfy the client, not to be used.
+        Insert: Insert<
+          QuizAttempt,
+          | "id" | "started_at" | "submitted_at" | "auto_score" | "manual_score"
+          | "max_score" | "status" | "attempt_no" | "circle_id"
+        >;
+        Update: Partial<QuizAttempt>;
+        Relationships: [];
+      };
+      quiz_answers: {
+        Row: QuizAnswer;
+        Insert: Insert<
+          QuizAnswer,
+          "option_ids" | "text_answer" | "is_correct" | "awarded_points" | "answered_at"
+        >;
+        Update: Partial<QuizAnswer>;
+        Relationships: [];
+      };
     };
     Views: Empty;
     Functions: {
@@ -504,6 +678,36 @@ export type Database = {
       circle_materials: {
         Args: { p_slug: string };
         Returns: CircleMaterialRow[];
+      };
+      circle_quizzes: {
+        Args: { p_slug: string };
+        Returns: CircleQuizRow[];
+      };
+      start_quiz_attempt: {
+        Args: {
+          p_slug: string;
+          p_quiz_id: string;
+          p_student_id: string;
+          p_phone: string;
+        };
+        Returns: StartAttemptRow[];
+      };
+      quiz_for_student: {
+        Args: { p_attempt_id: string };
+        Returns: QuizForStudentRow[];
+      };
+      save_quiz_answer: {
+        Args: {
+          p_attempt_id: string;
+          p_question_id: string;
+          p_option_ids?: string[] | null;
+          p_text?: string | null;
+        };
+        Returns: undefined;
+      };
+      submit_quiz_attempt: {
+        Args: { p_attempt_id: string };
+        Returns: SubmitAttemptRow[];
       };
     };
     Enums: Empty;

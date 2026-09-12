@@ -6,6 +6,7 @@ import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { formatTime } from "@/lib/format-time";
 import { createClient } from "@/lib/supabase/server";
+import { Link } from "@/i18n/navigation";
 import { LessonCard } from "@/components/lesson-card";
 import { CircleClient } from "./circle-client";
 
@@ -43,6 +44,7 @@ export default async function CirclePage({ params }: CirclePageProps) {
   setRequestLocale(locale);
 
   const t = await getTranslations("circle");
+  const tQuiz = await getTranslations("quiz");
 
   if (!isSupabaseConfigured()) {
     return (
@@ -57,16 +59,18 @@ export default async function CirclePage({ params }: CirclePageProps) {
   if (!circle) notFound();
 
   const supabase = await createClient();
-  const [{ data: queue }, { data: lessonRows }, circleTypes] = await Promise.all([
-    supabase.rpc("circle_queue", { p_slug: slug }),
-    // The day's lesson, through the same SECURITY DEFINER function the
-    // teacher's screen reads — a student is anonymous and never touches
-    // `curriculum_units` directly.
-    supabase.rpc("circle_lesson", { p_slug: slug }),
-    // `activeOnly: false` — the circle's own type must still show a real
-    // label here even if a supervisor has since deactivated it.
-    loadCircleTypes(supabase, circle.academy_id, { activeOnly: false }),
-  ]);
+  const [{ data: queue }, { data: lessonRows }, { data: quizRows }, circleTypes] =
+    await Promise.all([
+      supabase.rpc("circle_queue", { p_slug: slug }),
+      // The day's lesson, through the same SECURITY DEFINER function the
+      // teacher's screen reads — a student is anonymous and never touches
+      // `curriculum_units` directly.
+      supabase.rpc("circle_lesson", { p_slug: slug }),
+      supabase.rpc("circle_quizzes", { p_slug: slug }),
+      // `activeOnly: false` — the circle's own type must still show a real
+      // label here even if a supervisor has since deactivated it.
+      loadCircleTypes(supabase, circle.academy_id, { activeOnly: false }),
+    ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -89,6 +93,40 @@ export default async function CirclePage({ params }: CirclePageProps) {
       </section>
 
       {lessonRows?.[0] && <LessonCard lesson={lessonRows[0]} locale={locale} />}
+
+      {/*
+        Only quizzes that are published, in scope for this circle, and inside
+        their time window — `circle_quizzes()` applies all three, so nothing
+        here has to re-derive "is this one available".
+      */}
+      {(quizRows?.length ?? 0) > 0 && (
+        <section>
+          <h2 className="mb-3 text-lg font-semibold">{tQuiz("available")}</h2>
+          <ul className="flex flex-col gap-3">
+            {quizRows!.map((quiz) => (
+              <li key={quiz.id}>
+                <Link
+                  href={`/${academySlug}/circle/${slug}/quiz/${quiz.id}`}
+                  className="card flex items-center gap-3 hover:border-brand-600 transition-colors"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold">{quiz.title}</p>
+                    <p className="mt-0.5 text-sm text-muted-foreground">
+                      {tQuiz("questionCount", { count: String(quiz.question_count) })}
+                      {quiz.duration_minutes
+                        ? ` · ${tQuiz("durationLabel", { minutes: String(quiz.duration_minutes) })}`
+                        : ""}
+                    </p>
+                  </div>
+                  <span className="btn-primary shrink-0 px-4 py-2 text-sm">
+                    {tQuiz("open")}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <CircleClient
         academySlug={academySlug}

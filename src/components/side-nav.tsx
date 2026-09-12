@@ -4,6 +4,7 @@ import {
   BarChart,
   BookOpen,
   CalendarDays,
+  ClipboardList,
   GraduationCap,
   House,
   LayoutGrid,
@@ -68,6 +69,8 @@ export function SideNav({
     // Open to every معلمة rather than admin-only: she is the one who prepares
     // the lesson she is about to teach.
     { href: `/${academySlug}/admin/curricula`, label: t("curricula"), Icon: BookOpen, prefix: true },
+    // Also open to every معلمة: she writes the quiz on what she taught.
+    { href: `/${academySlug}/admin/quizzes`, label: t("quizzes"), Icon: ClipboardList, prefix: true },
     { href: `/${academySlug}/admin/teachers`, label: t("teachers"), Icon: UserCheck, prefix: true },
     { href: `/${academySlug}/admin/reports`, label: t("reports"), Icon: BarChart, prefix: true },
     { href: `/${academySlug}/admin/circle-types`, label: t("circleTypes"), Icon: Tags, prefix: true, adminOnly: true },

@@ -5,6 +5,7 @@ import {
   BarChart,
   BookOpen,
   CalendarDays,
+  ClipboardList,
   GraduationCap,
   House,
   LayoutGrid,
@@ -81,6 +82,8 @@ export function BottomNav({
     // Open to every معلمة rather than admin-only: she is the one who prepares
     // the lesson she is about to teach.
     { href: `/${academySlug}/admin/curricula`, label: t("curricula"), Icon: BookOpen, adminOnly: false, hidden: false },
+    // Also open to every معلمة: she writes the quiz on what she taught.
+    { href: `/${academySlug}/admin/quizzes`, label: t("quizzes"), Icon: ClipboardList, adminOnly: false, hidden: false },
     { href: `/${academySlug}/admin/teachers`, label: t("teachers"), Icon: UserCheck, adminOnly: false, hidden: false },
     // The mirror image: already a primary tab for her, so listing it again
     // here would just be clutter.
