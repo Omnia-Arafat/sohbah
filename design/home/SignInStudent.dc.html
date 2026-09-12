@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Amiri:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f6f9f7; font-family: "Cairo", ui-sans-serif, system-ui, sans-serif; color: #0e1f19; }
+    a { color: #1e6e51; text-decoration: none; }
+    a:hover { color: #1a5842; }
+    .amiri { font-family: "Amiri", ui-serif, Georgia, serif; }
+  </style>
+</helmet>
+
+<!--
+  THE STUDENT TAB — the state that matters most, because it is the one the
+  current design gets wrong.
+
+  A student has no account and no password; the tab's job is to say so
+  quickly and hand her the two things she might actually be here for. Showing
+  her an empty login form she can never fill is how she ends up messaging her
+  معلمة.
+-->
+<div dir="rtl" style="width: 560px; min-height: 680px; background: #f6f9f7; display: flex; flex-direction: column; align-items: center; padding: 40px 40px 44px;">
+
+  <img src="sohbah-logo.webp" alt="" style="width: 54px; height: 54px; object-fit: contain;">
+  <h1 class="amiri" style="margin: 14px 0 0; font-size: 28px; font-weight: 700;">تسجيل الدخول</h1>
+  <p style="margin: 6px 0 0; font-size: 15px; color: #5a6e66; text-align: center;">مقراءة صحبة الإلكترونية</p>
+
+  <div style="width: 100%; margin-top: 26px; background: #ffffff; border: 1px solid #dbe5e0; border-radius: 16px; box-shadow: 0 1px 2px rgba(14,31,25,0.05); overflow: hidden;">
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; padding: 6px; background: #edf2ef;">
+      <button type="button" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; border: 0; border-radius: 10px; background: transparent; color: #5a6e66; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V6a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 1.5z"/><path d="M8 8h7"/></svg>
+        معلمة أو مشرفة
+      </button>
+      <button type="button" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; border: 0; border-radius: 10px; background: #ffffff; color: #0e1f19; font-family: inherit; font-size: 15px; font-weight: 700; box-shadow: 0 1px 2px rgba(14,31,25,0.08); cursor: pointer;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e6e51" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        طالبة
+      </button>
+    </div>
+
+    <div style="padding: 24px;">
+
+      <!-- The whole point, stated first. -->
+      <div style="display: flex; align-items: flex-start; gap: 11px; padding: 15px 16px; background: #edf7f2; border: 1px solid #a8d9c2; border-radius: 12px;">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#1e6e51" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <p style="margin: 0; font-size: 14px; color: #1a5842; line-height: 1.75;">
+          الطالبات مالهمش حساب ولا كلمة مرور. سجّلي مرة واحدة، وبعد كده افتحي رابط حلقتك وابحثي عن اسمك.
+        </p>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+        <a href="#" style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 52px; border-radius: 12px; background: #1e6e51; color: #ffffff; font-size: 16px; font-weight: 700;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+          تسجيل طالبة جديدة
+        </a>
+
+        <a href="#" style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 52px; border-radius: 12px; border: 1px solid #a8d9c2; color: #1a5842; font-size: 16px; font-weight: 700;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          حلقات اليوم
+        </a>
+      </div>
+
+      <div style="margin-top: 20px; padding-top: 18px; border-top: 1px solid #edf2ef;">
+        <p style="margin: 0; font-size: 13px; color: #5a6e66; line-height: 1.75;">
+          <b style="color: #0e1f19;">مسجّلة من قبل؟</b>
+          افتحي رابط حلقتك اللي وصلك من معلمتك — أو اختاري حلقتك من صفحة حلقات اليوم.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 7px; margin-top: 22px; padding-top: 18px; border-top: 1px solid #dbe5e0; width: 100%; justify-content: center;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b9a93" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <a href="#" style="font-size: 12.5px; font-weight: 600; color: #8b9a93;">الدخول كأدمن</a>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

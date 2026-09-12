@@ -1,0 +1,190 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Amiri:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f6f9f7; font-family: "Cairo", ui-sans-serif, system-ui, sans-serif; color: #0e1f19; }
+    a { color: #1e6e51; text-decoration: none; }
+    a:hover { color: #1a5842; }
+    .amiri { font-family: "Amiri", ui-serif, Georgia, serif; }
+  </style>
+</helmet>
+
+<!--
+  THE MUSHAF READER — page ٣٠٩, سُورَةُ مَرۡيَمَ.
+
+  Drawn as a PAGE, not a scroll of verses: these students memorise by position
+  on the Madani page, and a reflowing list fights the thing they are trying to
+  remember.
+
+  THE TEXT ON THIS ARTBOARD IS NOT TYPED. It is generated verbatim from a
+  verified Uthmani edition (see the generator in this project's scratch work).
+  The first draft of this mockup was typed by hand and silently lost every
+  waqf mark, then the sajdah and the hizb quarter - which is the whole reason
+  the rule exists. Nobody types scripture into this app, in a mockup or in
+  production.
+
+  This page was chosen because it carries all three at once: the sajdah at
+  سُورَةُ مَرۡيَمَ ٥٨, a hizb-quarter boundary, and waqf marks.
+
+  Amiri is a stand-in for the KFGQPC per-page font the real reader uses.
+-->
+<div dir="rtl" style="width: 390px; min-height: 844px; background: #f6f9f7; display: flex; flex-direction: column;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 14px; background: #ffffff; border-bottom: 1px solid #dbe5e0;">
+    <div style="display: flex; align-items: center; gap: 9px; min-width: 0;">
+      <a href="#" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 9px; border: 1px solid #dbe5e0; color: #5a6e66; flex-shrink: 0;" aria-label="رجوع">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </a>
+      <div style="display: flex; flex-direction: column; line-height: 1.3; min-width: 0;">
+        <span class="amiri" style="font-size: 15px; font-weight: 700;">سُورَةُ مَرۡيَمَ</span>
+        <span style="font-size: 11px; color: #5a6e66;">الجزء ١٦ · مكية</span>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <a href="#" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 9px; border: 1px solid #dbe5e0; color: #5a6e66;" aria-label="فهرس السور">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+      </a>
+      <a href="#" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 9px; border: 1px solid #dbe5e0; color: #5a6e66;" aria-label="إعدادات القراءة">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h10M4 17h7"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; padding: 14px;">
+    <div style="background: #fffdf7; border: 1px solid #e3c37c; border-radius: 12px; padding: 6px;">
+      <div style="border: 1px solid #efdbac; border-radius: 8px; padding: 18px 16px 12px; min-height: 500px; display: flex; flex-direction: column;">
+
+        <div class="amiri" style="flex-grow: 1; font-size: 20px; line-height: 2.7; text-align: center; color: #0e1f19;">
+          وَنَٰدَيْنَٰهُ مِن جَانِبِ ٱلطُّورِ ٱلْأَيْمَنِ وَقَرَّبْنَٰهُ نَجِيًّۭا<span style="display: inline-block; min-width: 26px; font-size: 13px; color: #a2742d;">﴿٥٢﴾</span>
+          وَوَهَبْنَا لَهُۥ مِن رَّحْمَتِنَآ أَخَاهُ هَٰرُونَ نَبِيًّۭا<span style="display: inline-block; min-width: 26px; font-size: 13px; color: #a2742d;">﴿٥٣﴾</span>
+          وَٱذْكُرْ فِى ٱلْكِتَٰبِ إِسْمَٰعِيلَ ۚ إِنَّهُۥ كَانَ صَادِقَ ٱلْوَعْدِ وَكَانَ رَسُولًۭا نَّبِيًّۭا<span style="display: inline-block; min-width: 26px; font-size: 13px; color: #a2742d;">﴿٥٤﴾</span>
+          وَكَانَ يَأْمُرُ أَهْلَهُۥ بِٱلصَّلَوٰةِ وَٱلزَّكَوٰةِ وَكَانَ عِندَ رَبِّهِۦ مَرْضِيًّۭا<span style="display: inline-block; min-width: 26px; font-size: 13px; color: #a2742d;">﴿٥٥﴾</span>
+          وَٱذْكُرْ فِى ٱلْكِتَٰبِ إِدْرِيسَ ۚ إِنَّهُۥ كَانَ صِدِّيقًۭا نَّبِيًّۭا<span style="display: inline-block; min-width: 26px; font-size: 13px; color: #a2742d;">﴿٥٦﴾</span>
+          وَرَفَعْنَٰهُ مَكَانًا عَلِيًّا<span style="display: inline-block; min-width: 26px; font-size: 13px; color: #a2742d;">﴿٥٧﴾</span>
+          أُو۟لَٰٓئِكَ ٱلَّذِينَ أَنْعَمَ ٱللَّهُ عَلَيْهِم مِّنَ ٱلنَّبِيِّۦنَ مِن ذُرِّيَّةِ ءَادَمَ وَمِمَّنْ حَمَلْنَا مَعَ نُوحٍۢ وَمِن ذُرِّيَّةِ إِبْرَٰهِيمَ وَإِسْرَٰٓءِيلَ وَمِمَّنْ هَدَيْنَا وَٱجْتَبَيْنَآ ۚ إِذَا تُتْلَىٰ عَلَيْهِمْ ءَايَٰتُ ٱلرَّحْمَٰنِ خَرُّوا۟ سُجَّدًۭا وَبُكِيًّۭا <span title="موضع سجدة" style="color: #1e6e51;">۩</span><span style="display: inline-block; min-width: 26px; font-size: 13px; color: #a2742d;">﴿٥٨﴾</span>
+          <span title="بداية ربع الحزب" style="color: #c4913a;">۞</span> فَخَلَفَ مِنۢ بَعْدِهِمْ خَلْفٌ أَضَاعُوا۟ ٱلصَّلَوٰةَ وَٱتَّبَعُوا۟ ٱلشَّهَوَٰتِ ۖ فَسَوْفَ يَلْقَوْنَ غَيًّا<span style="display: inline-block; min-width: 26px; font-size: 13px; color: #a2742d;">﴿٥٩﴾</span>
+          إِلَّا مَن تَابَ وَءَامَنَ وَعَمِلَ صَٰلِحًۭا فَأُو۟لَٰٓئِكَ يَدْخُلُونَ ٱلْجَنَّةَ وَلَا يُظْلَمُونَ شَيْـًۭٔا<span style="display: inline-block; min-width: 26px; font-size: 13px; color: #a2742d;">﴿٦٠﴾</span>
+          جَنَّٰتِ عَدْنٍ ٱلَّتِى وَعَدَ ٱلرَّحْمَٰنُ عِبَادَهُۥ بِٱلْغَيْبِ ۚ إِنَّهُۥ كَانَ وَعْدُهُۥ مَأْتِيًّۭا<span style="display: inline-block; min-width: 26px; font-size: 13px; color: #a2742d;">﴿٦١﴾</span>
+          لَّا يَسْمَعُونَ فِيهَا لَغْوًا إِلَّا سَلَٰمًۭا ۖ وَلَهُمْ رِزْقُهُمْ فِيهَا بُكْرَةًۭ وَعَشِيًّۭا<span style="display: inline-block; min-width: 26px; font-size: 13px; color: #a2742d;">﴿٦٢﴾</span>
+          تِلْكَ ٱلْجَنَّةُ ٱلَّتِى نُورِثُ مِنْ عِبَادِنَا مَن كَانَ تَقِيًّۭا<span style="display: inline-block; min-width: 26px; font-size: 13px; color: #a2742d;">﴿٦٣﴾</span>
+          وَمَا نَتَنَزَّلُ إِلَّا بِأَمْرِ رَبِّكَ ۖ لَهُۥ مَا بَيْنَ أَيْدِينَا وَمَا خَلْفَنَا وَمَا بَيْنَ ذَٰلِكَ ۚ وَمَا كَانَ رَبُّكَ نَسِيًّۭا<span style="display: inline-block; min-width: 26px; font-size: 13px; color: #a2742d;">﴿٦٤﴾</span>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; padding-top: 10px; border-top: 1px solid #efdbac;">
+          <span style="font-size: 12px; color: #a2742d;">٣٠٩</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Waqf key: this academy teaches تجويد, and the page never explains its
+       own marks. Collapsed - a reference, not decoration. -->
+  <div style="padding: 0 14px 10px;">
+    <details style="background: #ffffff; border: 1px solid #dbe5e0; border-radius: 12px;">
+      <summary style="display: flex; align-items: center; gap: 8px; padding: 11px 14px; cursor: pointer; list-style: none;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5a6e66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <span style="font-size: 13px; font-weight: 700; flex-grow: 1;">علامات الوقف والسجدة</span>
+        <span style="font-size: 12px; color: #5a6e66;">إيه معناها؟</span>
+      </summary>
+
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 4px 14px 10px;">
+        <div style="display: flex; align-items: center; gap: 9px;">
+          <span class="amiri" style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 7px; background: #edf2ef; font-size: 17px; color: #7e5a24;">ۖ</span>
+          <span style="font-size: 12px; color: #5a6e66;">الوصل أَولى</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 9px;">
+          <span class="amiri" style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 7px; background: #edf2ef; font-size: 17px; color: #7e5a24;">ۗ</span>
+          <span style="font-size: 12px; color: #5a6e66;">الوقف أَولى</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 9px;">
+          <span class="amiri" style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 7px; background: #edf2ef; font-size: 17px; color: #7e5a24;">ۘ</span>
+          <span style="font-size: 12px; color: #5a6e66;">وقف لازم</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 9px;">
+          <span class="amiri" style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 7px; background: #edf2ef; font-size: 17px; color: #7e5a24;">ۚ</span>
+          <span style="font-size: 12px; color: #5a6e66;">وقف جائز</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 9px;">
+          <span class="amiri" style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 7px; background: #edf2ef; font-size: 17px; color: #7e5a24;">ۙ</span>
+          <span style="font-size: 12px; color: #5a6e66;">لا تقف</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 9px;">
+          <span class="amiri" style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 7px; background: #edf2ef; font-size: 17px; color: #7e5a24;">ۛ</span>
+          <span style="font-size: 12px; color: #5a6e66;">معانقة — قف بأحدهما</span>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 8px 14px 14px; border-top: 1px solid #edf2ef;">
+        <div style="display: flex; align-items: center; gap: 9px;">
+          <span class="amiri" style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 7px; background: #edf7f2; font-size: 16px; color: #1e6e51;">۩</span>
+          <span style="font-size: 12px; color: #5a6e66;">موضع سجدة</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 9px;">
+          <span class="amiri" style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 7px; background: #f7edd6; font-size: 16px; color: #c4913a;">۞</span>
+          <span style="font-size: 12px; color: #5a6e66;">بداية ربع الحزب</span>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; background: #ffffff; border-top: 1px solid #dbe5e0;">
+    <a href="#" style="display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 11px; border: 1px solid #dbe5e0; color: #5a6e66;" aria-label="الصفحة السابقة">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </a>
+    <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; justify-content: center;">
+      <a href="#" style="display: inline-flex; align-items: center; gap: 7px; height: 42px; padding: 0 18px; border-radius: 11px; background: #1e6e51; color: #ffffff; font-size: 14px; font-weight: 700;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="none"><polygon points="6 3 20 12 6 21 6 3" fill="currentColor"/></svg>
+        استمعي
+      </a>
+      <a href="#" style="display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 11px; border: 1px solid #a8d9c2; color: #1a5842;" aria-label="علّمي مكانك">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      </a>
+    </div>
+    <a href="#" style="display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 11px; border: 1px solid #dbe5e0; color: #5a6e66;" aria-label="الصفحة التالية">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </a>
+  </div>
+
+  <!-- Same values as src/components/bottom-nav.tsx. -->
+  <div style="background: #ffffff; border-top: 1px solid #dbe5e0; box-shadow: 0 -2px 10px rgba(14,31,25,0.05); padding-bottom: 18px;">
+    <div style="display: flex; align-items: flex-start; justify-content: space-around; padding-top: 8px;">
+      <a href="#" style="position: relative; display: flex; width: 68px; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0 8px;">
+        
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#5a6e66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <span style="font-size: 10.5px; font-weight: 600; color: #5a6e66;">الرئيسية</span>
+      </a>
+      <a href="#" style="position: relative; display: flex; width: 68px; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0 8px;">
+        
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#5a6e66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
+        <span style="font-size: 10.5px; font-weight: 600; color: #5a6e66;">الجدول</span>
+      </a>
+      <a href="#" style="display: flex; width: 68px; flex-direction: column; align-items: center; gap: 4px;">
+        <span style="margin-top: -20px; display: flex; width: 52px; height: 52px; align-items: center; justify-content: center; border-radius: 999px; border: 3px solid #ffffff; background: #1e6e51; box-shadow: 0 6px 14px rgba(30,110,81,0.32);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>
+        </span>
+        <span style="margin-top: -2px; font-size: 10.5px; font-weight: 700; color: #1a5842;">اختبري حفظك</span>
+      </a>
+      <a href="#" style="position: relative; display: flex; width: 68px; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0 8px;">
+        <span style="position: absolute; top: 0; height: 3px; width: 20px; border-radius: 999px; background: #1e6e51;"></span>
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#1e6e51" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+        <span style="font-size: 10.5px; font-weight: 700; color: #1e6e51;">المصحف</span>
+      </a>
+      <a href="#" style="position: relative; display: flex; width: 68px; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0 8px;">
+        
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#5a6e66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
+        <span style="font-size: 10.5px; font-weight: 600; color: #5a6e66;">الاختبارات</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

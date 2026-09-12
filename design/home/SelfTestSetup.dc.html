@@ -1,0 +1,187 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Amiri:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f6f9f7; font-family: "Cairo", ui-sans-serif, system-ui, sans-serif; color: #0e1f19; }
+    a { color: #1e6e51; text-decoration: none; }
+    a:hover { color: #1a5842; }
+    .amiri { font-family: "Amiri", ui-serif, Georgia, serif; }
+  </style>
+</helmet>
+<!--
+  اختبري نفسك — segment 2. Unlimited, unrecorded, her own choice.
+
+  Scope first, then type: "which part of my hifz" is the question she arrives
+  with, and it is also what makes the test generatable - every type below is
+  produced from the text itself over the range she picks, so there is no
+  question bank to write and no معلمة in the loop.
+
+  المتشابهات deserves its own row rather than being buried: it is the classic
+  hifz stumbling block, whole courses are built around it, and it is exactly
+  the kind of thing a machine can find and a human cannot enumerate by hand.
+-->
+<div dir="rtl" style="width: 390px; min-height: 900px; background: #f6f9f7; display: flex; flex-direction: column;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; background: #ffffff; border-bottom: 1px solid #dbe5e0;">
+    <span style="font-size: 16px; font-weight: 700;">الاختبارات</span>
+  </div>
+
+  <div style="padding: 14px 14px 0;">
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; padding: 5px; background: #edf2ef; border-radius: 12px;">
+      <button type="button" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 44px; border: 0; border-radius: 10px; background: transparent; color: #5a6e66; font-weight: 600; font-family: inherit; font-size: 14px; cursor: pointer;">من معلمتك</button>
+      <button type="button" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 44px; border: 0; border-radius: 10px; background: #ffffff; color: #0e1f19; font-weight: 700; box-shadow: 0 1px 2px rgba(14,31,25,0.08); font-family: inherit; font-size: 14px; cursor: pointer;">اختبري نفسك</button>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 13px; padding: 14px 14px 24px;">
+
+    <p style="margin: 0; font-size: 12.5px; color: #5a6e66; line-height: 1.7;">
+      اختبارات من عندك، وقت ما تحبي، وبعدد ما تحبي. مش بتتسجّل في سجلك عند المعلمة — بس بتحدّث خريطة حفظك.
+    </p>
+
+    <!-- Scope. Defaulted to the thing she most likely needs. -->
+    <div style="background: #ffffff; border: 1px solid #dbe5e0; border-radius: 16px; padding: 16px;">
+      <div style="font-size: 13px; font-weight: 700;">النطاق</div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
+        <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border: 2px solid #1e6e51; border-radius: 12px; background: #edf7f2;">
+          <span style="display: flex; width: 20px; height: 20px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 999px; border: 2px solid #1e6e51;"><span style="width: 10px; height: 10px; border-radius: 999px; background: #1e6e51;"></span></span>
+          <div style="flex-grow: 1; min-width: 0;">
+            <div style="font-size: 14px; font-weight: 700;">اللي محتاج مراجعة</div>
+            <div style="font-size: 11.5px; color: #1a5842;">الجزء ٦ والجزء ٧ — باهتين في خريطتك</div>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border: 1px solid #dbe5e0; border-radius: 12px;">
+          <span style="display: flex; width: 20px; height: 20px; flex-shrink: 0; border-radius: 999px; border: 2px solid #dbe5e0;"></span>
+          <div style="flex-grow: 1; min-width: 0;">
+            <div style="font-size: 14px; font-weight: 600;">من جزء ← إلى جزء</div>
+            <div style="font-size: 11.5px; color: #5a6e66;">الجزء ١ ← الجزء ٧</div>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border: 1px solid #dbe5e0; border-radius: 12px;">
+          <span style="display: flex; width: 20px; height: 20px; flex-shrink: 0; border-radius: 999px; border: 2px solid #dbe5e0;"></span>
+          <div style="flex-grow: 1; min-width: 0;">
+            <div style="font-size: 14px; font-weight: 600;">من سورة ← إلى سورة</div>
+            <div style="font-size: 11.5px; color: #5a6e66;">النَّبَإِ ← النَّاسِ</div>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 11px; padding: 12px 14px; border: 1px solid #dbe5e0; border-radius: 12px;">
+          <span style="display: flex; width: 20px; height: 20px; flex-shrink: 0; border-radius: 999px; border: 2px solid #dbe5e0;"></span>
+          <div style="flex-grow: 1; min-width: 0;">
+            <div style="font-size: 14px; font-weight: 600;">كل حفظك</div>
+            <div style="font-size: 11.5px; color: #5a6e66;">٧ أجزاء و١٢ صفحة</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Types. Each is generated from the text over the chosen range. -->
+    <div style="background: #ffffff; border: 1px solid #dbe5e0; border-radius: 16px; overflow: hidden;">
+      <div style="padding: 15px 16px 4px; font-size: 13px; font-weight: 700;">نوع الاختبار</div>
+
+      <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-top: 1px solid #edf2ef;">
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0;">
+          <span style="font-size: 15px; font-weight: 700;">أكملي الآية</span>
+          <span style="font-size: 12px; color: #5a6e66; line-height: 1.6;">نوريكِ أول الآية وتكمّلي — وممكن الآيتين اللي بعدها.</span>
+          
+        </div>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5a6e66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: scaleX(-1); flex-shrink: 0;"><path d="M9 18l6-6-6-6"/></svg>
+      </a>
+
+      <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-top: 1px solid #edf2ef;">
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0;">
+          <span style="font-size: 15px; font-weight: 700;">المتشابهات</span>
+          <span style="font-size: 12px; color: #5a6e66; line-height: 1.6;">آيات شبه متطابقة في مواضع مختلفة — أصعب حاجة في الحفظ.</span>
+          <span style="font-size: 11px; color: #1a5842; font-weight: 600;">بتتولّد لوحدها بمقارنة النص</span>
+        </div>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5a6e66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: scaleX(-1); flex-shrink: 0;"><path d="M9 18l6-6-6-6"/></svg>
+      </a>
+
+      <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-top: 1px solid #edf2ef;">
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0;">
+          <span style="font-size: 15px; font-weight: 700;">الانفرادات</span>
+          <span style="font-size: 12px; color: #5a6e66; line-height: 1.6;">الصيغة اللي جت في موضع واحد بس في القرآن كله.</span>
+          
+        </div>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5a6e66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: scaleX(-1); flex-shrink: 0;"><path d="M9 18l6-6-6-6"/></svg>
+      </a>
+
+      <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-top: 1px solid #edf2ef;">
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0;">
+          <span style="font-size: 15px; font-weight: 700;">من أي سورة؟</span>
+          <span style="font-size: 12px; color: #5a6e66; line-height: 1.6;">آية من غير سياق، وإنتِ تحدّدي سورتها وموضعها.</span>
+          
+        </div>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5a6e66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: scaleX(-1); flex-shrink: 0;"><path d="M9 18l6-6-6-6"/></svg>
+      </a>
+
+      <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-top: 1px solid #edf2ef;">
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0;">
+          <span style="font-size: 15px; font-weight: 700;">تبدأ / تنتهي بـ</span>
+          <span style="font-size: 12px; color: #5a6e66; line-height: 1.6;">الآيات اللي بدأت أو انتهت بكلمة معينة داخل نطاقك.</span>
+          
+        </div>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5a6e66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: scaleX(-1); flex-shrink: 0;"><path d="M9 18l6-6-6-6"/></svg>
+      </a>
+
+      <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-top: 1px solid #edf2ef;">
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0;">
+          <span style="font-size: 15px; font-weight: 700;">التسميع المتقدم</span>
+          <span style="font-size: 12px; color: #5a6e66; line-height: 1.6;">سمّعي الآية واللي بعدها، وقيّمي نفسك.</span>
+          
+        </div>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5a6e66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: scaleX(-1); flex-shrink: 0;"><path d="M9 18l6-6-6-6"/></svg>
+      </a>
+    </div>
+
+    <a href="#" style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 52px; border-radius: 12px; background: #1e6e51; color: #ffffff; font-size: 16px; font-weight: 700;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
+      ابدأي — ١٠ أسئلة
+    </a>
+
+  </div>
+
+  <div style="background: #ffffff; border-top: 1px solid #dbe5e0; box-shadow: 0 -2px 10px rgba(14,31,25,0.05); padding-bottom: 18px;">
+    <div style="display: flex; align-items: flex-start; justify-content: space-around; padding-top: 8px;">
+      <a href="#" style="position: relative; display: flex; width: 68px; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0 8px;">
+        
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#5a6e66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <span style="font-size: 10.5px; font-weight: 600; color: #5a6e66;">الرئيسية</span>
+      </a>
+      <a href="#" style="position: relative; display: flex; width: 68px; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0 8px;">
+        
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#5a6e66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
+        <span style="font-size: 10.5px; font-weight: 600; color: #5a6e66;">الجدول</span>
+      </a>
+      <a href="#" style="display: flex; width: 68px; flex-direction: column; align-items: center; gap: 4px;">
+        <span style="margin-top: -20px; display: flex; width: 52px; height: 52px; align-items: center; justify-content: center; border-radius: 999px; border: 3px solid #ffffff; background: #1e6e51; box-shadow: 0 6px 14px rgba(30,110,81,0.32);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>
+        </span>
+        <span style="margin-top: -2px; font-size: 10.5px; font-weight: 700; color: #1a5842;">اختبري حفظك</span>
+      </a>
+      <a href="#" style="position: relative; display: flex; width: 68px; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0 8px;">
+        
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#5a6e66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+        <span style="font-size: 10.5px; font-weight: 600; color: #5a6e66;">المصحف</span>
+      </a>
+      <a href="#" style="position: relative; display: flex; width: 68px; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0 8px;">
+        <span style="position: absolute; top: 0; height: 3px; width: 20px; border-radius: 999px; background: #1e6e51;"></span>
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#1e6e51" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
+        <span style="font-size: 10.5px; font-weight: 700; color: #1e6e51;">الاختبارات</span>
+      </a>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

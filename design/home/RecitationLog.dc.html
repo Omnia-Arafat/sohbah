@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Amiri:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f6f9f7; font-family: "Cairo", ui-sans-serif, system-ui, sans-serif; color: #0e1f19; }
+    a { color: #1e6e51; text-decoration: none; }
+    a:hover { color: #1a5842; }
+    .amiri { font-family: "Amiri", ui-serif, Georgia, serif; }
+  </style>
+</helmet>
+<!-- سجل التسميع — ما تملؤه المعلمة عند انتهاء الطالبة -->
+<!--
+  WHAT THE معلمة FILLS IN when a student finishes reciting.
+
+  This is the record the app does not keep today: 'recitation_status' stores
+  only waiting/reciting/done, so the academy knows THAT a student recited and
+  never WHAT. For 18 of 25 circles - every تصحيح التلاوة and تجويد circle -
+  that is the whole point of the session going unrecorded.
+
+  Designed for a معلمة running a live circle on a phone: every field is a tap,
+  nothing is typed. She has a queue of students waiting; a form that takes
+  thirty seconds will not be filled in.
+
+  The two error kinds are the ones the discipline actually uses: لحن جلي
+  changes the word or the meaning, لحن خفي is a tajweed slip. Counting them
+  separately is what lets a معلمة see later that a student's problem is
+  tajweed rather than memorisation.
+-->
+<div dir="rtl" style="width: 390px; min-height: 844px; background: #f6f9f7; display: flex; flex-direction: column;">
+
+  <div style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #ffffff; border-bottom: 1px solid #dbe5e0;">
+    <a href="#" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; border: 1px solid #dbe5e0; color: #5a6e66;" aria-label="رجوع">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </a>
+    <div style="display: flex; flex-direction: column; line-height: 1.3; min-width: 0;">
+      <span style="font-size: 15px; font-weight: 700;">تسميع سارة محمود</span>
+      <span style="font-size: 11px; color: #5a6e66;">الدور ٣ · حلقة مها طلال</span>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px; padding: 18px 14px 24px;">
+
+    <div>
+      <div style="font-size: 13px; font-weight: 700; padding-bottom: 9px;">نوع التسميع</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 7px;">
+        <span style="display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 14px; border-radius: 11px; font-size: 13px; font-weight: 700; background: #1e6e51; color: #ffffff;">حفظ جديد</span>
+        <span style="display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 14px; border-radius: 11px; font-size: 13px; font-weight: 600; background: #ffffff; color: #5a6e66; border: 1px solid #dbe5e0;">مراجعة قريبة</span>
+        <span style="display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 14px; border-radius: 11px; font-size: 13px; font-weight: 600; background: #ffffff; color: #5a6e66; border: 1px solid #dbe5e0;">مراجعة بعيدة</span>
+        <span style="display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 14px; border-radius: 11px; font-size: 13px; font-weight: 600; background: #ffffff; color: #5a6e66; border: 1px solid #dbe5e0;">تثبيت</span>
+      </div>
+    </div>
+
+    <!-- Pre-filled from where she stopped last time: the commonest case is
+         "she continued from where she was", and that should cost no taps. -->
+    <div style="background: #ffffff; border: 1px solid #dbe5e0; border-radius: 16px; padding: 16px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+        <span style="font-size: 13px; font-weight: 700;">من ← إلى</span>
+        <span style="font-size: 11px; color: #5a6e66;">تكملة من آخر مرة</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; margin-top: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border: 1px solid #dbe5e0; border-radius: 11px;">
+          <span style="font-size: 10px; color: #5a6e66;">من</span>
+          <span style="font-size: 14px; font-weight: 700;">الكَهۡفِ ١١</span>
+        </div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5a6e66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        <div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border: 1px solid #1e6e51; border-radius: 11px;">
+          <span style="font-size: 10px; color: #5a6e66;">إلى</span>
+          <span style="font-size: 14px; font-weight: 700;">الكَهۡفِ ٢٦</span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 11px; padding-top: 11px; border-top: 1px solid #edf2ef;">
+        <span style="font-size: 12px; color: #5a6e66;">صفحة ٢٩٤ · ١٦ آية · ثلاثة أرباع صفحة</span>
+        <a href="#" style="font-size: 12px; font-weight: 700;">تعديل</a>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size: 13px; font-weight: 700; padding-bottom: 9px;">التقييم</div>
+      <div style="display: flex; gap: 7px;">
+        <span style="display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 14px; border-radius: 11px; font-size: 13px; font-weight: 700; background: #1e6e51; color: #ffffff;">ممتاز</span>
+        <span style="display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 14px; border-radius: 11px; font-size: 13px; font-weight: 600; background: #ffffff; color: #5a6e66; border: 1px solid #dbe5e0;">جيد جدًا</span>
+        <span style="display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 14px; border-radius: 11px; font-size: 13px; font-weight: 600; background: #ffffff; color: #5a6e66; border: 1px solid #dbe5e0;">جيد</span>
+        <span style="display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 14px; border-radius: 11px; font-size: 13px; font-weight: 600; background: #ffffff; color: #5a6e66; border: 1px solid #dbe5e0;">تُعيد</span>
+      </div>
+    </div>
+
+    <div style="background: #ffffff; border: 1px solid #dbe5e0; border-radius: 16px; padding: 16px;">
+      <div style="font-size: 13px; font-weight: 700;">الأخطاء</div>
+      <p style="margin: 5px 0 12px; font-size: 11px; color: #5a6e66; line-height: 1.6;">فصل النوعين بيخلّي المعلمة تشوف بعدين إن مشكلة الطالبة تجويد مش حفظ.</p>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0;">
+        <div style="min-width: 0;">
+          <div style="font-size: 14px; font-weight: 600;">لحن جلي</div>
+          <div style="font-size: 11px; color: #5a6e66;">يغيّر الكلمة أو المعنى</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+          <span style="display: flex; width: 36px; height: 36px; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid #dbe5e0; color: #5a6e66; font-size: 18px;">−</span>
+          <span style="min-width: 20px; text-align: center; font-size: 17px; font-weight: 700;">٠</span>
+          <span style="display: flex; width: 36px; height: 36px; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid #dbe5e0; color: #5a6e66; font-size: 18px;">+</span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid #edf2ef;">
+        <div style="min-width: 0;">
+          <div style="font-size: 14px; font-weight: 600;">لحن خفي</div>
+          <div style="font-size: 11px; color: #5a6e66;">خطأ تجويدي لا يغيّر المعنى</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+          <span style="display: flex; width: 36px; height: 36px; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid #dbe5e0; color: #5a6e66; font-size: 18px;">−</span>
+          <span style="min-width: 20px; text-align: center; font-size: 17px; font-weight: 700;">٢</span>
+          <span style="display: flex; width: 36px; height: 36px; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid #1e6e51; color: #1e6e51; font-size: 18px;">+</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 9px;">
+      <a href="#" style="display: flex; align-items: center; justify-content: center; flex-grow: 1; height: 52px; border-radius: 12px; background: #1e6e51; color: #ffffff; font-size: 16px; font-weight: 700;">حفظ وإنهاء الدور</a>
+      <a href="#" style="display: flex; align-items: center; justify-content: center; height: 52px; padding: 0 18px; border-radius: 12px; border: 1px solid #dbe5e0; color: #5a6e66; font-size: 14px; font-weight: 600;">ملاحظة</a>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

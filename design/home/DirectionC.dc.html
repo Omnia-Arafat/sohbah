@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Amiri:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f6f9f7; font-family: "Cairo", ui-sans-serif, system-ui, sans-serif; color: #0e1f19; }
+    a { color: #1e6e51; text-decoration: none; }
+    a:hover { color: #1a5842; }
+    .amiri { font-family: "Amiri", ui-serif, Georgia, serif; }
+  </style>
+</helmet>
+
+<!--
+  DIRECTION C — "المخطوطة".
+  Leans into what the palette is already named after: Sidr green and the
+  manuscript tradition. Amiri does the heavy lifting, the day reads as a
+  ruled timetable rather than a stack of cards, and the page is quiet.
+-->
+<div dir="rtl" style="width: 1120px; background: #f6f9f7;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 16px 56px; border-bottom: 1px solid #dbe5e0;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <img src="sohbah-logo.webp" alt="" style="width: 36px; height: 36px; object-fit: contain;">
+      <span class="amiri" style="font-size: 19px; font-weight: 700; color: #1a5842;">مقراءة صحبة الإلكترونية</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 20px; font-size: 14px;">
+      <a href="#" style="color: #5a6e66; font-weight: 600;">الجدول</a>
+      <a href="#" style="color: #5a6e66; font-weight: 600;">دخول المعلمات</a>
+      <span style="color: #5a6e66; font-weight: 600;">EN</span>
+    </div>
+  </div>
+
+  <div style="padding: 52px 56px 56px;">
+
+    <!-- A centred, unhurried opening. -->
+    <div style="text-align: center; padding-bottom: 40px; border-bottom: 1px solid #dbe5e0;">
+      <h1 class="amiri" style="margin: 0; font-size: 46px; font-weight: 700; line-height: 1.25;">وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا</h1>
+      <p style="margin: 14px auto 0; max-width: 540px; font-size: 16px; color: #5a6e66; line-height: 1.85;">
+        حلقات تصحيح التلاوة والتجويد والحديث. اعرفي موعد حلقتك اليوم وادخليها من هنا — بلا حساب ولا كلمة مرور.
+      </p>
+    </div>
+
+    <!-- The day as a ruled table: times in a narrow column, names in the wide
+         one, one ruled line between entries. Only the live row is tinted. -->
+    <div style="margin-top: 38px;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 16px;">
+        <h2 class="amiri" style="margin: 0; font-size: 26px; font-weight: 700;">حلقات اليوم</h2>
+        <span style="font-size: 14px; color: #5a6e66;">السبت ١٢ سبتمبر · بتوقيت مكة المكرمة</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column;">
+
+        <div style="display: grid; grid-template-columns: 118px 1fr auto; gap: 24px; align-items: center; padding: 18px 20px; background: #f7edd6; border-top: 2px solid #c4913a; border-bottom: 1px solid #efdbac;">
+          <span class="amiri" style="font-size: 26px; font-weight: 700; color: #7e5a24;">٥:٠٠ م</span>
+          <div style="min-width: 0;">
+            <div style="font-size: 18px; font-weight: 700;">منة أحمد</div>
+            <div style="margin-top: 2px; font-size: 13px; color: #7e5a24;">تسميع حر · تبدأ الآن</div>
+          </div>
+          <a href="#" style="display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 24px; border-radius: 12px; background: #1e6e51; color: #ffffff; font-size: 15px; font-weight: 700;">ادخلي الحلقة</a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 118px 1fr auto; gap: 24px; align-items: center; padding: 18px 20px; border-bottom: 1px solid #dbe5e0;">
+          <span class="amiri" style="font-size: 24px; font-weight: 700; color: #5a6e66;">٨:٠٠ م</span>
+          <div style="min-width: 0;">
+            <div style="font-size: 17px; font-weight: 600;">أسماء إبراهيم محمد</div>
+            <div style="margin-top: 2px; font-size: 13px; color: #5a6e66;">حلقة تجويد</div>
+          </div>
+          <a href="#" style="font-size: 14px; font-weight: 700;">فتح الصفحة</a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 118px 1fr auto; gap: 24px; align-items: center; padding: 18px 20px; border-bottom: 1px solid #dbe5e0;">
+          <span class="amiri" style="font-size: 24px; font-weight: 700; color: #5a6e66;">٥:٠٠ م</span>
+          <div style="min-width: 0;">
+            <div style="font-size: 17px; font-weight: 600;">مها طلال عقله الدخان</div>
+            <div style="margin-top: 2px; font-size: 13px; color: #5a6e66;">حلقة تصحيح التلاوة</div>
+          </div>
+          <a href="#" style="font-size: 14px; font-weight: 700;">فتح الصفحة</a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 118px 1fr auto; gap: 24px; align-items: center; padding: 18px 20px; border-bottom: 1px solid #dbe5e0; opacity: 0.55;">
+          <span class="amiri" style="font-size: 24px; font-weight: 700; color: #5a6e66;">٢:٠٠ م</span>
+          <div style="min-width: 0;">
+            <div style="font-size: 17px; font-weight: 600;">ميمونة شباح</div>
+            <div style="margin-top: 2px; font-size: 13px; color: #5a6e66;">حلقة تصحيح التلاوة</div>
+          </div>
+          <span style="font-size: 13px; color: #5a6e66;">انتهت</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 118px 1fr auto; gap: 24px; align-items: center; padding: 18px 20px; border-bottom: 1px solid #dbe5e0; opacity: 0.55;">
+          <span class="amiri" style="font-size: 24px; font-weight: 700; color: #5a6e66;">١١:٠٠ ص</span>
+          <div style="min-width: 0;">
+            <div style="font-size: 17px; font-weight: 600;">فاطمة عبدالله</div>
+            <div style="margin-top: 2px; font-size: 13px; color: #5a6e66;">تسميع حر</div>
+          </div>
+          <span style="font-size: 13px; color: #5a6e66;">انتهت</span>
+        </div>
+
+      </div>
+
+      <div style="display: flex; justify-content: center; padding-top: 24px;">
+        <a href="#" style="font-size: 15px; font-weight: 700;">الجدول الأسبوعي كامل ←</a>
+      </div>
+    </div>
+
+    <!-- Two quiet lines instead of two competing panels. -->
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-top: 44px; padding-top: 34px; border-top: 1px solid #dbe5e0;">
+      <div>
+        <div class="amiri" style="font-size: 20px; font-weight: 700;">أول مرة معنا؟</div>
+        <p style="margin: 6px 0 12px; font-size: 15px; color: #5a6e66; line-height: 1.7;">سجّلي مرة واحدة باسمك واسم والدك، وبعدها تنضمي لأي حلقة بالبحث عن اسمك.</p>
+        <a href="#" style="display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 22px; border-radius: 12px; background: #1e6e51; color: #ffffff; font-size: 15px; font-weight: 700;">تسجيل طالبة جديدة</a>
+      </div>
+      <div>
+        <div class="amiri" style="font-size: 20px; font-weight: 700;">معلمة أو مشرفة؟</div>
+        <p style="margin: 6px 0 12px; font-size: 15px; color: #5a6e66; line-height: 1.7;">تابعي حلقات اليوم ودور التلاوة، وسجّلي الحضور، وشاركي رابط الحلقة.</p>
+        <a href="#" style="display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 22px; border-radius: 12px; border: 1px solid #a8d9c2; color: #1a5842; font-size: 15px; font-weight: 700;">تسجيل الدخول</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

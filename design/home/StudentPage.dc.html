@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Amiri:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f6f9f7; font-family: "Cairo", ui-sans-serif, system-ui, sans-serif; color: #0e1f19; }
+    a { color: #1e6e51; text-decoration: none; }
+    a:hover { color: #1a5842; }
+    .amiri { font-family: "Amiri", ui-serif, Georgia, serif; }
+  </style>
+</helmet>
+<!-- صفحتي — سجل الطالبة وتقدمها -->
+<div dir="rtl" style="width: 390px; min-height: 1180px; background: #f6f9f7; display: flex; flex-direction: column;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; background: #ffffff; border-bottom: 1px solid #dbe5e0;">
+    <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+      <span style="display: flex; width: 38px; height: 38px; align-items: center; justify-content: center; border-radius: 999px; background: #d3ece0; color: #1a5842; font-size: 15px; font-weight: 700; flex-shrink: 0;">س</span>
+      <div style="display: flex; flex-direction: column; line-height: 1.3; min-width: 0;">
+        <span style="font-size: 15px; font-weight: 700;">سارة محمود</span>
+        <span style="font-size: 11px; color: #5a6e66;">حلقة مها طلال · تصحيح التلاوة</span>
+      </div>
+    </div>
+    <a href="#" style="font-size: 12px; font-weight: 600; color: #5a6e66;">خروج</a>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 14px; padding: 16px 14px 24px;">
+
+    <!--
+      THE PROGRESS OBJECT. A 30-cell juz map, not a bar: a bar of 604 pages
+      moves invisibly, and "18%" means nothing you can feel. Thirty cells is
+      a shape she can hold in her head and watch fill.
+
+      Crucially the map can go BACKWARDS in intensity: juz 6 and 7 have faded
+      to a dashed tint because they are overdue for review. A number that only
+      rises is a vanity metric; a map that dims is the truth, and it is what
+      makes the "راجعي" button below worth pressing.
+    -->
+    <div style="background: #ffffff; border: 1px solid #dbe5e0; border-radius: 16px; padding: 18px 16px;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
+        <span class="amiri" style="font-size: 20px; font-weight: 700;">حفظك</span>
+        <span style="font-size: 13px; color: #5a6e66;">٧ أجزاء و١٢ صفحة</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; margin-top: 14px;">
+        <span title="الجزء ١" style="background: #1e6e51; color: #ffffff; border: 1px solid #1e6e51; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">١</span>
+        <span title="الجزء ٢" style="background: #1e6e51; color: #ffffff; border: 1px solid #1e6e51; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">٢</span>
+        <span title="الجزء ٣" style="background: #1e6e51; color: #ffffff; border: 1px solid #1e6e51; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">٣</span>
+        <span title="الجزء ٤" style="background: #1e6e51; color: #ffffff; border: 1px solid #1e6e51; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">٤</span>
+        <span title="الجزء ٥" style="background: #1e6e51; color: #ffffff; border: 1px solid #1e6e51; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">٥</span>
+        <span title="الجزء ٦" style="background: #d3ece0; color: #1a5842; border: 1px dashed #75c0a0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">٦</span>
+        <span title="الجزء ٧" style="background: #d3ece0; color: #1a5842; border: 1px dashed #75c0a0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">٧</span>
+        <span title="الجزء ٨" style="background: #edf7f2; color: #1a5842; border: 1px solid #45a57f; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">٨</span>
+        <span title="الجزء ٩" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">٩</span>
+        <span title="الجزء ١٠" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">١٠</span>
+        <span title="الجزء ١١" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">١١</span>
+        <span title="الجزء ١٢" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">١٢</span>
+        <span title="الجزء ١٣" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">١٣</span>
+        <span title="الجزء ١٤" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">١٤</span>
+        <span title="الجزء ١٥" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">١٥</span>
+        <span title="الجزء ١٦" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">١٦</span>
+        <span title="الجزء ١٧" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">١٧</span>
+        <span title="الجزء ١٨" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">١٨</span>
+        <span title="الجزء ١٩" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">١٩</span>
+        <span title="الجزء ٢٠" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">٢٠</span>
+        <span title="الجزء ٢١" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">٢١</span>
+        <span title="الجزء ٢٢" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">٢٢</span>
+        <span title="الجزء ٢٣" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">٢٣</span>
+        <span title="الجزء ٢٤" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">٢٤</span>
+        <span title="الجزء ٢٥" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">٢٥</span>
+        <span title="الجزء ٢٦" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">٢٦</span>
+        <span title="الجزء ٢٧" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">٢٧</span>
+        <span title="الجزء ٢٨" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">٢٨</span>
+        <span title="الجزء ٢٩" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">٢٩</span>
+        <span title="الجزء ٣٠" style="background: #edf2ef; color: #a7b5ae; border: 1px solid #dbe5e0; display: flex; align-items: center; justify-content: center; height: 34px; border-radius: 8px; font-size: 12px; font-weight: 700;">٣٠</span>
+      </div>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #edf2ef; font-size: 11px; color: #5a6e66;">
+        <span style="display: inline-flex; align-items: center; gap: 5px;"><span style="width: 11px; height: 11px; border-radius: 3px; background: #1e6e51;"></span> متقن</span>
+        <span style="display: inline-flex; align-items: center; gap: 5px;"><span style="width: 11px; height: 11px; border-radius: 3px; background: #d3ece0; border: 1px dashed #75c0a0;"></span> بدأ يبهت</span>
+        <span style="display: inline-flex; align-items: center; gap: 5px;"><span style="width: 11px; height: 11px; border-radius: 3px; background: #edf7f2; border: 1px solid #45a57f;"></span> قيد الحفظ</span>
+      </div>
+    </div>
+
+    <!-- The one action the research actually supports. -->
+    <div style="background: #edf7f2; border: 1px solid #a8d9c2; border-radius: 16px; padding: 16px;">
+      <div style="display: flex; align-items: center; gap: 9px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1e6e51" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a8 8 0 1 0-8-8"/><path d="M4 4v5h5"/></svg>
+        <span class="amiri" style="font-size: 19px; font-weight: 700;">جزءان محتاجان مراجعة</span>
+      </div>
+      <p style="margin: 7px 0 0; font-size: 13px; color: #1a5842; line-height: 1.7;">الجزء ٦ والجزء ٧ — آخر مراجعة من ٢٣ يوم.</p>
+      <div style="display: flex; gap: 8px; margin-top: 13px;">
+        <a href="#" style="display: flex; align-items: center; justify-content: center; gap: 7px; flex-grow: 1; height: 46px; border-radius: 12px; background: #1e6e51; color: #ffffff; font-size: 15px; font-weight: 700;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
+          اختبري حفظك
+        </a>
+        <a href="#" style="display: flex; align-items: center; justify-content: center; height: 46px; padding: 0 18px; border-radius: 12px; border: 1px solid #a8d9c2; color: #1a5842; font-size: 15px; font-weight: 700;">اقرئي</a>
+      </div>
+    </div>
+
+    <!-- Her own record, which today she cannot see at all. -->
+    <div style="background: #ffffff; border: 1px solid #dbe5e0; border-radius: 16px; overflow: hidden;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 14px 16px 10px;">
+        <span style="font-size: 14px; font-weight: 700;">آخر تسميع</span>
+        <a href="#" style="font-size: 12px; font-weight: 600;">السجل كامل</a>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid #edf2ef;">
+        <span style="display: flex; width: 40px; height: 40px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 10px; background: #edf7f2; color: #1a5842; font-size: 11px; font-weight: 700;">ممتاز</span>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0;">
+          <span style="font-size: 14px; font-weight: 600;">الكَهۡفِ ١–١٠</span>
+          <span style="font-size: 12px; color: #5a6e66;">حفظ جديد · صفحة ٢٩٣ · أمس</span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid #edf2ef;">
+        <span style="display: flex; width: 40px; height: 40px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 10px; background: #f6f9f7; color: #5a6e66; font-size: 11px; font-weight: 700;">جيد</span>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0;">
+          <span style="font-size: 14px; font-weight: 600;">البَقَرَةِ ٢٥٥–٢٦٠</span>
+          <span style="font-size: 12px; color: #5a6e66;">مراجعة · ٣ أخطاء خفية · السبت الماضي</span>
+        </div>
+      </div>
+    </div>
+
+    <p style="margin: 0; font-size: 12px; color: #5a6e66; text-align: center; line-height: 1.7;">
+      البيانات دي من تسميعك في الحلقة — معلمتك هي اللي بتسجّلها.
+    </p>
+
+  </div>
+
+  <div style="background: #ffffff; border-top: 1px solid #dbe5e0; box-shadow: 0 -2px 10px rgba(14,31,25,0.05); padding-bottom: 18px;">
+    <div style="display: flex; align-items: flex-start; justify-content: space-around; padding-top: 8px;">
+      <a href="#" style="position: relative; display: flex; width: 68px; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0 8px;">
+        <span style="position: absolute; top: 0; height: 3px; width: 20px; border-radius: 999px; background: #1e6e51;"></span>
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#1e6e51" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <span style="font-size: 10.5px; font-weight: 700; color: #1e6e51;">الرئيسية</span>
+      </a>
+      <a href="#" style="position: relative; display: flex; width: 68px; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0 8px;">
+        
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#5a6e66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
+        <span style="font-size: 10.5px; font-weight: 600; color: #5a6e66;">الجدول</span>
+      </a>
+      <a href="#" style="display: flex; width: 68px; flex-direction: column; align-items: center; gap: 4px;">
+        <span style="margin-top: -20px; display: flex; width: 52px; height: 52px; align-items: center; justify-content: center; border-radius: 999px; border: 3px solid #ffffff; background: #1e6e51; box-shadow: 0 6px 14px rgba(30,110,81,0.32);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>
+        </span>
+        <span style="margin-top: -2px; font-size: 10.5px; font-weight: 700; color: #1a5842;">اختبري حفظك</span>
+      </a>
+      <a href="#" style="position: relative; display: flex; width: 68px; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0 8px;">
+        
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#5a6e66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+        <span style="font-size: 10.5px; font-weight: 600; color: #5a6e66;">المصحف</span>
+      </a>
+      <a href="#" style="position: relative; display: flex; width: 68px; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0 8px;">
+        
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#5a6e66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
+        <span style="font-size: 10.5px; font-weight: 600; color: #5a6e66;">الاختبارات</span>
+      </a>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
