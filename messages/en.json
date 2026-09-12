@@ -91,6 +91,10 @@
       "login": "Sign in",
       "register": "Register"
     },
+    "next": {
+      "label": "Next circle",
+      "body": "You can join now and take your place in the queue before it starts."
+    },
     "greeting": "Welcome to Sohbah",
     "mushaf": {
       "title": "Mushaf",
@@ -98,10 +102,6 @@
       "cta": "Open the mushaf",
       "resume": "Continue where you stopped — {surah}, page {page}",
       "resumeCta": "Continue reading"
-    },
-    "next": {
-      "label": "Next circle",
-      "body": "You can join now and take your place in the queue before it starts."
     }
   },
   "register": {
@@ -139,8 +139,9 @@
       "generic": "Registration could not be completed. Please try again.",
       "notConfigured": "The database is not connected yet.",
       "phoneRequired": "A WhatsApp number is required.",
-      "phoneInvalid": "Enter a full phone number.",
-      "phoneTaken": "This number is already registered. Do not register again — open your circle's link and search for your name."
+      "phoneInvalid": "That number is not valid for this country. Check the digits and the country code.",
+      "phoneTaken": "This number is already registered. Do not register again — open your circle's link and search for your name.",
+      "phoneCountryRequired": "Choose a country code."
     }
   },
   "circle": {
@@ -596,7 +597,7 @@
         "fatherRequired": "Father's name is required.",
         "genderRequired": "Choose a section.",
         "phoneRequired": "A phone number is required.",
-        "phoneInvalid": "Enter a full phone number.",
+        "phoneInvalid": "That number is not valid for this country. Check the digits and the country code.",
         "phoneTaken": "Another student in this academy already uses this number.",
         "typeRequired": "Choose a circle type.",
         "teacherRequired": "Choose a teacher.",
@@ -609,7 +610,8 @@
         "missingParams": "Something is missing from the request.",
         "academyNotFound": "Academy not found.",
         "saveFailed": "Could not save the changes. Please try again.",
-        "saved": "Changes saved."
+        "saved": "Changes saved.",
+        "phoneCountryRequired": "Choose a country code."
       },
       "accessDenied": "Access denied",
       "adminRequired": "This area is for supervisors only."
@@ -1313,6 +1315,10 @@
     "attribution": "Uthmani text from the Tanzil project (tanzil.net) — unmodified.",
     "notFound": "No such page. The mushaf runs from 1 to 604.",
     "ayahCount": "{count, plural, one{# ayah} other{# ayat}}"
+  },
+  "phone": {
+    "countryLabel": "Country code",
+    "hint": "Pick the country and type the number without it — {country} example: {example}"
   },
   "selfTest": {
     "title": "Test yourself",

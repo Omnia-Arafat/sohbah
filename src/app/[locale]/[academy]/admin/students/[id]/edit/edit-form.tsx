@@ -4,6 +4,8 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { PhoneField } from "@/components/phone-field";
+import { parseE164 } from "@/lib/phone";
 import { updateStudent, type UpdateStudentState } from "./actions";
 
 function SubmitButton() {
@@ -43,6 +45,16 @@ export function EditStudentForm({ student, academySlug }: EditStudentFormProps) 
     state.status === "invalid" ? state.values : student;
   const fieldErrors =
     state.status === "invalid" ? state.fieldErrors : {};
+
+  /**
+   * A rejected save comes back with the picker and digits as typed; otherwise
+   * the stored E.164 is split apart. A legacy row we cannot place returns a
+   * null country, and the picker falls back to Egypt for the معلمة to correct.
+   */
+  const storedPhone =
+    state.status === "invalid"
+      ? { iso: state.values.phone_country, national: state.values.phone ?? "" }
+      : parseE164(student.phone);
 
   /** The action returns message keys, not sentences, so it stays locale-free. */
   function fieldError(key: string) {
@@ -89,24 +101,12 @@ export function EditStudentForm({ student, academySlug }: EditStudentFormProps) 
         {fieldError("father_name")}
       </div>
 
-      <div>
-        <label className="field-label" htmlFor="phone">
-          {t("phoneNumber")}
-        </label>
-        <input
-          id="phone"
-          name="phone"
-          type="tel"
-          inputMode="tel"
-          dir="ltr"
-          required
-          className="input text-start"
-          defaultValue={values.phone || ""}
-          autoComplete="tel"
-          aria-invalid={Boolean(fieldErrors.phone)}
-        />
-        {fieldError("phone")}
-      </div>
+      <PhoneField
+        label={t("phoneNumber")}
+        error={fieldErrors.phone ? t(`errors.${fieldErrors.phone}`) : undefined}
+        defaultCountry={storedPhone.iso}
+        defaultValue={storedPhone.national}
+      />
 
       <fieldset>
         <legend className="field-label">{t("gender")}</legend>

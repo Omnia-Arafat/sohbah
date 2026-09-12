@@ -9,7 +9,10 @@ import type { StudentSearchResult } from "@/lib/database.types";
 
 export type RegisterValues = {
   name: string;
+  /** National digits as typed — the country lives in `phoneCountry`. */
   phone: string;
+  /** ISO code from the country picker; joined with `phone` into E.164. */
+  phoneCountry: string;
   gender: string;
 };
 

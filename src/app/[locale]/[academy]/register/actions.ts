@@ -1,19 +1,12 @@
 "use server";
 
 import type { GenderCategory } from "@/lib/database.types";
+import { toE164, validatePhone } from "@/lib/phone";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import type { RegisterState, RegisterValues } from "./state";
 
 const MAX_LENGTH = 80;
-
-/** Short enough to accept local formats, long enough to reject a typo. */
-const MIN_PHONE_DIGITS = 7;
-
-/** Mirrors `public.normalize_phone()` so the form rejects what the DB would. */
-function digitsOnly(phone: string) {
-  return phone.replace(/^00/, "").replace(/\D/g, "");
-}
 
 /** Unique violation — the only one on `students` is the per-academy phone key. */
 const UNIQUE_VIOLATION = "23505";
@@ -23,6 +16,7 @@ function readValues(formData: FormData): RegisterValues {
   return {
     name: read("name"),
     phone: read("phone"),
+    phoneCountry: read("phoneCountry"),
     gender: read("gender"),
   };
 }
@@ -45,10 +39,14 @@ export async function registerStudent(
   }
   // Required, but deliberately not unique: siblings share one parent's number.
   // `students_phone_required` enforces the same rule in the database.
-  if (!values.phone) fieldErrors.phone = "phoneRequired";
-  else if (values.phone.length > 32) fieldErrors.phone = "tooLong";
-  else if (digitsOnly(values.phone).length < MIN_PHONE_DIGITS) {
-    fieldErrors.phone = "phoneInvalid";
+  //
+  // The country picker is what makes the check meaningful: each country has its
+  // own length and mobile prefix, so "0104018960" (an Egyptian number a digit
+  // short) is rejected here instead of being stored and found months later.
+  if (values.phone.length > 32) fieldErrors.phone = "tooLong";
+  else {
+    const phoneError = validatePhone(values.phoneCountry, values.phone);
+    if (phoneError) fieldErrors.phone = phoneError;
   }
 
   if (Object.keys(fieldErrors).length > 0) {
@@ -89,10 +87,16 @@ export async function registerStudent(
     }
   }
 
+  // Stored in E.164 so one line is one `phone_key`, however it was typed.
+  const phone = toE164(values.phoneCountry, values.phone);
+  if (!phone) {
+    return { status: "invalid", values, fieldErrors: { phone: "phoneInvalid" } };
+  }
+
   const { error } = await supabase.from("students").insert({
     name: values.name,
     father_name: fatherName,
-    phone: values.phone,
+    phone,
     gender_category: gender,
     academy_id: academyId,
   });
