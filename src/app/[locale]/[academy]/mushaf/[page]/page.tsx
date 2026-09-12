@@ -127,7 +127,7 @@ export default async function MushafReaderPage({ params }: MushafPageProps) {
             className="font-display text-center text-[1.35rem] leading-[2.6]"
           >
             {ayahs.map((entry) => (
-              <Ayah key={`${entry.surah}:${entry.ayah}`} entry={entry} t={t} />
+              <Ayah key={`${entry.surah}:${entry.ayah}`} entry={entry} />
             ))}
           </p>
         </div>
@@ -179,17 +179,23 @@ export default async function MushafReaderPage({ params }: MushafPageProps) {
  * page that opens a surah reads exactly as the printed one does: the previous
  * surah ends, the title sits in the flow, and the text continues.
  */
-function Ayah({
-  entry,
-  t,
-}: {
-  entry: MushafAyah;
-  t: Awaited<ReturnType<typeof getTranslations<"mushaf">>>;
-}) {
+function Ayah({ entry }: { entry: MushafAyah }) {
   const surah = surahByNumber(entry.surah);
 
   return (
     <>
+      {/*
+        The surah's name, and NOTHING ELSE.
+
+        An earlier version of this file also drew a البسملة here, and that was
+        the ۩۩ mistake repeated: in this edition the البسملة is already the
+        opening of every surah's first ayah — every surah but التوبة, which
+        correctly has none. Drawing it as well printed it twice.
+
+        The rule, once more: this app renders what is in the text and never
+        adds to it. If something looks missing, it is missing from the source
+        and the source is what gets checked.
+      */}
       {entry.starts_surah && (
         <span className="my-3 block">
           <span
@@ -199,17 +205,6 @@ function Ayah({
           >
             {surah?.name}
           </span>
-          {/*
-            التوبة is the one surah with no البسملة. Drawing it would be adding
-            words to the Quran, which this app does not do anywhere.
-            الفاتحة already carries it as its own first ayah, so drawing it
-            again there would print it twice.
-          */}
-          {entry.surah !== 1 && entry.surah !== 9 && (
-            <span className="mt-2 block text-[1.15rem] leading-loose">
-              {t("bismillah")}
-            </span>
-          )}
         </span>
       )}
       <span className={entry.sajda ? "text-brand-800 dark:text-brand-200" : undefined}>

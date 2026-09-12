@@ -1310,7 +1310,6 @@
       "sajda": "Place of prostration",
       "hizb": "Start of a hizb quarter"
     },
-    "bismillah": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
     "attribution": "Uthmani text from the Tanzil project (tanzil.net) — unmodified.",
     "notFound": "No such page. The mushaf runs from 1 to 604.",
     "ayahCount": "{count, plural, one{# ayah} other{# ayat}}"
