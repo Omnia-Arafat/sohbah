@@ -41,7 +41,8 @@ export async function ScheduleBoardCard({
 
   return (
     <section
-      className="motion-board card overflow-hidden p-0"
+      id={`board-${board.id}`}
+      className="motion-board card scroll-mt-4 overflow-hidden p-0"
       style={{ animationDelay: `${index * 90}ms` }}
     >
       <header className="border-b border-border-subtle bg-brand-50 px-5 py-4 dark:bg-brand-900">
@@ -51,9 +52,18 @@ export async function ScheduleBoardCard({
             {title}
           </h2>
           <div className="flex flex-wrap gap-1.5">
-            <span className="badge bg-brand-100 text-brand-700 dark:bg-brand-800 dark:text-brand-100">
-              {typeLabel}
-            </span>
+            {/*
+              The badge names the circle type the board covers — useful when the
+              board is called "حلقات متنوعة", and pure noise when a board is
+              simply titled after its own type, which is what the one-tap
+              "create a board for this type" button produces. Printing the same
+              words twice side by side reads as a bug.
+            */}
+            {title.trim() !== typeLabel.trim() && (
+              <span className="badge bg-brand-100 text-brand-700 dark:bg-brand-800 dark:text-brand-100">
+                {typeLabel}
+              </span>
+            )}
             {board.gender_category && (
               <span className="badge bg-surface text-muted-foreground">
                 {tDashboard(`gender.${board.gender_category}`)}

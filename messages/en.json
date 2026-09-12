@@ -1047,7 +1047,8 @@
       "4": "Thursday",
       "5": "Friday",
       "6": "Saturday"
-    }
+    },
+    "jumpTo": "Jump to"
   },
   "bottomNav": {
     "home": "Home",

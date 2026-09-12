@@ -48,6 +48,41 @@ export default async function SchedulePage({ params }: PageProps) {
           {t("title")}
         </h1>
         <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
+
+        {/*
+          Jump links to each board.
+
+          One board of 18 circles across seven days is ~2000px tall, so with
+          several boards the ones below the first are effectively invisible on a
+          phone — a reader scrolls, sees one timetable, and concludes that is the
+          whole page. This puts every board's name in the first screen, and the
+          count next to it says what is down there.
+
+          Plain anchors, so they work before any JavaScript loads and can be
+          shared as a link straight to one section.
+        */}
+        {loadedBoards.length > 1 && (
+          <nav className="mt-4 flex flex-wrap gap-2" aria-label={t("jumpTo")}>
+            {loadedBoards.map((loaded) => {
+              const count = loaded.days.reduce(
+                (sum, day) => sum + day.entries.length,
+                0,
+              );
+              return (
+                <a
+                  key={loaded.board.id}
+                  href={`#board-${loaded.board.id}`}
+                  className="rounded-xl border border-border bg-surface px-3 py-2 text-sm
+                             font-medium transition-colors hover:border-brand-600
+                             hover:text-brand-700 dark:hover:text-brand-300"
+                >
+                  {locale === "ar" ? loaded.board.title_ar : loaded.board.title_en}
+                  <span className="ms-1.5 text-xs text-muted-foreground">{count}</span>
+                </a>
+              );
+            })}
+          </nav>
+        )}
       </section>
 
       {loadedBoards.length === 0 ? (
