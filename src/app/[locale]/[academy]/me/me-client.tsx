@@ -44,7 +44,17 @@ export function MeClient({
     );
   }
 
-  return <Record me={me} locale={locale} onSignOut={() => clearMe(key)} />;
+  return (
+    <Record
+      me={me}
+      locale={locale}
+      onSignOut={() => clearMe(key)}
+      // Same effect as signing out, but not her doing: the identity this
+      // browser held no longer resolves, so it is dropped and she is asked
+      // again.
+      onStale={() => clearMe(key)}
+    />
+  );
 }
 
 // =============================================================================
@@ -171,10 +181,13 @@ function Record({
   me,
   locale,
   onSignOut,
+  onStale,
 }: {
   me: Me;
   locale: string;
   onSignOut: () => void;
+  /** The stored student no longer exists, or the phone no longer matches. */
+  onStale: () => void;
 }) {
   const t = useTranslations("me");
   const tLog = useTranslations("session.log");
@@ -218,6 +231,26 @@ function Record({
       if (recitations.error) console.error("my_recitations failed", recitations.error);
       if (myCircles.error) console.error("my_circles failed", myCircles.error);
 
+      /*
+        A stored identity that no longer resolves is forgotten rather than
+        shown an empty page.
+
+        It happens in ordinary use: a مشرفة merges two duplicate students, or
+        corrects a phone number, and this browser is still holding the old id.
+        Without this the page renders "لسه معلمتك ما سجّلتش تسميع ليكِ", which
+        is not true and which she cannot get out of — she would have to know
+        to press خروج.
+      */
+      const stale = [recitations.error, myCircles.error].some(
+        (failure) =>
+          failure?.message === "student_not_found" ||
+          failure?.message === "phone_mismatch",
+      );
+      if (stale) {
+        onStale();
+        return;
+      }
+
       setEntries((recitations.data ?? []) as MyRecitation[]);
       setCircles((myCircles.data ?? []) as MyCircle[]);
     })();
@@ -225,7 +258,7 @@ function Record({
     return () => {
       cancelled = true;
     };
-  }, [supabase, me.studentId, me.phone]);
+  }, [supabase, me.studentId, me.phone, onStale]);
 
   const isPending = entries === null;
   const progress = useMemo(() => buildProgress(entries ?? []), [entries]);
