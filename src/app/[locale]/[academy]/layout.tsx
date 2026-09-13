@@ -93,9 +93,17 @@ export default async function AcademyLayout({
         <header className="border-b border-border-subtle bg-surface print:hidden">
           <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-4 px-4 py-3">
             {/* Hidden from `sm` up for a signed-in teacher: the side rail carries
-                the same logo and name there, and two of them is one too many. */}
+                the same logo and name there, and two of them is one too many.
+
+                Tapping the logo is how people go home, so for a signed-in
+                معلمة or مشرفة it has to mean HER home. Pointing it at the
+                academy root handed her the students’ page — «أهلاً بكِ في
+                صحبة», today’s circles to join — which has no way into the
+                dashboard on it, so she was left reading a student screen
+                thinking that was her own. Reported by a مشرفة who could not
+                work out where the circles she runs had gone. */}
             <Link
-              href={`/${academySlug}`}
+              href={teacher ? `/${academySlug}/dashboard` : `/${academySlug}`}
               className={`flex min-w-0 items-center gap-3 ${teacher ? "sm:hidden" : ""}`}
             >
               {academy.logo_path ? (
