@@ -14,7 +14,8 @@ import { getAcademyBySlug } from "@/lib/academy-dal";
 import { getLocalizedAcademyName } from "@/lib/academy-display";
 import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import type { LiveCircle } from "@/lib/database.types";
-import { notFound } from "next/navigation";
+import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
+import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 
 type AcademyHomeProps = {
@@ -50,6 +51,24 @@ export default async function AcademyHome({ params }: AcademyHomeProps) {
 
   const academy = await getAcademyBySlug(academySlug);
   if (!academy) notFound();
+
+  /*
+    A signed-in معلمة or مشرفة is sent to her own dashboard instead.
+
+    "People who never sign in" above is not a description of who *reaches* this
+    URL — it is the academy root, so it is what she gets from a bookmark, from
+    typing the domain, or from tapping the logo. She then reads a page offering
+    her «صفحتك», «تسجيل طالب جديد», and «معلمة أو مشرفة؟ تسجيل الدخول» while she
+    is already signed in, with no way into the dashboard on it. A مشرفة
+    reported exactly that: she could not find the circles she runs.
+
+    `getTeacherSession` returns null for a signed-out visitor without
+    redirecting, so a student's path through here is unchanged.
+  */
+  const session = await getTeacherSession();
+  if (isActiveTeacher(session)) {
+    redirect(`/${locale}/${academySlug}/dashboard`);
+  }
 
   const t = await getTranslations("home");
   const academyName = await getLocalizedAcademyName(academySlug, locale, academy);
