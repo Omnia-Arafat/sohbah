@@ -1,7 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-
-  "//buildCommand": "Pinned here, not left to the framework default, because the service worker depends on it. Serwist only runs under webpack, so `build` in package.json is `next build --webpack`; a Build Command set in the Vercel dashboard would silently take the framework default instead and ship a deployment with no /sw.js — which is exactly the failure this project already had once with next-pwa, and it fails quietly. Settings in this file take precedence over the dashboard, so this is the one place that decides. The flag itself stays in package.json so there is a single place to change it.",
   "buildCommand": "npm run build"
 }
