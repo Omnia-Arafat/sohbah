@@ -62,16 +62,34 @@ const serwist = new Serwist({
     },
 
     /*
+      The mushaf TEXT — all 604 pages, 1.4MB, precached with the app.
+
+      This is what makes the whole mushaf readable offline rather than only the
+      pages she happened to open. Caching 604 rendered documents would be 60MB+
+      and is not an option; the text itself is 1.4MB, and `MushafPageView`
+      redraws any page from it. Cache-first and effectively forever: the Quran
+      does not change, and the file is rebuilt only when
+      scripts/export-quran.mjs is re-run.
+    */
+    {
+      matcher: ({ url }) => url.pathname === "/quran/pages.json",
+      handler: new CacheFirst({
+        cacheName: "sohbah-quran-text",
+        plugins: [
+          new ExpirationPlugin({ maxEntries: 2, maxAgeSeconds: 60 * 60 * 24 * 365 }),
+        ],
+      }),
+    },
+
+    /*
       Mushaf pages. Cache-first on purpose, and the one place in this app where
       that is the right call: the Quran does not change, so there is nothing to
       revalidate and no reason to make her wait.
 
-      604 pages at roughly 110KB each is more than any cache should hold, so
-      this keeps the last 120 she actually opened — far more than the stretch
-      anyone reads in a sitting, and it evicts in the order she stopped using
-      them. Reading the whole mushaf offline needs the pages downloaded
-      deliberately rather than collected by accident; that is a separate
-      feature, not this rule.
+      Keeps the last 120 documents she opened. A page that is NOT among them is
+      not a dead end: `handlerDidError` below returns any mushaf document the
+      cache does hold, and the view corrects it from the text above. That is
+      why this cap can stay small.
     */
     {
       matcher: ({ url, request }) =>
@@ -84,6 +102,23 @@ const serwist = new Serwist({
             maxAgeSeconds: 60 * 60 * 24 * 365,
             purgeOnQuotaError: true,
           }),
+          {
+            /*
+              She asked for a page she has never opened, and there is no
+              network. Hand her ANY mushaf document that is cached — the
+              layout, the font, the frame are identical on every page, and
+              `MushafPageView` reads the page number out of the address bar
+              and redraws the right ayahs from the precached text.
+
+              Returning undefined here would be the browser's offline error,
+              which is the one outcome worth this much machinery to avoid.
+            */
+            handlerDidError: async () => {
+              const cache = await caches.open("sohbah-mushaf-pages");
+              const [any] = await cache.keys();
+              return any ? await cache.match(any) : undefined;
+            },
+          },
         ],
       }),
     },
