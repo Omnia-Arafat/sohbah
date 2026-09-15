@@ -59,3 +59,12 @@ next-env.d.ts
 # .dc.html sources and canvas.json, which ARE tracked. The published canvas
 # itself lives as an Artifact, not here.
 design/**/sohbah-home-redesign.html
+
+# Scratch space for screenshots and one-off SQL run against the live database
+# while debugging. Working notes, not source: the screenshots were for a
+# WhatsApp announcement, and every SQL file here has a real counterpart in
+# supabase/migrations. It reached the repo once via `git add .`, which is what
+# this line is for.
+.shots/
+.shots$*
+.shots${*
