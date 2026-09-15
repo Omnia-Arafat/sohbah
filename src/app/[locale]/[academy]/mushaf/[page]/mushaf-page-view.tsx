@@ -85,6 +85,41 @@ export function MushafPageView({
     ayahs: MushafAyah[];
   } | null>(null);
 
+  /*
+    Pull the whole mushaf into the cache the first time she opens a page.
+
+    This used to be left to the service worker's precache, and on Vercel that
+    never ran — locally the same build precaches 125 files, in production the
+    cache simply never appears, while runtime caching works fine. The symptom
+    was exactly what was reported: "I have to open a page once, then it works
+    offline", because the only thing offline had to work with was the handful
+    of documents she had already visited.
+
+    So the text is fetched from here instead, where nothing can skip it. The
+    worker's `sohbah-quran-text` rule is cache-first, so this costs 1.4MB once
+    and is served from the cache every time after — including the fetch in the
+    correction below, which is why that one does not need to wait on a network.
+
+    Deferred to idle so it never competes with the page she is reading.
+  */
+  useEffect(() => {
+    const warm = () => {
+      fetch("/quran/pages.json").catch(() => {
+        // Offline on her very first visit. Nothing to do and nothing to say:
+        // the page she is on came from the server, so she is reading fine.
+      });
+    };
+
+    const idle = window.requestIdleCallback;
+    if (idle) {
+      const handle = idle(warm, { timeout: 4000 });
+      return () => window.cancelIdleCallback?.(handle);
+    }
+    // Safari has no requestIdleCallback.
+    const timer = setTimeout(warm, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     const wanted = pageFromLocation();
     // The ordinary case, online and off: the document matches the URL and
