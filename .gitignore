@@ -68,3 +68,10 @@ design/**/sohbah-home-redesign.html
 .shots/
 .shots$*
 .shots${*
+
+# The seeded design canvas — ~2MB of editor payload wrapped around the
+# artboards beside it, rebuilt by the design skill from the .dc.html sources
+# and canvas.json, which ARE tracked. The published canvas lives as an
+# Artifact, not here.
+design/*.html
+!design/*.dc.html
