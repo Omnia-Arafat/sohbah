@@ -1,29 +1,34 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore } from "react";
-import { Check, ChevronDown, RotateCcw } from "lucide-react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Check, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import adhkarData from "@/lib/adhkar/morning-evening.json";
 
 /**
- * أذكار الصباح والمساء, with the counter that makes them usable.
+ * أذكار الصباح والمساء — one dhikr at a time, and it turns its own page.
  *
- * WHY A COUNTER AND NOT A LIST. A list of أذكار is a page anyone can find in a
- * book; what is hard on a phone is keeping the count — «مائة مرة» for
- * لا إله إلا الله وحده لا شريك له, ثلاث مرات for the معوذات — while reading
- * from the same screen. So the dhikr IS the button: she reads it, taps it, and
- * the number comes down. Nothing else on the card competes for the thumb.
+ * WHY ONE AT A TIME. The first version was a scrolling list of 26 cards, and
+ * it read like a book: to say her أذكار she had to hold her place in a long
+ * page while tapping a counter on it, with the next twenty-five in her
+ * peripheral vision the whole way. One to a screen is what a مسبحة is — the
+ * only thing in front of her is the dhikr she is on, and finishing it takes
+ * her to the next one without her having to find it.
  *
- * WHAT IT REMEMBERS, AND FOR HOW LONG. Progress is kept per day and per
- * period, in this browser only. Half-finished أذكار الصباح survive the phone
- * locking, a call, or the app being closed — and are gone tomorrow, because
- * yesterday's count is not something anyone wants to clear by hand. Nothing
- * goes to a server: this is between her and her Lord, and the academy has no
- * business knowing whether she said them.
+ * WHY THE WHOLE CARD IS THE BUTTON. One of these is مائة مرة. A (+) beside the
+ * text would be a small target hit a hundred times, while her eyes are on the
+ * words above it. So the dhikr is the button, it is the size of the screen,
+ * and it cannot be missed.
  *
- * The data is imported, not fetched, so this screen works offline from the
- * first visit — see scripts/import-adhkar.mjs for where it comes from and why
- * that source was chosen over the fuller ones.
+ * WHAT IT REMEMBERS. Progress is per day and per period, in this browser only.
+ * Half-finished أذكار الصباح survive a lock screen or a call, and are gone
+ * tomorrow — nobody wants to clear yesterday's count by hand. Nothing is sent
+ * anywhere: whether she said her أذكار is between her and her Lord, and not
+ * something an academy should be able to look up.
+ *
+ * The data is imported rather than fetched, so this screen works offline from
+ * the first visit. See scripts/import-adhkar.mjs for the source and why that
+ * one was chosen over the fuller ones.
  */
 
 type Dhikr = {
@@ -71,17 +76,12 @@ function readProgress(period: Period): Record<number, number> {
 /** The clock, read on the client only — it never changes mid-visit. */
 const subscribeNever = () => () => {};
 
+/** Long enough to see «تمّ» land, short enough not to feel like waiting. */
+const ADVANCE_DELAY_MS = 550;
+
 export function AdhkarClient() {
   const t = useTranslations("adhkar");
 
-  /*
-    The period and the saved counts are both client-only facts, and neither is
-    assigned from an effect. An effect would render the page once with the
-    server's nothing and again with the truth — a visible flash of the wrong
-    half of the day, which reads as the app choosing wrongly. The clock is
-    subscribed to instead, and the counts are read straight from storage
-    during render, which is cheap and gives the same answer every time.
-  */
   const detected = useSyncExternalStore<Period | null>(
     subscribeNever,
     periodNow,
@@ -90,20 +90,35 @@ export function AdhkarClient() {
   const [chosen, setChosen] = useState<Period | null>(null);
   const period = chosen ?? detected;
 
-  /** Her taps this session, which storage has already been told about. */
   const [edits, setEdits] = useState<Partial<Record<Period, Record<number, number>>>>({});
-  const [open, setOpen] = useState<number | null>(null);
+  /** Null until she moves herself; before that the screen picks where to open. */
+  const [at, setAt] = useState<number | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
+
+  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (advanceTimer.current) clearTimeout(advanceTimer.current);
+  }, []);
 
   const tapped = period === null ? {} : edits[period] ?? readProgress(period);
+  const list = period === null ? [] : ALL.filter((d) => d[period]);
 
-  const list = useMemo(
-    () => (period === null ? [] : ALL.filter((d) => d[period])),
-    [period],
-  );
+  const isDone = (d: Dhikr) => (tapped[d.id] ?? 0) >= d.count;
+  const doneCount = list.filter(isDone).length;
+  const allDone = list.length > 0 && doneCount === list.length;
+
+  /*
+    Where to open: the first one she has not finished. Coming back after a
+    call should put her where she stopped, not at the top — and on a fresh
+    morning that is the first dhikr anyway.
+  */
+  const firstUnfinished = Math.max(0, list.findIndex((d) => !isDone(d)));
+  const index = Math.min(at ?? firstUnfinished, Math.max(0, list.length - 1));
+  const current = list[index];
 
   function persist(next: Record<number, number>) {
     if (!period) return;
-    setEdits((current) => ({ ...current, [period]: next }));
+    setEdits((currentEdits) => ({ ...currentEdits, [period]: next }));
     try {
       window.localStorage.setItem(storageKey(period), JSON.stringify(next));
     } catch {
@@ -111,207 +126,269 @@ export function AdhkarClient() {
     }
   }
 
-  function tap(dhikr: Dhikr) {
-    const current = tapped[dhikr.id] ?? 0;
-    if (current >= dhikr.count) return;
-    persist({ ...tapped, [dhikr.id]: current + 1 });
+  function go(to: number) {
+    if (advanceTimer.current) clearTimeout(advanceTimer.current);
+    setAt(Math.max(0, Math.min(to, list.length - 1)));
+    setShowDetails(false);
+  }
+
+  function tap() {
+    if (!current) return;
+    const said = tapped[current.id] ?? 0;
+    if (said >= current.count) return;
+
+    const next = said + 1;
+    persist({ ...tapped, [current.id]: next });
+
+    // Finished this one. Let «تمّ» show, then turn the page for her — but
+    // never past the end, where the completion screen belongs.
+    if (next >= current.count && index < list.length - 1) {
+      advanceTimer.current = setTimeout(() => {
+        setAt(index + 1);
+        setShowDetails(false);
+      }, ADVANCE_DELAY_MS);
+    }
   }
 
   function switchTo(next: Period) {
+    if (advanceTimer.current) clearTimeout(advanceTimer.current);
     setChosen(next);
-    setOpen(null);
+    setAt(null);
+    setShowDetails(false);
   }
 
   function reset() {
     if (!period) return;
     if (!window.confirm(t("resetConfirm", { period: t(`period.${period}`) }))) return;
     persist({});
+    setAt(0);
+    setShowDetails(false);
   }
 
-  const doneCount = list.filter((d) => (tapped[d.id] ?? 0) >= d.count).length;
-  const allDone = list.length > 0 && doneCount === list.length;
+  // Nothing is drawn until the clock has been read on the client.
+  if (period === null) return null;
+
+  const said = current ? tapped[current.id] ?? 0 : 0;
+  const remaining = current ? current.count - said : 0;
+  const finished = current ? isDone(current) : false;
 
   return (
     <div className="flex flex-col gap-4">
-      <section>
-        <h1 className="font-display text-2xl font-bold sm:text-3xl">{t("title")}</h1>
-        <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
-      </section>
-
-      {/* Nothing below is drawn until the clock has been read on the client. */}
-      {period !== null && (
-        <>
-          <div className="flex items-center gap-2">
-            <div
-              role="tablist"
-              className="flex flex-grow rounded-2xl bg-surface-muted p-1"
-            >
-              {(["morning", "evening"] as const).map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  role="tab"
-                  aria-selected={period === key}
-                  onClick={() => switchTo(key)}
-                  className={`flex-1 rounded-xl px-3 py-2 text-sm font-bold transition-colors ${
-                    period === key
-                      ? "bg-surface text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {t(`tabs.${key}`)}
-                </button>
-              ))}
-            </div>
-
+      <div className="flex items-center gap-2">
+        <div role="tablist" className="flex flex-grow rounded-2xl bg-surface-muted p-1">
+          {(["morning", "evening"] as const).map((key) => (
             <button
+              key={key}
               type="button"
-              onClick={reset}
-              aria-label={t("reset")}
-              title={t("reset")}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl
-                         border border-border-subtle text-muted-foreground
-                         transition-colors hover:border-brand-600 hover:text-brand-700
-                         dark:hover:text-brand-300"
+              role="tab"
+              aria-selected={period === key}
+              onClick={() => switchTo(key)}
+              className={`flex-1 rounded-xl px-3 py-2 text-sm font-bold transition-colors ${
+                period === key
+                  ? "bg-surface text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
-              <RotateCcw className="h-4 w-4" aria-hidden="true" />
+              {t(`tabs.${key}`)}
             </button>
-          </div>
+          ))}
+        </div>
 
-          {/* A bar rather than a number alone: on a 26-item list "٥ من ٢٦" is
-              a fact, and the bar is the feeling of getting through them. */}
-          <div className="flex items-center gap-3">
-            <div className="h-2 flex-grow overflow-hidden rounded-full bg-surface-muted">
-              <div
-                className="h-full rounded-full bg-brand-600 transition-[width] duration-300"
-                style={{ width: `${list.length ? (doneCount / list.length) * 100 : 0}%` }}
-              />
-            </div>
-            <span className="shrink-0 text-sm font-semibold tabular-nums text-muted-foreground">
-              {t("progress", { done: doneCount, total: list.length })}
+        <button
+          type="button"
+          onClick={reset}
+          aria-label={t("reset")}
+          title={t("reset")}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl
+                     border border-border-subtle text-muted-foreground transition-colors
+                     hover:border-brand-600 hover:text-brand-700 dark:hover:text-brand-300"
+        >
+          <RotateCcw className="h-4 w-4" aria-hidden="true" />
+        </button>
+      </div>
+
+      {/* A bar rather than a number alone: "٥ من ٢٦" is a fact, the bar is the
+          feeling of getting through them. */}
+      <div className="flex items-center gap-3">
+        <div className="h-2 flex-grow overflow-hidden rounded-full bg-surface-muted">
+          <div
+            className="h-full rounded-full bg-brand-600 transition-[width] duration-300"
+            style={{ width: `${list.length ? (doneCount / list.length) * 100 : 0}%` }}
+          />
+        </div>
+        <span className="shrink-0 text-sm font-semibold tabular-nums text-muted-foreground">
+          {t("progress", { done: doneCount, total: list.length })}
+        </span>
+      </div>
+
+      {allDone && (
+        <section className="card border-brand-300 bg-brand-50 text-center dark:border-brand-800 dark:bg-brand-950/40">
+          <h2 className="text-lg font-bold">
+            {t("allDone.title", { period: t(`period.${period}`) })}
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">{t("allDone.body")}</p>
+        </section>
+      )}
+
+      {current && (
+        <>
+          {/*
+            The dhikr, and the button, and most of the screen. `min-h` rather
+            than a fixed height: أذكار run from thirty characters to seven
+            hundred, and a fixed box would either crop آية الكرسي or leave a
+            short dhikr floating in emptiness.
+          */}
+          <button
+            type="button"
+            onClick={tap}
+            disabled={finished}
+            className={`card flex min-h-[19rem] w-full flex-col items-center justify-center
+                        gap-6 px-5 py-8 text-center transition-colors
+                        enabled:active:bg-surface-muted disabled:cursor-default ${
+                          finished
+                            ? "border-brand-300 bg-brand-50/70 dark:border-brand-800 dark:bg-brand-950/40"
+                            : ""
+                        }`}
+          >
+            <p
+              dir="rtl"
+              lang="ar"
+              className={`text-[1.2rem] leading-[2.3] ${
+                finished ? "text-muted-foreground" : ""
+              }`}
+            >
+              {current.text}
+            </p>
+
+            {finished ? (
+              <span className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white">
+                <Check className="h-4 w-4" aria-hidden="true" />
+                {t("done")}
+              </span>
+            ) : (
+              <span className="flex flex-col items-center gap-2">
+                <span
+                  className="flex h-20 w-20 items-center justify-center rounded-full
+                             bg-accent-500 text-3xl font-bold tabular-nums text-white shadow-md"
+                >
+                  {remaining}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {current.count > 1 ? current.countLabel : t("tapHint")}
+                </span>
+              </span>
+            )}
+          </button>
+
+          {/*
+            Order matters more than the icons here, and it is the same order
+            the mushaf uses: «السابق» first, «التالي» last. In RTL the first
+            child sits on the RIGHT, which puts going-back on the right and
+            going-forward on the left — the direction Arabic actually moves.
+            An earlier version had these the other way round and the forward
+            arrow pointed left from the right-hand side, which reads as an
+            arrow disagreeing with the button it is on.
+
+            Skipping forward is deliberate: a dhikr she has already said
+            elsewhere should not trap her.
+          */}
+          <nav className="flex items-center justify-between gap-3">
+            <StepButton
+              onClick={() => go(index - 1)}
+              disabled={index <= 0}
+              direction="prev"
+              label={t("prev")}
+            />
+            {/* `dir="ltr"` because "1 / 24" is a fraction, not a sentence —
+                left to it, bidi reorders it into "24 / 1". */}
+            <span
+              dir="ltr"
+              className="text-sm font-semibold tabular-nums text-muted-foreground"
+            >
+              {index + 1} / {list.length}
             </span>
-          </div>
+            <StepButton
+              onClick={() => go(index + 1)}
+              disabled={index >= list.length - 1}
+              direction="next"
+              label={t("next")}
+            />
+          </nav>
 
-          {allDone && (
-            <section className="card border-brand-300 bg-brand-50 text-center dark:border-brand-800 dark:bg-brand-950/40">
-              <h2 className="text-lg font-bold">
-                {t("allDone.title", { period: t(`period.${period}`) })}
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">{t("allDone.body")}</p>
+          {(current.fadl || current.source) && (
+            <section className="card gap-0 overflow-hidden p-0">
+              <button
+                type="button"
+                onClick={() => setShowDetails((open) => !open)}
+                aria-expanded={showDetails}
+                className="flex w-full items-center justify-between gap-2 px-4 py-3
+                           text-sm font-medium text-muted-foreground transition-colors
+                           hover:bg-surface-muted"
+              >
+                {showDetails ? t("details.hide") : t("details.show")}
+                <ChevronLeft
+                  aria-hidden="true"
+                  className={`h-4 w-4 transition-transform ${showDetails ? "-rotate-90" : ""}`}
+                />
+              </button>
+
+              {showDetails && (
+                <div className="flex flex-col gap-3 border-t border-border-subtle bg-surface-muted/50 px-4 py-3">
+                  {current.fadl && (
+                    <p className="text-sm">
+                      <span className="font-bold">{t("details.fadl")}: </span>
+                      {current.fadl}
+                    </p>
+                  )}
+                  {/* The تخريج is never hidden behind a "read more": it is the
+                      reason to trust the text above it. */}
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    <span className="font-bold">{t("details.source")}: </span>
+                    {current.source}
+                  </p>
+                </div>
+              )}
             </section>
           )}
-
-          <ol className="flex flex-col gap-3">
-            {list.map((dhikr) => {
-              const said = tapped[dhikr.id] ?? 0;
-              const finished = said >= dhikr.count;
-              const remaining = dhikr.count - said;
-
-              return (
-                <li
-                  key={dhikr.id}
-                  className={`card gap-0 overflow-hidden p-0 transition-colors ${
-                    finished
-                      ? "border-brand-200 bg-brand-50/60 dark:border-brand-800 dark:bg-brand-950/40"
-                      : ""
-                  }`}
-                >
-                  {/*
-                    The whole dhikr is the tap target. A small (+) button beside
-                    it would be a 40px target next to 700 characters of text she
-                    is already looking at, and she is tapping this a hundred
-                    times for one of them.
-                  */}
-                  <button
-                    type="button"
-                    onClick={() => tap(dhikr)}
-                    disabled={finished}
-                    className="w-full px-4 py-4 text-start transition-colors
-                               enabled:hover:bg-surface-muted/60 disabled:cursor-default"
-                  >
-                    <p
-                      dir="rtl"
-                      lang="ar"
-                      className={`text-[1.12rem] leading-[2.15] ${
-                        finished ? "text-muted-foreground" : ""
-                      }`}
-                    >
-                      {dhikr.text}
-                    </p>
-
-                    <div className="mt-3 flex items-center justify-between gap-3">
-                      <span className="text-xs text-muted-foreground">
-                        {dhikr.countLabel}
-                      </span>
-
-                      {finished ? (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-3 py-1 text-xs font-bold text-white">
-                          <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                          {t("done")}
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-2">
-                          {dhikr.count > 1 && (
-                            <span className="text-xs text-muted-foreground">
-                              {t("remaining", { count: remaining })}
-                            </span>
-                          )}
-                          <span
-                            className="flex h-10 w-10 items-center justify-center rounded-full
-                                       bg-accent-500 text-base font-bold tabular-nums text-white shadow-sm"
-                          >
-                            {remaining}
-                          </span>
-                        </span>
-                      )}
-                    </div>
-                  </button>
-
-                  {(dhikr.fadl || dhikr.source) && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => setOpen(open === dhikr.id ? null : dhikr.id)}
-                        aria-expanded={open === dhikr.id}
-                        className="flex w-full items-center justify-between gap-2 border-t
-                                   border-border-subtle px-4 py-2.5 text-xs font-medium
-                                   text-muted-foreground transition-colors hover:bg-surface-muted"
-                      >
-                        {open === dhikr.id ? t("details.hide") : t("details.show")}
-                        <ChevronDown
-                          aria-hidden="true"
-                          className={`h-4 w-4 transition-transform ${
-                            open === dhikr.id ? "rotate-180" : ""
-                          }`}
-                        />
-                      </button>
-
-                      {open === dhikr.id && (
-                        <div className="flex flex-col gap-3 border-t border-border-subtle bg-surface-muted/50 px-4 py-3">
-                          {dhikr.fadl && (
-                            <p className="text-sm">
-                              <span className="font-bold">{t("details.fadl")}: </span>
-                              {dhikr.fadl}
-                            </p>
-                          )}
-                          {/* The تخريج is never hidden behind a "read more":
-                              it is the reason to trust the text above it. */}
-                          <p className="text-xs leading-relaxed text-muted-foreground">
-                            <span className="font-bold">{t("details.source")}: </span>
-                            {dhikr.source}
-                          </p>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </li>
-              );
-            })}
-          </ol>
-
-          <p className="pb-2 text-center text-xs text-muted-foreground">{t("offline")}</p>
         </>
       )}
+
+      <p className="pb-2 text-center text-xs text-muted-foreground">{t("offline")}</p>
     </div>
+  );
+}
+
+function StepButton({
+  onClick,
+  disabled,
+  direction,
+  label,
+}: {
+  onClick: () => void;
+  disabled: boolean;
+  direction: "prev" | "next";
+  label: string;
+}) {
+  /*
+    Fixed to the أذكار's own direction, not the interface language's. This
+    list is read right to left whether she is on the Arabic or the English
+    side, so forward is always ← and back is always →, exactly as the mushaf
+    turns its pages.
+  */
+  const Icon = direction === "next" ? ChevronLeft : ChevronRight;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      title={label}
+      className="flex h-11 w-11 items-center justify-center rounded-xl border
+                 border-border-subtle text-muted-foreground transition-colors
+                 enabled:hover:border-brand-600 enabled:hover:text-brand-700
+                 disabled:opacity-30 dark:enabled:hover:text-brand-300"
+    >
+      <Icon className="h-5 w-5" aria-hidden="true" />
+    </button>
   );
 }
