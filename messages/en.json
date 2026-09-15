@@ -79,7 +79,8 @@
     },
     "rest": {
       "title": "The rest of today",
-      "ended": "Ended"
+      "ended": "Ended",
+      "more": "{count, plural, one{one more circle} other{# more circles}} today — see the timetable"
     },
     "me": {
       "title": "Your page",
@@ -102,12 +103,15 @@
       "start": "Open the mushaf and read from any page.",
       "cta": "Open the mushaf",
       "resume": "Continue where you stopped — {surah}, page {page}",
-      "resumeCta": "Continue reading"
+      "resumeCta": "Continue reading",
+      "tileStart": "Read from any page — works offline.",
+      "tileResume": "You stopped at {surah} · page {page}"
     },
     "adhkar": {
       "title": "Adhkar",
       "body": "Morning and evening adhkar with a counter — and they work offline.",
-      "cta": "Open the adhkar"
+      "cta": "Open the adhkar",
+      "tileNote": "Morning and evening, with a counter."
     }
   },
   "register": {
@@ -1189,7 +1193,10 @@
     "progress": "Progress",
     "myPage": "My page",
     "mushaf": "Mushaf",
-    "selfTest": "Test yourself"
+    "selfTest": "Test yourself",
+    "adhkar": "Adhkar",
+    "register": "New student",
+    "install": "Install the app"
   },
   "lesson": {
     "today": "Today's lesson",

@@ -1,5 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ChevronLeft, Clock, Sunrise, Users } from "lucide-react";
+import { ChevronLeft, Clock, Users } from "lucide-react";
 import { formatTime } from "@/lib/format-time";
 import {
   loadBoardsWithCircles,
@@ -8,7 +8,7 @@ import {
 } from "@/lib/schedule-boards";
 import { createClient } from "@/lib/supabase/server";
 import { BrandMark } from "@/components/brand-mark";
-import { MushafCard } from "@/components/mushaf-card";
+import { DailyTiles } from "@/components/daily-tiles";
 import { Link } from "@/i18n/navigation";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { getLocalizedAcademyName } from "@/lib/academy-display";
@@ -240,15 +240,47 @@ export default async function AcademyHome({ params }: AcademyHomeProps) {
                 {t("next.cta")}
               </Link>
             </div>
+
+            {/*
+              The rest of the day, in one line.
+
+              It used to be a card of its own: every remaining circle as a row
+              with a time, a teacher and a type. That is the timetable, rebuilt
+              on the home screen, for a student who is in one or two circles
+              and already knows when they are — a tall block she scrolls past
+              to reach the things that are actually hers. The count is the only
+              part she reads, so the count is what is left, and الجدول is one
+              tap away for the rare day she wants the whole list.
+            */}
+            {rest.length > 0 && (
+              <Link
+                href={`/${academySlug}/schedule`}
+                className="flex items-center justify-between gap-2 border-t
+                           border-border-subtle px-4 py-2.5 text-xs font-medium
+                           text-muted-foreground transition-colors hover:bg-surface-muted"
+              >
+                {t("rest.more", { count: rest.length })}
+                <ChevronLeft
+                  aria-hidden="true"
+                  className="h-4 w-4 shrink-0 ltr:rotate-180"
+                />
+              </Link>
+            )}
           </article>
         </section>
       )}
 
-      {rest.length > 0 && (
+      {/*
+        Only when there is no «الحلقة الجاية» card — with one, the rest of the
+        day is a single line inside it. This is the other case: a circle is on
+        air right now, or today's circles have all started, and there is
+        nowhere to hang that line.
+      */}
+      {rest.length > 0 && !next && (
         <section className="card p-0">
           <div className="flex items-baseline justify-between gap-3 px-5 pb-1 pt-4">
             <h2 className="text-sm font-bold text-muted-foreground">
-              {live.length > 0 || next ? t("rest.title") : t("today.title")}
+              {live.length > 0 ? t("rest.title") : t("today.title")}
             </h2>
             <Link
               href={`/${academySlug}/schedule`}
@@ -280,9 +312,6 @@ export default async function AcademyHome({ params }: AcademyHomeProps) {
                       )}
                     </span>
                   </span>
-                  {/* Points the way the row goes: left in Arabic, right in
-                      English. `ChevronLeft` is already correct for RTL, so it
-                      is the LTR case that needs flipping. */}
                   <ChevronLeft
                     aria-hidden="true"
                     className="h-4 w-4 shrink-0 text-muted-foreground ltr:rotate-180"
@@ -307,28 +336,9 @@ export default async function AcademyHome({ params }: AcademyHomeProps) {
         </section>
       )}
 
-      {/* Full width, and above صفحتك: on a day with no circles this is the one
-          thing on the page a student can actually do. */}
-      <MushafCard academySlug={academySlug} locale={locale} />
-
-      {/*
-        Directly under the mushaf, because it is the same kind of thing: hers
-        to open, every day, whether or not a circle is running — and the only
-        other screen in the app that needs no connection at all.
-      */}
-      <section className="card">
-        <div className="flex items-center gap-2">
-          <Sunrise
-            aria-hidden="true"
-            className="h-5 w-5 shrink-0 text-accent-600 dark:text-accent-400"
-          />
-          <h2 className="font-display text-lg font-bold">{t("adhkar.title")}</h2>
-        </div>
-        <p className="mt-1 text-sm text-muted-foreground">{t("adhkar.body")}</p>
-        <Link href={`/${academySlug}/adhkar`} className="btn-primary mt-3 w-full">
-          {t("adhkar.cta")}
-        </Link>
-      </section>
+      {/* The two she opens on her own, every day — a pair rather than two
+          full-width cards, which were 260px of screen for two links. */}
+      <DailyTiles academySlug={academySlug} locale={locale} />
 
       {/* Her own record. New, and the reason a student comes back on a day
           with no circle. */}
