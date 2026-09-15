@@ -1,5 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ChevronLeft, Clock, Users } from "lucide-react";
+import { ChevronLeft, Clock, Sunrise, Users } from "lucide-react";
 import { formatTime } from "@/lib/format-time";
 import {
   loadBoardsWithCircles,
@@ -310,6 +310,25 @@ export default async function AcademyHome({ params }: AcademyHomeProps) {
       {/* Full width, and above صفحتك: on a day with no circles this is the one
           thing on the page a student can actually do. */}
       <MushafCard academySlug={academySlug} locale={locale} />
+
+      {/*
+        Directly under the mushaf, because it is the same kind of thing: hers
+        to open, every day, whether or not a circle is running — and the only
+        other screen in the app that needs no connection at all.
+      */}
+      <section className="card">
+        <div className="flex items-center gap-2">
+          <Sunrise
+            aria-hidden="true"
+            className="h-5 w-5 shrink-0 text-accent-600 dark:text-accent-400"
+          />
+          <h2 className="font-display text-lg font-bold">{t("adhkar.title")}</h2>
+        </div>
+        <p className="mt-1 text-sm text-muted-foreground">{t("adhkar.body")}</p>
+        <Link href={`/${academySlug}/adhkar`} className="btn-primary mt-3 w-full">
+          {t("adhkar.cta")}
+        </Link>
+      </section>
 
       {/* Her own record. New, and the reason a student comes back on a day
           with no circle. */}

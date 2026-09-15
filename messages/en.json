@@ -103,6 +103,11 @@
       "cta": "Open the mushaf",
       "resume": "Continue where you stopped — {surah}, page {page}",
       "resumeCta": "Continue reading"
+    },
+    "adhkar": {
+      "title": "Adhkar",
+      "body": "Morning and evening adhkar with a counter — and they work offline.",
+      "cta": "Open the adhkar"
     }
   },
   "register": {
@@ -1478,6 +1483,36 @@
       "body": "The same link works for every student and teacher — it opens this page with the installation steps.",
       "copy": "Copy the link",
       "copied": "Copied ✓"
+    }
+  },
+  "adhkar": {
+    "title": "Adhkar",
+    "subtitle": "Morning and evening adhkar — tap a dhikr to count a repetition.",
+    "tabs": {
+      "morning": "Morning",
+      "evening": "Evening"
+    },
+    "progress": "{done} of {total}",
+    "allDone": {
+      "title": "{period} adhkar complete 🤍",
+      "body": "May Allah accept it from you. Come back tomorrow, in shaa Allah.",
+      "reset": "Start again"
+    },
+    "remaining": "{count} left",
+    "done": "Done",
+    "tapHint": "Tap the dhikr",
+    "details": {
+      "show": "Virtue and reference",
+      "hide": "Hide",
+      "fadl": "Virtue",
+      "source": "Reference"
+    },
+    "reset": "Reset",
+    "resetConfirm": "Start the {period} adhkar again?",
+    "offline": "Adhkar work without a connection.",
+    "period": {
+      "morning": "morning",
+      "evening": "evening"
     }
   }
 }
