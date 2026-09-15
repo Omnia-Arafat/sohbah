@@ -7,7 +7,6 @@ import {
   type ScheduleEntry,
 } from "@/lib/schedule-boards";
 import { createClient } from "@/lib/supabase/server";
-import { BrandMark } from "@/components/brand-mark";
 import { AyahTeaser } from "@/components/ayah-teaser";
 import { DailyTiles } from "@/components/daily-tiles";
 import { Link } from "@/i18n/navigation";
@@ -17,7 +16,6 @@ import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import type { LiveCircle } from "@/lib/database.types";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { notFound, redirect } from "next/navigation";
-import Image from "next/image";
 
 type AcademyHomeProps = {
   params: Promise<{ locale: string; academy: string }>;
@@ -140,30 +138,21 @@ export default async function AcademyHome({ params }: AcademyHomeProps) {
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Smaller than it was. The name of the academy is not what anyone came
-          for, and at 80px of logo plus a 4xl heading it was pushing the
-          circles below the fold on a phone. */}
-      <section className="flex flex-col items-center text-center">
-        {academy.logo_path ? (
-          <div className="relative h-14 w-14">
-            <Image
-              src={academy.logo_path}
-              alt={academyName}
-              fill
-              sizes="56px"
-              className="object-contain"
-            />
-          </div>
-        ) : (
-          <BrandMark className="h-14 w-14" />
-        )}
-        {/* The canvas greets her by name of place, not by name of product.
-            "مقراءة صحبة الإلكترونية" is already in the header above; repeating
-            it here as the page's only heading told a returning student
-            nothing. */}
-        <h1 className="font-display mt-2 text-2xl font-bold">{t("greeting")}</h1>
-        <p className="mt-0.5 text-sm text-muted-foreground">{academyName}</p>
-      </section>
+      {/*
+        No greeting, and no logo.
+
+        There was a centred block here — the mark, «أهلًا بكِ في صحبة», and the
+        academy's name — and it was saying nothing the screen above it does not
+        already say: the same logo and the same name sit in the header on every
+        page of the app. On a phone it cost about 120px at the top, which is
+        the difference between a student seeing the running circle when she
+        opens the app and having to scroll for it. A greeting is worth that on
+        a marketing page; this is the door she comes through every day.
+
+        The heading stays for screen readers, which need one and cannot use a
+        header that belongs to the layout rather than the page.
+      */}
+      <h1 className="sr-only">{academyName}</h1>
 
       {live.length > 0 && (
         <section className="flex flex-col gap-3">
