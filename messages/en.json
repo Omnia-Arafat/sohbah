@@ -1434,5 +1434,50 @@
     "selfIntro": "Your own tests, whenever you like and as often as you like — not recorded with your teacher.",
     "selfCta": "Start a self-test",
     "myPage": "My page"
+  },
+  "install": {
+    "title": "Install the app",
+    "subtitle": "Put Sohbah on your home screen, and read without a connection.",
+    "why": {
+      "title": "Why install it?",
+      "mushaf": "The whole mushaf — all 604 pages — works with no connection at all",
+      "fast": "Opens from the home screen like any app, with no browser around it",
+      "light": "About 3 MB, and no app store needed"
+    },
+    "installed": {
+      "title": "Already installed 🎉",
+      "body": "You are running it from your home screen right now. Open the mushaf and turn through the pages you study, and they will be there even in airplane mode."
+    },
+    "button": {
+      "install": "Install the app",
+      "installing": "Installing…",
+      "done": "Installed ✓",
+      "dismissed": "Installation cancelled. You can tap the button again any time."
+    },
+    "ios": {
+      "title": "On iPhone and iPad",
+      "note": "Safari never offers this by itself, so it takes two taps by hand — about a minute.",
+      "step1": "Tap the Share button at the bottom (the square with an arrow ↑)",
+      "step2": "Scroll down and choose \"Add to Home Screen\"",
+      "step3": "Tap \"Add\" at the top right",
+      "safariOnly": "You must open the link in Safari — Chrome on iPhone cannot install it."
+    },
+    "manual": {
+      "title": "If the button does not appear",
+      "body": "Open the browser menu (⋮ or ⋯) and choose \"Install app\" or \"Add to Home Screen\".",
+      "chrome": "On Android: Chrome → menu → \"Install app\"",
+      "desktop": "On a computer: the install icon at the end of the address bar"
+    },
+    "offline": {
+      "title": "To make the mushaf work offline",
+      "body": "After installing, open the mushaf once while you are online — it downloads the whole text by itself. After that it works anywhere, including pages you have never opened.",
+      "cta": "Open the mushaf"
+    },
+    "share": {
+      "title": "Send this link to anyone",
+      "body": "The same link works for every student and teacher — it opens this page with the installation steps.",
+      "copy": "Copy the link",
+      "copied": "Copied ✓"
+    }
   }
 }
