@@ -223,7 +223,9 @@
     },
     "errors": {
       "passwordRequired": "Your password is required.",
-      "invalidCredentials": "Wrong number or password.",
+      "invalidCredentials": "Could not sign in. Try again.",
+      "phoneNotFound": "No account with that number. Type it exactly as you registered it.",
+      "wrongPassword": "Wrong password.",
       "generic": "Sign in could not be completed. Please try again.",
       "notConfigured": "The database is not connected yet.",
       "phoneRequired": "Your number is required.",

@@ -861,6 +861,14 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: TeacherTodayCircle[];
       };
+      /** Boolean only — lets sign-in separate a wrong number from a wrong password. */
+      staff_phone_registered: {
+        Args: {
+          p_phone_key: string;
+          p_academy_slug: string;
+        };
+        Returns: boolean;
+      };
       reorder_queue: {
         Args: {
           p_circle_id: string;

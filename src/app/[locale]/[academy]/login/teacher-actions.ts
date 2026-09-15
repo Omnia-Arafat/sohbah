@@ -53,9 +53,35 @@ export async function teacherSignIn(
   });
 
   if (signInError) {
-    // One message for both "no such number" and "wrong password": telling them
-    // apart would let anyone test which numbers are registered.
-    return { status: "failed", values, reason: "invalidCredentials" };
+    /*
+      Say which half is wrong.
+
+      This used to be one message for both, so that nobody could test numbers
+      against the staff list. The number IS the account — `normalizePhone`
+      keeps digits only, so "0561094834" and "+966561094834" are two different
+      accounts for one person — and telling her the PASSWORD was wrong sent her
+      to a reset that could never help. See the migration for what the change
+      gives up.
+
+      A failure of the lookup itself falls back to the old combined message
+      rather than guessing: being vague is recoverable, being confidently wrong
+      about which field to fix is not.
+    */
+    const { data: registered, error: lookupError } = await supabase.rpc(
+      "staff_phone_registered",
+      { p_phone_key: phoneKey, p_academy_slug: academySlug },
+    );
+
+    if (lookupError) {
+      console.error("staff_phone_registered failed", lookupError);
+      return { status: "failed", values, reason: "invalidCredentials" };
+    }
+
+    return {
+      status: "failed",
+      values,
+      reason: registered ? "wrongPassword" : "phoneNotFound",
+    };
   }
 
   // Signed in, but approval is separate. RLS lets them read their own row.

@@ -223,7 +223,9 @@
     },
     "errors": {
       "passwordRequired": "كلمة المرور مطلوبة.",
-      "invalidCredentials": "الرقم أو كلمة المرور غير صحيحة.",
+      "invalidCredentials": "تعذّر تسجيل الدخول. حاولي تاني.",
+      "phoneNotFound": "مفيش حساب بالرقم ده. اكتبيه زي ما سجّلتيه بالظبط.",
+      "wrongPassword": "كلمة المرور غلط.",
       "generic": "تعذّر إتمام تسجيل الدخول. حاول مرة أخرى.",
       "notConfigured": "لم يتم ربط قاعدة البيانات بعد.",
       "phoneRequired": "الرقم مطلوب.",
