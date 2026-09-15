@@ -8,6 +8,7 @@ import {
 } from "@/lib/schedule-boards";
 import { createClient } from "@/lib/supabase/server";
 import { BrandMark } from "@/components/brand-mark";
+import { AyahTeaser } from "@/components/ayah-teaser";
 import { DailyTiles } from "@/components/daily-tiles";
 import { Link } from "@/i18n/navigation";
 import { getAcademyBySlug } from "@/lib/academy-dal";
@@ -339,6 +340,10 @@ export default async function AcademyHome({ params }: AcademyHomeProps) {
       {/* The two she opens on her own, every day — a pair rather than two
           full-width cards, which were 260px of screen for two links. */}
       <DailyTiles academySlug={academySlug} locale={locale} />
+
+      {/* The third thing she can do on her own, and the one she would never
+          go looking for. */}
+      <AyahTeaser academySlug={academySlug} />
 
       {/* Her own record. New, and the reason a student comes back on a day
           with no circle. */}

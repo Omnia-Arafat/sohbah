@@ -112,6 +112,12 @@
       "body": "Morning and evening adhkar with a counter — and they work offline.",
       "cta": "Open the adhkar",
       "tileNote": "Morning and evening, with a counter."
+    },
+    "teaser": {
+      "label": "Complete the ayah",
+      "another": "Another ayah",
+      "from": "From Surat {surah}",
+      "cta": "Find out, and test yourself →"
     }
   },
   "register": {
