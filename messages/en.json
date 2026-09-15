@@ -117,6 +117,23 @@
       "another": "Another ayah",
       "from": "From Surat {surah}",
       "cta": "Find out, and test yourself →"
+    },
+    "strip": {
+      "hifz": {
+        "title": "Your memorisation",
+        "span": "{juz} juz and {pages} pages",
+        "note": "See your juz map"
+      },
+      "adhkar": {
+        "morning": "Morning adhkar",
+        "evening": "Evening adhkar",
+        "start": "Start",
+        "remaining": "{count} left",
+        "done": "Complete 🤍",
+        "note": "Tap to continue",
+        "beforeEvening": "Finish them before evening comes in",
+        "morningLeft": "Morning: {done} of {total}"
+      }
     }
   },
   "register": {

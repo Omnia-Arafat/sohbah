@@ -39,13 +39,26 @@ const POOL = teasers as Teaser[];
 const subscribeNever = () => () => {};
 const pickOne = () => Math.floor(Math.random() * POOL.length);
 
+/*
+  The first cue, chosen ONCE per page load.
+
+  `useSyncExternalStore` calls its snapshot on every render and compares the
+  result with the last one, so a snapshot that rolls a fresh random number
+  each time never settles: React re-renders, gets a different cue, re-renders
+  again. That is exactly what happened — the home screen died with "Maximum
+  update depth exceeded" once there was a second store on the page to keep
+  provoking it. The pick has to be a value that is read, not computed.
+*/
+let firstPick: number | null = null;
+const getFirstPick = () => (firstPick ??= pickOne());
+
 export function AyahTeaser({ academySlug }: { academySlug: string }) {
   const t = useTranslations("home.teaser");
 
   // The first one is chosen as the client renders; «غيّريها» takes over after.
   const initial = useSyncExternalStore<number | null>(
     subscribeNever,
-    pickOne,
+    getFirstPick,
     () => null,
   );
   const [swapped, setSwapped] = useState<number | null>(null);

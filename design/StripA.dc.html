@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Amiri:wght@700&display=swap">
+  <style>
+    body {
+      margin: 0;
+      background: #f6f9f7;
+      font-family: Cairo, ui-sans-serif, system-ui, sans-serif;
+      color: #0e1f19;
+      direction: rtl;
+    }
+    a { color: #1a5842; } a:hover { color: #164636; }
+  </style>
+</helmet>
+
+<div style="padding: 20px 16px; display: flex; flex-direction: column; gap: 14px">
+
+  <div style="display: flex; flex-direction: column; gap: 2px">
+    <div style="font-family: Amiri, serif; font-size: 19px; font-weight: 700">اتجاه أ — الشريط الرفيع</div>
+    <div style="font-size: 12px; color: #5a6e66; line-height: 1.7">أقل ارتفاع ممكن (٧٢px). حلقة صغيرة للنسبة، سطر واحد، وخط تقدّم رفيع تحت. بيقعد فوق من غير ما ياخد مكان الحلقة الجاية.</div>
+  </div>
+
+  <!-- الشريحة الأولى: حفظ القرآن -->
+  <div style="border-radius: 16px; border: 1px solid #dbe5e0; background: #ffffff; box-shadow: 0 1px 2px rgba(14,31,25,.05); overflow: hidden">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px">
+
+      <!-- حلقة النسبة -->
+      <div style="position: relative; width: 44px; height: 44px; flex-shrink: 0">
+        <svg width="44" height="44" viewBox="0 0 44 44" style="display: block; transform: rotate(-90deg)">
+          <circle cx="22" cy="22" r="19" fill="none" stroke="#edf2ef" stroke-width="5"></circle>
+          <circle cx="22" cy="22" r="19" fill="none" stroke="#1e6e51" stroke-width="5"
+                  stroke-linecap="round" stroke-dasharray="119.4" stroke-dashoffset="91.5"></circle>
+        </svg>
+        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+                    font-size: 11px; font-weight: 700; color: #1a5842">٢٣٪</div>
+      </div>
+
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+        <div style="display: flex; align-items: baseline; gap: 6px">
+          <span style="font-size: 13px; font-weight: 700">حفظك من القرآن</span>
+          <span style="font-size: 11px; color: #5a6e66">٧ أجزاء من ٣٠</span>
+        </div>
+        <div style="font-size: 11px; color: #5a6e66">آخر تسميع: الإسراء · صفحة ٢٩٣</div>
+      </div>
+
+      <!-- نقاط الشرائح -->
+      <div style="display: flex; flex-direction: column; gap: 4px; flex-shrink: 0">
+        <span style="width: 5px; height: 5px; border-radius: 999px; background: #1e6e51"></span>
+        <span style="width: 5px; height: 5px; border-radius: 999px; background: #dbe5e0"></span>
+      </div>
+    </div>
+
+    <div style="height: 3px; background: #edf2ef">
+      <div style="width: 23%; height: 100%; background: #1e6e51"></div>
+    </div>
+  </div>
+
+  <!-- الشريحة التانية: الأذكار -->
+  <div style="border-radius: 16px; border: 1px solid #dbe5e0; background: #ffffff; box-shadow: 0 1px 2px rgba(14,31,25,.05); overflow: hidden">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px">
+
+      <div style="position: relative; width: 44px; height: 44px; flex-shrink: 0">
+        <svg width="44" height="44" viewBox="0 0 44 44" style="display: block; transform: rotate(-90deg)">
+          <circle cx="22" cy="22" r="19" fill="none" stroke="#f7edd6" stroke-width="5"></circle>
+          <circle cx="22" cy="22" r="19" fill="none" stroke="#c4913a" stroke-width="5"
+                  stroke-linecap="round" stroke-dasharray="119.4" stroke-dashoffset="50.1"></circle>
+        </svg>
+        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+                    font-size: 11px; font-weight: 700; color: #7e5a24">١٨/٢٦</div>
+      </div>
+
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+        <div style="display: flex; align-items: baseline; gap: 6px">
+          <span style="font-size: 13px; font-weight: 700">أذكار الصباح</span>
+          <span style="font-size: 11px; color: #a2742d; font-weight: 600">فاضل ٨</span>
+        </div>
+        <div style="font-size: 11px; color: #5a6e66">كمّليها قبل ما يدخل المسا</div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 4px; flex-shrink: 0">
+        <span style="width: 5px; height: 5px; border-radius: 999px; background: #dbe5e0"></span>
+        <span style="width: 5px; height: 5px; border-radius: 999px; background: #c4913a"></span>
+      </div>
+    </div>
+
+    <div style="height: 3px; background: #f7edd6">
+      <div style="width: 69%; height: 100%; background: #c4913a"></div>
+    </div>
+  </div>
+
+  <div style="font-size: 11px; color: #5a6e66; line-height: 1.8; border-top: 1px solid #dbe5e0; padding-top: 10px">
+    <b style="color: #0e1f19">المقايضة:</b> أهدأ حاجة وأقلّها ازدحامًا — بس أقلّها لفتًا للنظر كمان. الحلقة الصغيرة صعب تتقري من بعيد.
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

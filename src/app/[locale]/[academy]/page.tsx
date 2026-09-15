@@ -8,6 +8,7 @@ import {
 } from "@/lib/schedule-boards";
 import { createClient } from "@/lib/supabase/server";
 import { AyahTeaser } from "@/components/ayah-teaser";
+import { ProgressStrip } from "@/components/progress-strip";
 import { DailyTiles } from "@/components/daily-tiles";
 import { Link } from "@/i18n/navigation";
 import { getAcademyBySlug } from "@/lib/academy-dal";
@@ -153,6 +154,10 @@ export default async function AcademyHome({ params }: AcademyHomeProps) {
         header that belongs to the layout rather than the page.
       */}
       <h1 className="sr-only">{academyName}</h1>
+
+      {/* First on the page, in the space the welcome block used to take: the
+          two numbers that are hers, which were both two taps away before. */}
+      <ProgressStrip academySlug={academySlug} />
 
       {live.length > 0 && (
         <section className="flex flex-col gap-3">

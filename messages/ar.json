@@ -117,6 +117,23 @@
       "another": "آية تانية",
       "from": "من سورة {surah}",
       "cta": "اعرفي الإجابة واختبري حفظك ←"
+    },
+    "strip": {
+      "hifz": {
+        "title": "حفظك من القرآن",
+        "span": "{juz} أجزاء و{pages} صفحة",
+        "note": "شوفي خريطة الأجزاء"
+      },
+      "adhkar": {
+        "morning": "أذكار الصباح",
+        "evening": "أذكار المساء",
+        "start": "ابدأي",
+        "remaining": "فاضل {count}",
+        "done": "تمّت 🤍",
+        "note": "دوسي تكمّلي",
+        "beforeEvening": "كمّليها قبل ما يدخل المسا",
+        "morningLeft": "الصباح: {done} من {total}"
+      }
     }
   },
   "register": {
