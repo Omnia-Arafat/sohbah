@@ -73,7 +73,14 @@ export function MushafPageView({
   locale: string;
 }) {
   const t = useTranslations("mushaf");
+  /*
+    A correction is stamped with the document it was made against, rather than
+    cleared when that document changes. Clearing would mean a setState on the
+    ordinary path — every page, online included — to undo something that is
+    almost never set; stamping lets a stale correction simply stop matching.
+  */
   const [corrected, setCorrected] = useState<{
+    forServerPage: number;
     page: number;
     ayahs: MushafAyah[];
   } | null>(null);
@@ -82,10 +89,7 @@ export function MushafPageView({
     const wanted = pageFromLocation();
     // The ordinary case, online and off: the document matches the URL and
     // there is nothing to do.
-    if (wanted === null || wanted === serverPage) {
-      setCorrected(null);
-      return;
-    }
+    if (wanted === null || wanted === serverPage) return;
 
     let cancelled = false;
     (async () => {
@@ -94,7 +98,7 @@ export function MushafPageView({
         const pages: Record<string, PackedAyah[]> = await res.json();
         const rows = pages[String(wanted)];
         if (!cancelled && rows?.length) {
-          setCorrected({ page: wanted, ayahs: unpack(rows) });
+          setCorrected({ forServerPage: serverPage, page: wanted, ayahs: unpack(rows) });
           // The document came from the cache under another page's name, so the
           // browser tab still carries that page's title. Everything visible is
           // corrected above; this is the one thing outside the tree.
@@ -112,8 +116,11 @@ export function MushafPageView({
     };
   }, [serverPage]);
 
-  const page = corrected?.page ?? serverPage;
-  const ayahs = corrected?.ayahs ?? serverAyahs;
+  // A correction made against a document we have since navigated away from is
+  // simply ignored.
+  const active = corrected?.forServerPage === serverPage ? corrected : null;
+  const page = active?.page ?? serverPage;
+  const ayahs = active?.ayahs ?? serverAyahs;
 
   if (ayahs.length === 0) return null;
 
