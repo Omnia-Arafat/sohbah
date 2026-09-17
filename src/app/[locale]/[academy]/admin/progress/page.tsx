@@ -8,6 +8,7 @@ import { requireStaffSession } from "@/lib/auth/dal";
 import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import { curriculumLabel, loadCurricula } from "@/lib/curricula";
 import { createClient } from "@/lib/supabase/server";
+import { fullStudentName } from "@/lib/student-name";
 
 type PageProps = {
   params: Promise<{ locale: string; academy: string }>;
@@ -111,7 +112,7 @@ export default async function ProgressReportPage({ params, searchParams }: PageP
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <p className="font-semibold">
-                    {row.student_name} {row.father_name}
+                    {fullStudentName(row.student_name, row.father_name)}
                   </p>
                   <p className="text-sm font-medium" dir="ltr">
                     {done} / {total}

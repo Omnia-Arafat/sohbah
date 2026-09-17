@@ -163,8 +163,7 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
                 <thead className="sticky top-0 z-10 bg-surface">
                   <tr className="border-b border-border-subtle text-left text-sm text-muted-foreground">
                     <th className="pb-3 font-medium">{tStudents("name")}</th>
-                    <th className="pb-3 font-medium">{tStudents("fatherName")}</th>
-                    <th className="pb-3 font-medium">{tStudents("gender")}</th>
+                                        <th className="pb-3 font-medium">{tStudents("gender")}</th>
                     <th className="pb-3 font-medium">{tStudents("phone")}</th>
                     <th className="pb-3 font-medium">{tStudents("registered")}</th>
                     <th className="pb-3 font-medium text-right">{tStudents("actions")}</th>
@@ -174,10 +173,7 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
                   {students.map((student) => (
                     <tr key={student.id} className="border-b border-border-subtle last:border-0">
                       <td className="py-3 font-medium">{student.name}</td>
-                      <td className="py-3 text-sm text-muted-foreground">
-                        {student.father_name}
-                      </td>
-                      <td className="py-3">
+                                            <td className="py-3">
                         <span className={`badge-${student.gender_category === 'male' ? 'waiting' : 'done'} text-xs`}>
                           {t(`dashboard.gender.${student.gender_category}`)}
                         </span>
@@ -224,8 +220,7 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <p className="font-medium">{student.name}</p>
-                      <p className="mt-0.5 text-sm text-muted-foreground">{student.father_name}</p>
-                      <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                                            <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                         <span className={`badge-${student.gender_category === 'male' ? 'waiting' : 'done'} text-xs`}>
                           {t(`dashboard.gender.${student.gender_category}`)}
                         </span>

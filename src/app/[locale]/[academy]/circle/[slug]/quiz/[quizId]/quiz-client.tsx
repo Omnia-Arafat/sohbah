@@ -9,6 +9,7 @@ import type {
   SubmitAttemptRow,
 } from "@/lib/database.types";
 import { loadPaper, saveAnswer, submitAttempt } from "./actions";
+import { fullStudentName } from "@/lib/student-name";
 
 const MIN_QUERY = 2;
 const DEBOUNCE_MS = 250;
@@ -252,7 +253,7 @@ export function QuizClient({
           {student ? (
             <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface-subtle px-4 py-3">
               <span className="font-medium">
-                {student.name} {student.father_name}
+                {fullStudentName(student.name, student.father_name)}
               </span>
               <button
                 type="button"
@@ -285,7 +286,7 @@ export function QuizClient({
                         className="w-full rounded-xl border border-border px-4 py-2 text-start hover:border-brand-600"
                         onClick={() => setStudent(match)}
                       >
-                        {match.name} {match.father_name}
+                        {fullStudentName(match.name, match.father_name)}
                       </button>
                     </li>
                   ))}

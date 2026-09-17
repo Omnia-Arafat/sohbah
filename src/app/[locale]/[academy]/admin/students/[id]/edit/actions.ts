@@ -9,7 +9,6 @@ import { toE164, validatePhone } from "@/lib/phone";
 
 type StudentFormValues = {
   name: string;
-  father_name: string;
   phone: string | null;
   /** ISO code the picker was left on, so an invalid save re-renders as typed. */
   phone_country: string;
@@ -46,9 +45,18 @@ export async function updateStudent(
     return { status: "error", message: "academyNotFound" };
   }
 
+  /*
+    No `father_name` here on purpose.
+
+    Registration stopped asking for it and writes "-" instead, so every student
+    in the academy carries that placeholder — but this form still demanded a
+    value, which meant a مشرفة could not correct a phone number or a spelling
+    without inventing a father's name first. The field is gone from the form,
+    and the update below leaves the column alone rather than writing over it,
+    so any real name typed before the form was simplified survives.
+  */
   // Read form values
   const name = formData.get("name")?.toString().trim() || "";
-  const father_name = formData.get("father_name")?.toString().trim() || "";
   const phone = formData.get("phone")?.toString().trim() || "";
   const phone_country = formData.get("phoneCountry")?.toString().trim() || "";
   const gender = formData.get("gender")?.toString() || "";
@@ -58,9 +66,6 @@ export async function updateStudent(
 
   if (!name) fieldErrors.name = "nameRequired";
   else if (name.length > 120) fieldErrors.name = "tooLong";
-
-  if (!father_name) fieldErrors.father_name = "fatherRequired";
-  else if (father_name.length > 120) fieldErrors.father_name = "tooLong";
 
   if (gender !== "male" && gender !== "female") {
     fieldErrors.gender = "genderRequired";
@@ -78,7 +83,7 @@ export async function updateStudent(
   if (Object.keys(fieldErrors).length > 0) {
     return {
       status: "invalid",
-      values: { name, father_name, phone, phone_country, gender_category: gender },
+      values: { name, phone, phone_country, gender_category: gender },
       fieldErrors,
     };
   }
@@ -87,7 +92,7 @@ export async function updateStudent(
   if (!storedPhone) {
     return {
       status: "invalid",
-      values: { name, father_name, phone, phone_country, gender_category: gender },
+      values: { name, phone, phone_country, gender_category: gender },
       fieldErrors: { phone: "phoneInvalid" },
     };
   }
@@ -99,7 +104,6 @@ export async function updateStudent(
     .from("students")
     .update({
       name,
-      father_name,
       phone: storedPhone,
       gender_category: gender as GenderCategory,
     })
@@ -113,7 +117,7 @@ export async function updateStudent(
     if (error?.code === "23505") {
       return {
         status: "invalid",
-        values: { name, father_name, phone, phone_country, gender_category: gender },
+        values: { name, phone, phone_country, gender_category: gender },
         fieldErrors: { phone: "phoneTaken" },
       };
     }

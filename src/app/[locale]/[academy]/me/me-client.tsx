@@ -14,6 +14,7 @@ import { getMe, clearMe, meKey, setMe, subscribeMe, type Me } from "@/lib/me-sto
 import { buildProgress, type JuzState } from "@/lib/quran/progress";
 import { formatRange } from "@/lib/quran/reference";
 import { createClient } from "@/lib/supabase/client";
+import { realFatherName } from "@/lib/student-name";
 import type {
   MyCircle,
   MyRecitation,
@@ -169,9 +170,11 @@ function SignIn({
               </span>
               <span className="min-w-0">
                 <span className="block truncate font-semibold">{choice.name}</span>
-                <span className="block truncate text-xs text-muted-foreground">
-                  {choice.father_name}
-                </span>
+                {realFatherName(choice.father_name) && (
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {choice.father_name}
+                  </span>
+                )}
               </span>
             </button>
           ))}
@@ -356,9 +359,11 @@ function Record({
           </span>
           <div className="min-w-0">
             <p className="truncate font-semibold leading-tight">{me.name}</p>
-            <p className="truncate text-xs text-muted-foreground">
-              {me.fatherName}
-            </p>
+            {realFatherName(me.fatherName) && (
+              <p className="truncate text-xs text-muted-foreground">
+                {me.fatherName}
+              </p>
+            )}
           </div>
         </div>
         <button

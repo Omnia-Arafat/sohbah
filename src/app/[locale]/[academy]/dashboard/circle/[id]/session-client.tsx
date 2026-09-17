@@ -13,6 +13,7 @@ import { ayahCount, formatRange, nextAyah, type AyahRef } from "@/lib/quran/refe
 import { createClient } from "@/lib/supabase/client";
 import { useReorderAnimation } from "@/lib/use-reorder-animation";
 import { RecitationLogSheet } from "./recitation-log-sheet";
+import { realFatherName } from "@/lib/student-name";
 
 type SessionClientProps = {
   slug: string;
@@ -362,7 +363,7 @@ export function SessionClient({
                   <p className="truncate font-semibold leading-tight">
                     {entry.name}
                   </p>
-                  {entry.father_name && (
+                  {realFatherName(entry.father_name) && (
                     <p className="truncate text-xs text-muted-foreground">
                       {entry.father_name}
                     </p>

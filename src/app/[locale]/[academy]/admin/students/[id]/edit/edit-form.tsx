@@ -86,20 +86,6 @@ export function EditStudentForm({ student, academySlug }: EditStudentFormProps) 
         {fieldError("name")}
       </div>
 
-      <div>
-        <label className="field-label" htmlFor="father_name">
-          {t("fatherName")}
-        </label>
-        <input
-          id="father_name"
-          name="father_name"
-          className="input"
-          defaultValue={values.father_name}
-          required
-          aria-invalid={Boolean(fieldErrors.father_name)}
-        />
-        {fieldError("father_name")}
-      </div>
 
       <PhoneField
         label={t("phoneNumber")}

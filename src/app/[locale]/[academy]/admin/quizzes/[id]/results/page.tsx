@@ -6,6 +6,7 @@ import { getAcademyBySlug } from "@/lib/academy-dal";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { gradeAnswer } from "./actions";
+import { fullStudentName } from "@/lib/student-name";
 
 type PageProps = {
   params: Promise<{ locale: string; academy: string; id: string }>;
@@ -56,7 +57,7 @@ export default async function QuizResultsPage({ params }: PageProps) {
     : { data: [] };
 
   const names = new Map(
-    (students ?? []).map((s) => [s.id, `${s.name} ${s.father_name}`.trim()]),
+    (students ?? []).map((s) => [s.id, fullStudentName(s.name, s.father_name)]),
   );
 
   const submitted = (attempts ?? []).filter((a) => a.status !== "in_progress");
