@@ -15,6 +15,7 @@ import { buildProgress, type JuzState } from "@/lib/quran/progress";
 import { formatRange } from "@/lib/quran/reference";
 import { createClient } from "@/lib/supabase/client";
 import { realFatherName } from "@/lib/student-name";
+import { DailyTiles } from "@/components/daily-tiles";
 import type {
   MyCircle,
   MyRecitation,
@@ -49,6 +50,7 @@ export function MeClient({
   return (
     <Record
       me={me}
+      academySlug={academySlug}
       locale={locale}
       onSignOut={() => clearMe(key)}
       // Same effect as signing out, but not her doing: the identity this
@@ -261,11 +263,13 @@ function SignIn({
 
 function Record({
   me,
+  academySlug,
   locale,
   onSignOut,
   onStale,
 }: {
   me: Me;
+  academySlug: string;
   locale: string;
   onSignOut: () => void;
   /** The stored student no longer exists, or the phone no longer matches. */
@@ -411,6 +415,20 @@ function Record({
           <LegendSwatch state="learning" label={t("memorised.legend.learning")} />
         </div>
       </section>
+
+      {/*
+        The way on from here.
+
+        Her page was a destination with no exits: the map, the log, her circles
+        — and nothing that opened the two screens she is here to be nudged
+        towards. المصحف and الأذكار live in the bottom bar's «المزيد» sheet
+        (المصحف gives up its tab to الاختبارات, which has a closing time), and
+        a student who arrives from the home screen's «افتحي صفحتي» never sees
+        that sheet open. So the same pair of tiles the home screen leads with
+        appears here too, right under the map that tells her which juz has gone
+        faint — which is the moment she is most likely to want the mushaf.
+      */}
+      <DailyTiles academySlug={academySlug} locale={locale} />
 
       {/* The one action the retrieval-practice research actually supports —
           and it only appears when the map has something to say. */}
