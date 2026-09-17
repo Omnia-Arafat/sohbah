@@ -31,6 +31,12 @@ type CircleClientProps = {
   initialQueue: QueueEntry[];
   /** Null means unlimited — see `circles.max_students`. */
   maxStudents: number | null;
+  /**
+   * Whether the circle is taking joins right now, decided by the server from
+   * the CIRCLE's clock — never the browser's, which a student can set to
+   * anything. `join_circle()` re-checks it, so this only saves her the trip.
+   */
+  registrationOpen: boolean;
 };
 
 type SearchResults = { query: string; items: StudentSearchResult[] };
@@ -102,6 +108,7 @@ export function CircleClient({
   sessionLink,
   initialQueue,
   maxStudents,
+  registrationOpen,
 }: CircleClientProps) {
   const t = useTranslations("circle");
   const supabase = useMemo(() => createClient(), []);
@@ -255,7 +262,14 @@ export function CircleClient({
           ? "genderMismatch"
           : joinError.message.includes("circle_full")
             ? "full"
-            : "generic",
+            : // The window closed between the page rendering and the tap.
+              joinError.message.includes("not_open_yet")
+              ? "notOpenYet"
+              : joinError.message.includes("registration_closed")
+                ? "registrationClosed"
+                : joinError.message.includes("not_today")
+                  ? "notToday"
+                  : "generic",
       );
       return;
     }
@@ -293,12 +307,12 @@ export function CircleClient({
 
   return (
     <div className="flex flex-col gap-6">
-      <MotionSection show={!joined && isFull} className="card">
+      <MotionSection show={!joined && registrationOpen && isFull} className="card">
         <p className="font-semibold">{t("full.title")}</p>
         <p className="mt-1 text-sm text-muted-foreground">{t("full.body")}</p>
       </MotionSection>
 
-      <MotionSection show={!joined && !isFull} className="card">
+      <MotionSection show={!joined && registrationOpen && !isFull} className="card">
         <label className="field-label" htmlFor="student-search">
           {t("search.label")}
         </label>

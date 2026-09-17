@@ -194,7 +194,7 @@
     "search": {
       "label": "Search for your name",
       "placeholder": "Type the first two letters of your name",
-      "hint": "At least two letters. Results show the father's name to tell similar names apart.",
+      "hint": "Type at least two letters of your name.",
       "searching": "Searching…",
       "fatherLabel": "Father: {name}",
       "join": "Join",
@@ -229,7 +229,11 @@
       "genderMismatch": "You cannot join a circle from a different section.",
       "full": "This circle is full."
     },
-    "edit": "Edit"
+    "edit": "Edit",
+    "registration": {
+      "opensAt": "Joining the queue opens at {time} — come back then.",
+      "closed": "Joining the queue has closed for today."
+    }
   },
   "auth": {
     "title": "Teacher and supervisor sign in",

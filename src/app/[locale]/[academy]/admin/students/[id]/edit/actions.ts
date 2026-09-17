@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import type { GenderCategory } from "@/lib/database.types";
 import { toE164, validatePhone } from "@/lib/phone";
+import { redirect } from "next/navigation";
 
 type StudentFormValues = {
   name: string;
@@ -128,5 +129,7 @@ export async function updateStudent(
   revalidatePath(`/${locale}/${academySlug}/admin/students`);
   revalidatePath(`/${locale}/${academySlug}/admin/students/${studentId}/edit`);
 
-  return { status: "success", message: "saved" };
+  // Back to the roster. Staying on the form meant the only proof a save had
+  // landed was a line of text, and the way out was a second, separate click.
+  redirect(`/${locale}/${academySlug}/admin/students`);
 }

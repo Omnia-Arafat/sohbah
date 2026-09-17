@@ -95,9 +95,22 @@ export default async function CirclePage({ params }: CirclePageProps) {
           {t("startsAt", { time: formatTime(circle.start_time, locale) })}
         </p>
 
-        {!circle.meets_today && (
+        {/*
+          Why she cannot sign up, when she cannot. Students were writing their
+          names into the queue hours ahead, so joining now opens at the start
+          time and closes an hour after the circle ends — both on the CIRCLE's
+          clock, which is why the opening time below is formatted from the
+          server's answer rather than from `new Date()` in her browser.
+        */}
+        {circle.registration_state !== "open" && (
           <p className="mt-3 text-sm text-accent-700 dark:text-accent-300">
-            {t("notToday")}
+            {circle.registration_state === "before" && circle.opens_at
+              ? t("registration.opensAt", {
+                  time: formatTime(circle.start_time, locale),
+                })
+              : circle.registration_state === "after"
+                ? t("registration.closed")
+                : t("notToday")}
           </p>
         )}
       </section>
@@ -184,6 +197,7 @@ export default async function CirclePage({ params }: CirclePageProps) {
         sessionLink={circle.session_link}
         initialQueue={queue ?? []}
         maxStudents={circle.max_students}
+        registrationOpen={circle.registration_state === "open"}
       />
     </div>
   );

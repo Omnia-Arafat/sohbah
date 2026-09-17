@@ -9,6 +9,7 @@ import { TeacherAccountNotice } from "@/components/teacher-account-notice";
 import { createClient } from "@/lib/supabase/server";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { notFound } from "next/navigation";
+import { StudentsFilter } from "./students-filter";
 
 type StudentsAdminPageProps = {
   params: Promise<{ locale: string; academy: string }>;
@@ -101,41 +102,18 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
 
       {/* Filters */}
       <div className="card">
-        <form method="GET" className="flex flex-col gap-4 sm:flex-row sm:items-end">
-          <div className="flex-1">
-            <label htmlFor="search" className="field-label">
-              {tStudents("searchLabel")}
-            </label>
-            <input
-              id="search"
-              name="search"
-              type="text"
-              className="input"
-              placeholder={tStudents("searchPlaceholder")}
-              defaultValue={search || ""}
-            />
-          </div>
-
-          <div className="sm:w-48">
-            <label htmlFor="gender" className="field-label">
-              {tStudents("genderLabel")}
-            </label>
-            <select
-              id="gender"
-              name="gender"
-              className="input"
-              defaultValue={gender || ""}
-            >
-              <option value="">{tStudents("all")}</option>
-              <option value="male">{tStudents("male")}</option>
-              <option value="female">{tStudents("female")}</option>
-            </select>
-          </div>
-
-          <button type="submit" className="btn-primary">
-            {tStudents("filter")}
-          </button>
-        </form>
+        <StudentsFilter
+          search={search || ""}
+          gender={gender || ""}
+          labels={{
+            searchLabel: tStudents("searchLabel"),
+            searchPlaceholder: tStudents("searchPlaceholder"),
+            genderLabel: tStudents("genderLabel"),
+            all: tStudents("all"),
+            male: tStudents("male"),
+            female: tStudents("female"),
+          }}
+        />
       </div>
 
       {/* Results */}
@@ -163,7 +141,7 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
                 <thead className="sticky top-0 z-10 bg-surface">
                   <tr className="border-b border-border-subtle text-left text-sm text-muted-foreground">
                     <th className="pb-3 font-medium">{tStudents("name")}</th>
-                                        <th className="pb-3 font-medium">{tStudents("gender")}</th>
+                    <th className="pb-3 font-medium">{tStudents("gender")}</th>
                     <th className="pb-3 font-medium">{tStudents("phone")}</th>
                     <th className="pb-3 font-medium">{tStudents("registered")}</th>
                     <th className="pb-3 font-medium text-right">{tStudents("actions")}</th>
@@ -173,7 +151,7 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
                   {students.map((student) => (
                     <tr key={student.id} className="border-b border-border-subtle last:border-0">
                       <td className="py-3 font-medium">{student.name}</td>
-                                            <td className="py-3">
+                      <td className="py-3">
                         <span className={`badge-${student.gender_category === 'male' ? 'waiting' : 'done'} text-xs`}>
                           {t(`dashboard.gender.${student.gender_category}`)}
                         </span>

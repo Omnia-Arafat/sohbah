@@ -7,6 +7,7 @@ import type { GenderCategory } from "@/lib/database.types";
 import { normalizeSessionLink } from "@/lib/circle-link";
 import { createClient } from "@/lib/supabase/server";
 import { getAcademyBySlug } from "@/lib/academy-dal";
+import { redirect } from "next/navigation";
 
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -231,5 +232,6 @@ export async function updateCircle(
   revalidatePath(`/${locale}/${academySlug}/admin/circles`);
   revalidatePath(`/${locale}/${academySlug}/admin/circles/${circleId}/edit`);
   
-  return { status: "success", message: "saved" };
+  // Back to the list, for the same reason as the roster form.
+  redirect(`/${locale}/${academySlug}/admin/circles`);
 }

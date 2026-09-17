@@ -116,6 +116,15 @@ export type CirclePublicInfo = {
   meets_today: boolean;
   academy_id: string;
   max_students: number | null;
+  /**
+   * Whether the circle is accepting joins, decided on the circle's own clock:
+   * open from its start time until an hour after it ends. `before` and `after`
+   * both carry the times below so the screen can say which; `not_today` leaves
+   * them null. See `circle_registration_window()`.
+   */
+  registration_state: "open" | "before" | "after" | "not_today";
+  opens_at: string | null;
+  closes_at: string | null;
 };
 
 export type StudentSearchResult = {
