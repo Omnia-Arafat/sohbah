@@ -15,6 +15,7 @@ import { Link } from "@/i18n/navigation";
 import type { QueueEntry, StudentSearchResult } from "@/lib/database.types";
 import {
   getJoined,
+  clearJoined,
   joinedKey,
   setJoined,
   subscribeJoined,
@@ -248,6 +249,7 @@ export function CircleClient({
   async function join(student: StudentSearchResult) {
     setJoining(student.id);
     setError(null);
+    setWasRemoved(false);
 
     const { data, error: joinError } = await supabase.rpc("join_circle", {
       p_slug: slug,
@@ -290,6 +292,37 @@ export function CircleClient({
     ? queue.find((entry) => entry.student_id === joined.studentId)?.queue_order
     : undefined;
 
+  /*
+    The معلمة took her out of today's queue.
+
+    Removing a student deletes her `attendance_records` row for the day — it is
+    not a ban, and she is meant to be able to put her name back. But this
+    browser remembered the join in `localStorage`, so it went on showing her as
+    registered: «الدخول إلى الحلقة» stayed unlocked for someone no longer in
+    the circle, and the search box stayed hidden, so the one thing she could do
+    was the one thing she should not, and the thing she needed was gone.
+
+    The queue is the authority. If it has loaded and she is not in it, the
+    stored answer is wrong and is dropped — which re-locks the button and
+    brings the search box back on its own, because both already key off
+    `joined`.
+
+    No false positives: `join()` refreshes the queue BEFORE storing the join,
+    so her own row is always present by the time this can run; `refreshQueue`
+    only writes on a successful read; and the first render is seeded from the
+    server's own query. A failed refetch leaves the previous queue in place
+    rather than an empty one.
+  */
+  const [wasRemoved, setWasRemoved] = useState(false);
+
+  useEffect(() => {
+    if (!joined) return;
+    if (queue.some((entry) => entry.student_id === joined.studentId)) return;
+
+    clearJoined(storageKey);
+    setWasRemoved(true);
+  }, [joined, queue, storageKey]);
+
   // A cap frees up the moment someone is removed (the queue is a live count,
   // not a stored counter), so this only ever reflects the current queue.
   const isFull = maxStudents !== null && queue.length >= maxStudents && !joined;
@@ -310,6 +343,15 @@ export function CircleClient({
       <MotionSection show={!joined && registrationOpen && isFull} className="card">
         <p className="font-semibold">{t("full.title")}</p>
         <p className="mt-1 text-sm text-muted-foreground">{t("full.body")}</p>
+      </MotionSection>
+
+      {/* Said plainly, and only until she puts her name back. */}
+      <MotionSection
+        show={wasRemoved && !joined}
+        className="card border-accent-400 bg-accent-100/40 dark:bg-accent-700/15"
+      >
+        <p className="font-semibold">{t("removed.title")}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{t("removed.body")}</p>
       </MotionSection>
 
       <MotionSection show={!joined && registrationOpen && !isFull} className="card">
@@ -390,23 +432,6 @@ export function CircleClient({
         )}
       </MotionSection>
 
-      <MotionSection
-        show={Boolean(joined && myPosition !== undefined)}
-        className="card border-brand-200 bg-brand-50 dark:border-brand-800 dark:bg-surface"
-        delay={120}
-      >
-        {joined && myPosition !== undefined && (
-          <>
-            <h2 className="text-lg font-semibold">
-              {t("joined.title", { name: joined.name })}
-            </h2>
-            <p className="mt-1 text-muted-foreground">
-              {t("joined.position", { position: String(myPosition) })}
-            </p>
-          </>
-        )}
-      </MotionSection>
-
       {/* Always on screen — near the search box, not buried below the queue —
           so a student sees the door to the session as soon as they register.
           It just stays locked until then rather than being hidden. */}
@@ -414,9 +439,39 @@ export function CircleClient({
         ref={sessionRef}
         className="card border-brand-200 bg-brand-50 dark:border-brand-800 dark:bg-surface"
       >
-        <p className="text-sm text-muted-foreground">
-          {joined ? t("openSessionHint") : t("openSessionLockedHint")}
-        </p>
+        {/*
+          Her name and her place, for as long as she is on the page.
+
+          This used to be two things: a card that appeared once — and only once
+          the queue had loaded far enough for her position to be known — saying
+          «تم تسجيل حضورك يا فلانة», and then this line, which said the flat
+          «تم تسجيل دورك.» forever after. The greeting scrolled away, the
+          position with it, and what stayed was the sentence that tells her
+          nothing she wants to know. So they are one card now, and it does not
+          go anywhere: she is greeted by name, and her number is in front of her
+          while she waits for it.
+
+          `myPosition` is undefined for the moment between the join returning
+          and the queue arriving, and for a browser that still remembers a join
+          the server no longer has a row for. Falling back to «تم تسجيل دورك»
+          keeps the greeting honest in both — it never invents a number.
+        */}
+        {joined ? (
+          <>
+            <h2 className="text-lg font-semibold">
+              {t("joined.greeting", { name: joined.name })}
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {myPosition !== undefined
+                ? t("joined.position", { position: String(myPosition) })
+                : t("openSessionHint")}
+            </p>
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            {t("openSessionLockedHint")}
+          </p>
+        )}
         <div className="relative mt-3 inline-block w-full sm:w-auto">
           {joined ? (
             <a

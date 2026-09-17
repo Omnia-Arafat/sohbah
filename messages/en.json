@@ -207,7 +207,8 @@
     },
     "joined": {
       "title": "You are on the list, {name}",
-      "position": "You are number {position} in the queue."
+      "position": "You are number {position} in the queue.",
+      "greeting": "Welcome, {name} 🌿"
     },
     "full": {
       "title": "This circle is full",
@@ -233,6 +234,10 @@
     "registration": {
       "opensAt": "Joining the queue opens at {time} — come back then.",
       "closed": "Joining the queue has closed for today."
+    },
+    "removed": {
+      "title": "Your teacher removed you from the queue",
+      "body": "Search for your name below and join again."
     }
   },
   "auth": {

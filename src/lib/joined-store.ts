@@ -44,6 +44,24 @@ export function setJoined(key: string, value: Joined) {
   listeners.forEach((listener) => listener());
 }
 
+/**
+ * Forget which student this browser is.
+ *
+ * Used when the معلمة removes her from today's queue: the row is gone, but
+ * this browser would otherwise go on believing she is registered — which left
+ * «الدخول إلى الحلقة» unlocked for a student who is no longer in the circle,
+ * and hid the search box she needs to put her name back.
+ */
+export function clearJoined(key: string) {
+  cache.set(key, null);
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    // Same as `setJoined`: memory is enough for the rest of this session.
+  }
+  listeners.forEach((listener) => listener());
+}
+
 export function subscribeJoined(listener: () => void) {
   listeners.add(listener);
   return () => {
