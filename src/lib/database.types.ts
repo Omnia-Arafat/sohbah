@@ -978,7 +978,7 @@ export type Database = {
           p_gender?: GenderCategory | null;
           p_teacher_ids?: string[] | null;
           p_academy_id?: string | null;
-          p_circle_type?: CircleType | null;
+          p_circle_types?: CircleType[] | null;
         };
         Returns: AttendanceReportRow[];
       };

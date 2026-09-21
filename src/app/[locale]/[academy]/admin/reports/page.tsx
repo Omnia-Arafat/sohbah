@@ -28,7 +28,7 @@ type ReportsPageProps = {
     from?: string;
     to?: string;
     gender?: string;
-    type?: string;
+    type?: string | string[];
     teacher?: string | string[];
   }>;
 };
@@ -82,9 +82,13 @@ export default async function ReportsPage({
   ]);
 
   const circleTypes = circleTypesResult;
-  const circleType = circleTypes.some((type) => type.slug === query.type)
-    ? (query.type as string)
-    : null;
+
+  // Several types at once, the same way the teacher filter takes several
+  // teachers — an empty selection means every type, so it and "all ticked"
+  // are the same request.
+  const selectedTypes = (
+    Array.isArray(query.type) ? query.type : query.type ? [query.type] : []
+  ).filter((slug) => circleTypes.some((type) => type.slug === slug));
 
   const { data: reportRows, error: reportError } = await supabase.rpc(
     "attendance_report",
@@ -94,7 +98,7 @@ export default async function ReportsPage({
       p_gender: gender,
       p_teacher_ids: teacherIds.length > 0 ? teacherIds : null,
       p_academy_id: academy?.id ?? null,
-      p_circle_type: circleType,
+      p_circle_types: selectedTypes.length > 0 ? selectedTypes : null,
     },
   );
 
@@ -107,12 +111,17 @@ export default async function ReportsPage({
   // One filter, not two: a circle's own label already names its teacher, so
   // offering both a circle picker and a teacher picker just duplicated each
   // other. The teacher list narrows to whoever actually teaches the selected
-  // circle type, so picking "تسميع حر" only offers its teachers to filter by.
-  const teachersForType = circleType
-    ? teachers.filter((teacher) =>
-        circles.some((circle) => circle.teacher_id === teacher.id && circle.type === circleType),
-      )
-    : teachers;
+  // circle types, so ticking "تسميع حر" only offers its teachers to filter by.
+  const teachersForType =
+    selectedTypes.length > 0
+      ? teachers.filter((teacher) =>
+          circles.some(
+            (circle) =>
+              circle.teacher_id === teacher.id &&
+              selectedTypes.includes(circle.type),
+          ),
+        )
+      : teachers;
 
   const totals = rows.reduce(
     (acc, row) => ({
@@ -140,7 +149,7 @@ export default async function ReportsPage({
     printParams.set("to", range.to);
   }
   if (gender) printParams.set("gender", gender);
-  if (circleType) printParams.set("type", circleType);
+  selectedTypes.forEach((slug) => printParams.append("type", slug));
   teacherIds.forEach((id) => printParams.append("teacher", id));
   const printHref = `/${academySlug}/admin/reports/print?${printParams.toString()}`;
 
@@ -285,19 +294,17 @@ export default async function ReportsPage({
             <label className="field-label" htmlFor="type">
               {t("filters.type")}
             </label>
-            <select
+            <MultiSelectDropdown
               id="type"
               name="type"
-              className="input"
-              defaultValue={circleType ?? ""}
-            >
-              <option value="">{t("filters.all")}</option>
-              {circleTypes.map((option) => (
-                <option key={option.slug} value={option.slug}>
-                  {locale === "ar" ? option.name_ar : option.name_en}
-                </option>
-              ))}
-            </select>
+              options={circleTypes.map((option) => ({
+                value: option.slug,
+                label: locale === "ar" ? option.name_ar : option.name_en,
+              }))}
+              defaultValues={selectedTypes}
+              allLabel={t("filters.all")}
+              doneLabel={t("filters.done")}
+            />
           </div>
 
           <div className="sm:col-span-2">

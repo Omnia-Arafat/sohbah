@@ -22,7 +22,7 @@ type PrintReportPageProps = {
     from?: string;
     to?: string;
     gender?: string;
-    type?: string;
+    type?: string | string[];
     teacher?: string | string[];
   }>;
 };
@@ -78,9 +78,11 @@ export default async function PrintReportPage({
     supabase.from("teachers").select("*").eq("academy_id", academy.id),
   ]);
 
-  const circleType = circleTypes.some((option) => option.slug === query.type)
-    ? (query.type as string)
-    : null;
+  // Several types at once, matching the reports page filter that built this
+  // URL — an empty selection means every type.
+  const selectedTypes = (
+    Array.isArray(query.type) ? query.type : query.type ? [query.type] : []
+  ).filter((slug) => circleTypes.some((option) => option.slug === slug));
 
   const { data: reportRows, error: reportError } = await supabase.rpc(
     "attendance_report",
@@ -90,7 +92,7 @@ export default async function PrintReportPage({
       p_gender: gender,
       p_teacher_ids: teacherIds.length > 0 ? teacherIds : null,
       p_academy_id: academy.id,
-      p_circle_type: circleType,
+      p_circle_types: selectedTypes.length > 0 ? selectedTypes : null,
     },
   );
 
@@ -106,9 +108,11 @@ export default async function PrintReportPage({
       : t("filters.unknownTeacher");
   }
 
-  const circleTypeOption = circleType
-    ? circleTypes.find((option) => option.slug === circleType)
-    : null;
+  // Every slug here survived the validity filter above, so the lookup hits.
+  const selectedTypeNames = selectedTypes.map((slug) => {
+    const option = circleTypes.find((candidate) => candidate.slug === slug)!;
+    return locale === "ar" ? option.name_ar : option.name_en;
+  });
 
   const totals = rows.reduce(
     (acc, row) => ({
@@ -131,10 +135,8 @@ export default async function PrintReportPage({
   const filterLines: string[] = [
     `${t("filters.mode")}: ${t(`filters.modes.${range.mode}`)} (${range.from} – ${range.to})`,
   ];
-  if (circleTypeOption) {
-    filterLines.push(
-      `${t("filters.type")}: ${locale === "ar" ? circleTypeOption.name_ar : circleTypeOption.name_en}`,
-    );
+  if (selectedTypeNames.length > 0) {
+    filterLines.push(`${t("filters.type")}: ${selectedTypeNames.join("، ")}`);
   }
   if (teacherIds.length > 0) {
     filterLines.push(
