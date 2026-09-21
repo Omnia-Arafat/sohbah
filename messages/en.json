@@ -176,7 +176,9 @@
       "phoneInvalid": "That number is not valid for this country. Check the digits and the country code.",
       "phoneTaken": "This number is already registered. Do not register again — open your circle's link and search for your name.",
       "phoneCountryRequired": "Choose a country code."
-    }
+    },
+    "alreadyRegistered": "Already registered?",
+    "alreadyRegisteredBody": "Open your page with your name and phone number — no need to register again."
   },
   "circle": {
     "title": "Circle",
