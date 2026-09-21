@@ -1,0 +1,114 @@
+-- RUN STEPS — المسارات (phase 1: schema, RLS, seed)
+--
+-- Apply: supabase/migrations/20260921140000_tracks.sql
+--
+-- HOW TO RUN IT
+--
+--   Supabase Dashboard → SQL Editor → paste the whole migration file → Run.
+--   https://supabase.com/dashboard/project/emkcdhydsmrcugxiutvb/sql/new
+--
+--   The file wraps itself in BEGIN/COMMIT, so paste it whole and run it once.
+--   A failure at any point rolls everything back and leaves the database
+--   exactly as it was.
+--
+-- WHAT WAS AND WAS NOT VERIFIED
+--
+--   VERIFIED  Parsed with Postgres's own grammar (libpg_query). The same
+--             check was run against two migrations already live in this
+--             project as a control, and they pass too.
+--   VERIFIED  Every pre-existing object it depends on exists:
+--             validate_circle_timezone, can_supervise, is_admin_of,
+--             is_staff_of, current_teacher_id, and the academies, teachers,
+--             students, circles, circle_types and quizzes tables.
+--   VERIFIED  Additive only. No ALTER, no DROP, no UPDATE or DELETE on any
+--             existing table. The one write outside the new tables is a
+--             single circle_types row, guarded by ON CONFLICT DO NOTHING.
+--   NOT DONE  Never executed against a Postgres server. No psql, no database
+--             password here, and Docker could not be used. Parsing proves the
+--             syntax; it does not prove a policy does what its name says.
+--
+--   A syntax error WAS found and fixed this way: six dollar-quote delimiters
+--   had been corrupted (`as $` instead of `as $$`) by a patch script, because
+--   JavaScript's String.replace treats "$$" in a replacement as an escape for
+--   one "$". Running the file before that fix would have aborted part way.
+--
+-- WHAT IT CREATES
+--   18 tables, 24 policies, 8 functions, 2 triggers:
+--     tracks · track_cohorts · track_weeks · track_week_days
+--     track_rule_sets · track_score_rules · track_meeting_components
+--     track_warning_levels · track_absence_policy · track_assessment_rules
+--     track_rule_changes
+--     track_enrollments · track_partners · track_recitations
+--     track_meeting_scores · track_absences · track_warnings · track_alerts
+--     track_current_week() · track_effective_week() · track_rule_set_for()
+--     approve_track_enrollment() · track_cohort_seats()
+--     can_manage_cohort() · can_admin_rule_set() · raise_seat_freed_alert()
+--
+-- WHAT IT SEEDS (for the academy with slug = 'sohbah' only — itqan is not
+-- touched, which is the standing rule for this schema)
+--   • circle_types row `masar`
+--   • 6 tracks with their surah ranges, 8 seats per cohort by default
+--   • 6 × 40 = 240 unpublished weeks, each with its 7 day rows (0..6)
+--     → 1,680 empty day rows, ready to be filled rather than created
+--   • one rule set per track, effective 2000-01-01, holding:
+--       5 points/day × 5 days, star_threshold null (= the full total)
+--       3 meeting components at 5 each  → weekly total 40
+--       6 warning levels: 1w / 2w / 3w / 4w (remove)
+--                       + 3 consecutive and 5 scattered days (notify)
+--       absence policy at its documented defaults
+--
+-- VERIFY AFTER APPLYING — run these three, expect what each comment says.
+--
+--   select t.name_ar, count(distinct w.id) weeks, count(d.id) days
+--     from tracks t
+--     join track_weeks w on w.track_id = t.id and w.cohort_id is null
+--     join track_week_days d on d.week_id = w.id
+--    group by t.name_ar order by t.name_ar;
+--   -- 6 rows, 40 weeks and 280 days each
+--
+--   select t.name_ar,
+--          sr.points_per_recitation_day * sr.recitation_days_per_week
+--            + coalesce(sum(mc.points), 0) as weekly_total
+--     from tracks t
+--     join track_rule_sets rs on rs.track_id = t.id
+--     join track_score_rules sr on sr.rule_set_id = rs.id
+--     left join track_meeting_components mc
+--            on mc.rule_set_id = rs.id and mc.is_active
+--    group by t.name_ar, sr.points_per_recitation_day, sr.recitation_days_per_week;
+--   -- 40 for every track
+--
+--   select level, symbol, metric, threshold, action
+--     from track_warning_levels wl
+--     join track_rule_sets rs on rs.id = wl.rule_set_id
+--     join tracks t on t.id = rs.track_id
+--    where t.name_ar = 'المسار الأول' order by level;
+--   -- the 6 rows above. Both published removal rules are present: the ladder
+--   -- as warn/remove, the announcement's day-counts as notify. Switching
+--   -- which one removes is an UPDATE, not a migration.
+--
+--   -- And confirm nothing else moved:
+--   select count(*) from circles;   -- unchanged
+--   select count(*) from students;  -- unchanged
+--
+-- THEN
+--   1. Reload /admin — the tracks panel should stop saying "غير مهيّأة".
+--   2. Regenerate src/lib/database.types.ts, which removes the `as never`
+--      casts in src/lib/tracks-dal.ts and src/lib/tracks-list-dal.ts.
+--   3. Phase 2 (20260921150000): the weekly-score view, the alert generator,
+--      and the student RPCs — students are not authenticated here, so every
+--      student write must be a security-definer RPC taking p_student_id,
+--      exactly like join_circle() and find_me().
+--
+-- ROLLBACK (nothing else references these tables, so this is clean)
+--   drop table if exists
+--     track_alerts, track_warnings, track_absences, track_meeting_scores,
+--     track_recitations, track_partners, track_enrollments,
+--     track_rule_changes, track_assessment_rules, track_absence_policy,
+--     track_warning_levels, track_meeting_components, track_score_rules,
+--     track_rule_sets, track_week_days, track_weeks, track_cohorts, tracks
+--     cascade;
+--   drop function if exists track_current_week(uuid), track_effective_week(uuid, int),
+--     track_rule_set_for(uuid, date), can_manage_cohort(uuid), can_admin_rule_set(uuid),
+--     approve_track_enrollment(uuid, text), track_cohort_seats(uuid),
+--     raise_seat_freed_alert();
+--   delete from circle_types where slug = 'masar';
