@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import Image from "next/image";
+import { BrandMark } from "@/components/brand-mark";
 import { SetupNotice } from "@/components/setup-notice";
 import { redirect } from "next/navigation";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
@@ -48,18 +50,42 @@ export default async function LoginPage({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-6 sm:py-6">
       {/*
         "تسجيل الدخول", not "دخول المعلمين والمشرفين". The old heading answered
         the tab that is open rather than the page, and a student who arrives
-        here — which she does, from the header icon — was told in the first
+        here — which she does, from the header button — was told in the first
         line that this screen was not for her before she saw the tab that is.
+
+        Centred under the academy's own mark. This is the one screen a person
+        reaches before they are anybody here, and it was a left-aligned line of
+        text over a grey box — the same page any site could have shown her. The
+        mark says whose door this is before the heading says what it is for.
       */}
-      <section>
+      <section className="flex flex-col items-center text-center">
+        <div
+          className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl
+                     bg-brand-50 ring-1 ring-brand-100
+                     dark:bg-brand-900 dark:ring-brand-800"
+        >
+          {academy.logo_path ? (
+            <div className="relative h-10 w-10">
+              <Image
+                src={academy.logo_path}
+                alt=""
+                fill
+                sizes="40px"
+                className="object-contain"
+              />
+            </div>
+          ) : (
+            <BrandMark className="h-10 w-10" />
+          )}
+        </div>
         <h1 className="font-display text-2xl font-bold sm:text-3xl">
           {t("pageTitle")}
         </h1>
-        <p className="mt-2 text-muted-foreground">{academyName}</p>
+        <p className="mt-1.5 text-sm text-muted-foreground">{academyName}</p>
       </section>
 
       {!isSupabaseConfigured() && <SetupNotice />}

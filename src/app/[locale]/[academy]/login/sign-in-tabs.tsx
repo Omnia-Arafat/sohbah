@@ -42,11 +42,11 @@ export function SignInTabs({
   const [tab, setTab] = useState<"staff" | "student">("student");
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border-subtle bg-surface shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-border-subtle bg-surface shadow-[0_2px_16px_rgba(14,31,25,0.06)]">
       <div
         role="tablist"
         aria-label={t("pageTitle")}
-        className="grid grid-cols-2 gap-1.5 bg-surface-muted p-1.5"
+        className="grid grid-cols-2 gap-1.5 border-b border-border-subtle bg-surface-muted p-1.5"
       >
         <TabButton
           active={tab === "student"}
@@ -118,7 +118,10 @@ export function SignInTabs({
               </Link>
             </div>
 
-            <div className="border-t border-border-subtle pt-4">
+            {/* Set into the page rather than ruled off it: a hairline above a
+                grey paragraph read as another section, when it is a footnote
+                to the two buttons above it. */}
+            <div className="rounded-xl bg-surface-muted p-4">
               <p className="text-sm leading-relaxed text-muted-foreground">
                 <b className="text-foreground">{t("student.returningTitle")}</b>{" "}
                 {t("student.returningBody")}
@@ -130,15 +133,15 @@ export function SignInTabs({
 
       {/* Admin is a third door and it is deliberately the quietest thing on the
           screen: one or two people use it, and they know it is here. */}
-      <div className="flex items-center justify-center gap-1.5 border-t border-border-subtle px-5 py-3">
-        <Shield aria-hidden="true" className="h-3.5 w-3.5 text-muted-foreground" />
-        <Link
-          href={`/${academySlug}/admin`}
-          className="text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
-        >
-          {t("adminSignIn")}
-        </Link>
-      </div>
+      <Link
+        href={`/${academySlug}/admin`}
+        className="flex items-center justify-center gap-1.5 border-t border-border-subtle
+                   bg-surface-muted px-5 py-3.5 text-xs font-semibold text-muted-foreground
+                   transition-colors hover:text-foreground"
+      >
+        <Shield aria-hidden="true" className="h-3.5 w-3.5" />
+        {t("adminSignIn")}
+      </Link>
     </div>
   );
 }
@@ -161,19 +164,21 @@ function TabButton({
       role="tab"
       aria-selected={active}
       onClick={onClick}
-      className={`inline-flex h-11 items-center justify-center gap-2 rounded-xl
+      className={`inline-flex h-12 items-center justify-center gap-2 rounded-xl
                   text-sm transition-colors focus-visible:outline-2
                   focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${
                     active
-                      ? "bg-surface font-bold text-foreground shadow-sm"
-                      : "font-semibold text-muted-foreground hover:text-foreground"
+                      ? // The active tab is the academy's green, not a white
+                        // card on grey. Two near-white rectangles side by side
+                        // made you read the labels to find out which one you
+                        // were on.
+                        "bg-brand-600 font-bold text-white shadow-sm"
+                      : "font-semibold text-muted-foreground hover:bg-surface hover:text-foreground"
                   }`}
     >
       <Icon
         aria-hidden="true"
-        className={`h-[18px] w-[18px] ${
-          active ? "text-brand-600 dark:text-brand-300" : ""
-        }`}
+        className={`h-[18px] w-[18px] ${active ? "text-white" : ""}`}
       />
       {label}
     </button>

@@ -1362,7 +1362,9 @@
       "chooseTitle": "Which one are you?",
       "chooseHint": "That number is registered to more than one person. Pick your name.",
       "chooseBack": "Back",
-      "tooMany": "That name matches too many people. Type it in full."
+      "tooMany": "That name matches too many people. Type it in full.",
+      "noAccount": "Not registered yet?",
+      "noAccountBody": "Register once with your name and phone number, then sign in here."
     },
     "signOut": "Sign out",
     "memorised": {

@@ -7,7 +7,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { RotateCcw } from "lucide-react";
+import { ChevronLeft, RotateCcw, UserRoundPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { getMe, clearMe, meKey, setMe, subscribeMe, type Me } from "@/lib/me-store";
@@ -253,6 +253,40 @@ function SignIn({
           {t("signIn.privacy")}
         </p>
       </form>
+
+      {/*
+        The other half of the pair. This screen and the registration form are
+        sign-in and sign-up, and until now each was a dead end: a student who
+        had never registered found a form that would only ever tell her
+        «مش لاقيين اسمك», with nowhere to go from there. Same card, mirrored,
+        on both screens — so whichever one she lands on, the other is one tap
+        away.
+      */}
+      <Link
+        href={`/${academySlug}/register`}
+        className="flex items-center justify-between gap-3 rounded-2xl border
+                   border-border-subtle bg-surface p-4 transition-colors
+                   hover:border-brand-600"
+      >
+        <span className="flex items-center gap-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 dark:bg-brand-900">
+            <UserRoundPlus
+              aria-hidden="true"
+              className="h-[18px] w-[18px] text-brand-600 dark:text-brand-300"
+            />
+          </span>
+          <span className="flex min-w-0 flex-col leading-tight">
+            <span className="text-sm font-bold">{t("signIn.noAccount")}</span>
+            <span className="text-xs text-muted-foreground">
+              {t("signIn.noAccountBody")}
+            </span>
+          </span>
+        </span>
+        <ChevronLeft
+          aria-hidden="true"
+          className="h-5 w-5 shrink-0 text-muted-foreground rtl:rotate-180"
+        />
+      </Link>
     </div>
   );
 }
