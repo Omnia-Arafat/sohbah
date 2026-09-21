@@ -302,20 +302,22 @@ export default async function AdminTeachersPage({
         })}
       </div>
 
-      <section>
-        <h2 className="mb-3 text-lg font-semibold">
-          {t("pending", { count: String(pending.length) })}
-        </h2>
-        {pending.length === 0 ? (
-          <p className="card text-muted-foreground">{t("noPending")}</p>
-        ) : (
+      {/* Requests waiting for approval are the exception on this page, not the
+          rule, so on most days this was a heading reading "طلبات معلقة (٠)"
+          above a card repeating that there were none. The section appears when
+          there is something in it. */}
+      {pending.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-lg font-semibold">
+            {t("pending", { count: String(pending.length) })}
+          </h2>
           <ul className="scroll-list flex flex-col gap-3">
             {pending.map((teacher) => (
               <TeacherCard key={teacher.id} teacher={teacher} />
             ))}
           </ul>
-        )}
-      </section>
+        </section>
+      )}
 
       <section>
         <h2 className="mb-3 text-lg font-semibold">

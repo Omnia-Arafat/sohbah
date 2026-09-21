@@ -184,8 +184,6 @@ export default async function AdminPage({ params }: AdminPageProps) {
   const upcoming = todayCircles.filter(
     (c) => !liveIds.has(c.id) && !hasStarted(c.start_time, c.timezone),
   );
-  const nextUp = upcoming[0];
-
   const displayName = getTeacherDisplayLabel(session.teacher, academySlug, locale);
   const todayLabel = new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-GB", {
     weekday: "long",
@@ -212,7 +210,11 @@ export default async function AdminPage({ params }: AdminPageProps) {
           something of the reader. A warning computed in the dark helps
           nobody: each row names the student and carries the action.
       --------------------------------------------------------------- */}
-      {attentionCount > 0 ? (
+      {/* No "nothing needs you" card. A panel that exists to report its own
+          emptiness still costs a heading, a border and a scroll — and on a
+          good day it is the first thing on the page, which teaches the eye to
+          skip exactly where the warnings will appear. Absent means fine. */}
+      {attentionCount > 0 && (
         <section
           aria-label={t("home.attention")}
           className="overflow-hidden rounded-2xl border border-absent/30 bg-surface"
@@ -270,13 +272,6 @@ export default async function AdminPage({ params }: AdminPageProps) {
             )}
           </ul>
         </section>
-      ) : (
-        <section className="card">
-          <p className="text-sm font-semibold">{t("home.attentionNone")}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {t("home.attentionNoneNote")}
-          </p>
-        </section>
       )}
 
       {/* ---------------------------------------------------------------
@@ -285,10 +280,15 @@ export default async function AdminPage({ params }: AdminPageProps) {
           What is happening this minute, in brand-900 with gold for the
           pulse. Exactly one of these may exist: a second would cancel the
           first, and the whole point is that the eye lands here before it
-          lands anywhere else. When nothing is running it steps down to a
-          quiet card rather than shouting a zero.
+          lands anywhere else.
+
+          When nothing is running there is no panel at all. It used to step
+          down to a quiet card saying so, with the next circle's time under
+          it — which is most of the day, so most of the day the loudest slot
+          on the page held a sentence about nothing happening. What is coming
+          is the schedule's job, and الجدول is a tab away.
       --------------------------------------------------------------- */}
-      {liveCircles.length > 0 ? (
+      {liveCircles.length > 0 && (
         <section
           aria-label={t("home.nowRunning")}
           className="rounded-2xl bg-brand-900 px-5 py-5 text-brand-100 sm:px-6"
@@ -347,18 +347,6 @@ export default async function AdminPage({ params }: AdminPageProps) {
             ))}
           </ul>
         </section>
-      ) : (
-        <section className="card">
-          <p className="text-sm font-semibold">{t("home.quietTitle")}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {nextUp
-              ? t("home.quietNote", {
-                  time: formatTime(nextUp.start_time, locale),
-                  name: nextUp.name,
-                })
-              : t("home.quietNoneToday")}
-          </p>
-        </section>
       )}
 
       {/* ---------------------------------------------------------------
@@ -395,6 +383,7 @@ export default async function AdminPage({ params }: AdminPageProps) {
             the rows read as one block instead of a heading floating over
             a stack of cards.
         ------------------------------------------------------------ */}
+        {upcoming.length > 0 && (
         <section className="flex flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface">
           <div className="flex items-center gap-2.5 bg-surface-muted px-4 py-2.5">
             <h2 className="flex-grow text-sm font-bold text-foreground/80">
@@ -411,13 +400,6 @@ export default async function AdminPage({ params }: AdminPageProps) {
             </Link>
           </div>
 
-          {upcoming.length === 0 ? (
-            <p className="px-4 py-4 text-sm text-muted-foreground">
-              {todayCircles.length === 0
-                ? t("home.todayNone")
-                : t("home.restNone")}
-            </p>
-          ) : (
             <ul>
               {upcoming.slice(0, 6).map((circle) => (
                 <li
@@ -445,17 +427,21 @@ export default async function AdminPage({ params }: AdminPageProps) {
                 </li>
               ))}
             </ul>
-          )}
 
           <p className="mt-auto border-t border-border-subtle px-4 py-2.5 text-[11px] text-muted-foreground">
             {t("home.passedNote")}
           </p>
         </section>
+        )}
 
         {/* ------------------------------------------------------------
             المسارات. Each track is forty cells, one per week — see
             src/components/week-ticks.tsx for why that beats a bar.
         ------------------------------------------------------------ */}
+        {/* Hidden outright when there are no tracks. `null` is not the same as
+            empty, though: it means the tables are not installed yet, which is
+            something the مشرفة has to act on rather than something absent. */}
+        {(trackList === null || trackList.length > 0) && (
         <section className="flex flex-col overflow-hidden rounded-2xl border border-border-subtle bg-surface">
           <div className="flex items-center gap-2.5 bg-surface-muted px-4 py-2.5">
             <Route
@@ -478,13 +464,6 @@ export default async function AdminPage({ params }: AdminPageProps) {
               <p className="text-sm font-semibold">{t("tracksCard.notReady")}</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {t("tracksCard.notReadyNote")}
-              </p>
-            </div>
-          ) : trackList.length === 0 ? (
-            <div className="px-4 py-4">
-              <p className="text-sm font-semibold">{t("tracksCard.none")}</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {t("tracksCard.noneNote")}
               </p>
             </div>
           ) : (
@@ -528,6 +507,7 @@ export default async function AdminPage({ params }: AdminPageProps) {
             </div>
           )}
         </section>
+        )}
       </div>
 
       {/* ---------------------------------------------------------------

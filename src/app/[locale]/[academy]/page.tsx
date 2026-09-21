@@ -318,18 +318,11 @@ export default async function AcademyHome({ params }: AcademyHomeProps) {
         </section>
       )}
 
-      {live.length === 0 && rest.length === 0 && (
-        <section className="card">
-          <h2 className="font-display text-lg font-bold">{t("today.title")}</h2>
-          <p className="mt-2 text-muted-foreground">{t("today.none")}</p>
-          <Link
-            href={`/${academySlug}/schedule`}
-            className="btn-secondary mt-4 w-full"
-          >
-            {t("today.fullWeek")}
-          </Link>
-        </section>
-      )}
+      {/* No "nothing today" card. On a day with no circles it was the first
+          thing on the page and the only thing above the fold — a heading, a
+          sentence, and a button to the schedule that is already a permanent
+          tab in the bar below. The page has plenty else to show her; a day
+          with no circles simply has no circle section. */}
 
       {/* The two she opens on her own, every day — a pair rather than two
           full-width cards, which were 260px of screen for two links. */}
