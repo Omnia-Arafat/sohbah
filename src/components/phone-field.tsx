@@ -147,10 +147,14 @@ export function PhoneField({
                   key={`${c.iso}-${c.dial}`}
                   role="option"
                   aria-selected={c.iso === iso}
-                  onPointerDown={(event) => {
-                    event.preventDefault();
-                    commit(c);
-                  }}
+                  // `click`, not `pointerdown`. On a touch screen a scroll
+                  // starts by putting a finger on a row, and committing at
+                  // pointer-down meant the list picked that row and shut the
+                  // moment she tried to scroll it — the phone could only ever
+                  // reach the first few countries. A click fires only when the
+                  // finger lifts without dragging, which is the actual gesture
+                  // for "this one".
+                  onClick={() => commit(c)}
                   onMouseEnter={() => setActiveIndex(index)}
                   className={`flex cursor-pointer items-center gap-3 px-4 py-2.5 text-base
                               transition-colors ${
@@ -203,9 +207,9 @@ export function PhoneField({
  */
 function Flag({ country }: { country: Country }) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element -- a 2KB static SVG
-    // already the right size; next/image would add a request and optimise
-    // nothing, since it does not process SVG anyway.
+    // A 2KB static SVG already at the right size. next/image does not process
+    // SVG at all, so it would add a request and optimise nothing.
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={`/flags/${country.iso.toLowerCase()}.svg`}
       alt=""
