@@ -2,9 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import {
-  CalendarDays,
   GraduationCap,
-  Info,
   Shield,
   UserRound,
   UserRoundPlus,
@@ -95,34 +93,28 @@ export function SignInTabs({
           </>
         ) : (
           <div className="flex flex-col gap-5">
-            {/* The whole point, stated before anything is offered. */}
-            <div className="flex items-start gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4 dark:border-brand-800 dark:bg-brand-950/40">
-              <Info
-                aria-hidden="true"
-                className="mt-0.5 h-5 w-5 shrink-0 text-brand-700 dark:text-brand-300"
-              />
-              <p className="text-sm leading-relaxed text-brand-800 dark:text-brand-200">
-                {t("student.notice")}
-              </p>
-            </div>
+            {/*
+              Two doors, named the way she would name them: she is either new
+              here or she is coming back. The panel used to open with a notice
+              explaining that students have no account and no password — true,
+              but it answered a question nobody had asked yet and pushed both
+              buttons down the screen. صفحتي is that door, so it is labelled
+              تسجيل الدخول rather than by its destination.
 
+              حلقات اليوم used to be a third button and is not one any more:
+              الجدول is a permanent tab in the bar at the bottom of every
+              screen, so putting it here was offering a door that is already
+              open.
+            */}
             <div className="flex flex-col gap-2">
               <Link href={`/${academySlug}/register`} className="btn-primary w-full">
                 <UserRoundPlus aria-hidden="true" className="h-5 w-5" />
                 {t("student.register")}
               </Link>
 
-              {/* Not in the original design — it did not exist then. For a
-                  student who IS registered, this is the one door on this page
-                  that actually opens onto something of hers. */}
               <Link href={`/${academySlug}/me`} className="btn-secondary w-full">
                 <UserRound aria-hidden="true" className="h-5 w-5" />
-                {t("student.myPage")}
-              </Link>
-
-              <Link href={`/${academySlug}/schedule`} className="btn-secondary w-full">
-                <CalendarDays aria-hidden="true" className="h-5 w-5" />
-                {t("student.today")}
+                {t("student.signIn")}
               </Link>
             </div>
 

@@ -283,12 +283,10 @@
       "student": "Student"
     },
     "student": {
-      "notice": "Students have no account and no password. Register once, then open your circle's link and find your name.",
       "register": "Register a new student",
-      "myPage": "My page — memorisation and recitation",
-      "today": "Today's circles",
       "returningTitle": "Already registered?",
-      "returningBody": "Open the circle link your teacher sent you — or pick your circle from today's list."
+      "returningBody": "Open the circle link your teacher sent you — or pick your circle from today's list.",
+      "signIn": "Sign in"
     },
     "adminSignIn": "Sign in as admin"
   },
