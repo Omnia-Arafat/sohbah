@@ -105,7 +105,7 @@
       "resume": "Continue where you stopped — {surah}, page {page}",
       "resumeCta": "Continue reading",
       "tileStart": "Read from any page — works offline.",
-      "tileResume": "You stopped at {surah} · page {page}"
+      "tileResume": "You stopped at <q>{surah}</q> · page {page}"
     },
     "adhkar": {
       "title": "Adhkar",
@@ -116,7 +116,7 @@
     "teaser": {
       "label": "Complete the ayah",
       "another": "Another ayah",
-      "from": "From Surat {surah}",
+      "from": "From Surah <q>{surah}</q>",
       "cta": "Find out, and test yourself →"
     },
     "strip": {

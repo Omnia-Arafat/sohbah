@@ -95,19 +95,35 @@ export function AyahTeaser({ academySlug }: { academySlug: string }) {
         </button>
       </div>
 
+      {/*
+        `font-quran`, like every other ayah in the app. Without it the cue
+        inherited Cairo — a UI sans with no Quranic marks in it — so the
+        browser fell back per character and the Uthmani marks landed wherever
+        the substitute font happened to put them: the small high meem in
+        «يَوْمَئِذٍۢ» hanging off the wrong letter, the fatha and the sukun at
+        different heights. Correct text, drawn wrong, which for a مصحف is not
+        a styling detail.
+      */}
       <p
         dir="rtl"
         lang="ar"
-        className="px-4 pb-1 pt-2 text-center text-[1.15rem] leading-[2.1]"
+        className="px-4 pb-1 pt-2 text-center font-quran text-[1.35rem] leading-[2.1]"
       >
         {teaser.cue}
         {/* The ellipsis is the question. It is muted and outside the ayah's
             own styling, so nothing suggests it is part of the text. */}
-        <span className="text-muted-foreground"> …</span>
+        <span className="font-sans text-muted-foreground"> …</span>
       </p>
 
+      {/* The surah's name is Uthmani too — ٱلزَّلۡزَلَةِ carries a small sukun —
+          so it takes the same font, while «من سورة» around it stays UI text. */}
       <p className="pb-3 text-center text-xs text-muted-foreground">
-        {surah ? t("from", { surah: surah.name }) : ""}
+        {surah
+          ? t.rich("from", {
+              surah: surah.name,
+              q: (chunks) => <span className="font-quran text-sm">{chunks}</span>,
+            })
+          : ""}
       </p>
 
       <Link

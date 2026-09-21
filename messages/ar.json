@@ -105,7 +105,7 @@
       "resume": "أكملي من حيث توقفتِ — {surah} · صفحة {page}",
       "resumeCta": "أكملي القراءة",
       "tileStart": "اقرئي من أي صفحة — وبتشتغل من غير نت.",
-      "tileResume": "وقفتِ عند {surah} · صفحة {page}"
+      "tileResume": "وقفتِ عند <q>{surah}</q> · صفحة {page}"
     },
     "adhkar": {
       "title": "الأذكار",
@@ -116,7 +116,7 @@
     "teaser": {
       "label": "كمّلي الآية",
       "another": "آية تانية",
-      "from": "من سورة {surah}",
+      "from": "من سورة <q>{surah}</q>",
       "cta": "اعرفي الإجابة واختبري حفظك ←"
     },
     "strip": {

@@ -56,9 +56,14 @@ export function DailyTiles({
         tone="brand"
         note={
           bookmark && surah
-            ? t("mushaf.tileResume", {
+            ? // The surah's name is Uthmani — ٱلۡبَقَرَةِ carries an alef wasla
+              // and a small sukun, neither of which Cairo has — so it is drawn
+              // in the same font as the مصحف itself while the sentence around
+              // it stays UI text.
+              t.rich("mushaf.tileResume", {
                 surah: locale === "ar" ? surah.name : surah.englishName,
                 page: bookmark.page,
+                q: (chunks) => <span className="font-quran">{chunks}</span>,
               })
             : t("mushaf.tileStart")
         }
@@ -84,7 +89,7 @@ function Tile({
   href: string;
   Icon: typeof BookOpen;
   title: string;
-  note: string;
+  note: React.ReactNode;
   tone: "brand" | "accent";
 }) {
   /*
