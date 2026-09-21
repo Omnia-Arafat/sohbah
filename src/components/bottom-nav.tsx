@@ -11,6 +11,7 @@ import {
   LayoutGrid,
   LogOut,
   Plus,
+  Route,
   Tags,
   TrendingUp,
   UserCheck,
@@ -73,28 +74,41 @@ export function BottomNav({
   const isReports = pathname.startsWith(reports);
   const isCircles = pathname.startsWith(circles);
 
-  /** Sections that live in the sheet rather than on a tab of their own. */
+  /*
+    Sections that live in the sheet rather than on a tab of their own.
+
+    `group` is the only thing new here. The sheet had grown to a dozen
+    identical tiles in one undifferentiated grid — every feature added one
+    more, and finding "المناهج" meant reading all twelve. Four small headings
+    let the eye jump to a group and then to a tile, and cost no extra tap,
+    which an accordion would. Nothing was renamed, moved out or removed.
+  */
   const sheetLinks = [
     // A plain teacher already has this as her primary second tab; a
     // supervisor/admin has "التقارير" there instead, so it only needs a
     // place in the sheet for her.
-    { href: schedule, label: t("schedule"), Icon: CalendarDays, adminOnly: false, hidden: !canSupervise },
-    { href: `/${academySlug}/admin/students`, label: t("students"), Icon: GraduationCap, adminOnly: false, hidden: false },
+    { href: schedule, label: t("schedule"), Icon: CalendarDays, group: "circles" as const, adminOnly: false, hidden: !canSupervise },
+    { href: `/${academySlug}/admin/students`, label: t("students"), Icon: GraduationCap, group: "people" as const, adminOnly: false, hidden: false },
+    // A مسار does not get a tab of its own: the five slots below are the five
+    // things every role does daily, and a tab for something only a مشرفة
+    // touches would push one of them off. Same rule that keeps this sheet
+    // from growing back into /admin's old wall of cards.
+    { href: `/${academySlug}/admin/tracks`, label: t("tracks"), Icon: Route, group: "teaching" as const, adminOnly: true, hidden: false },
     // Open to every معلمة rather than admin-only: she is the one who prepares
     // the lesson she is about to teach.
-    { href: `/${academySlug}/admin/curricula`, label: t("curricula"), Icon: BookOpen, adminOnly: false, hidden: false },
+    { href: `/${academySlug}/admin/curricula`, label: t("curricula"), Icon: BookOpen, group: "teaching" as const, adminOnly: false, hidden: false },
     // Also open to every معلمة: she writes the quiz on what she taught.
-    { href: `/${academySlug}/admin/quizzes`, label: t("quizzes"), Icon: ClipboardList, adminOnly: false, hidden: false },
-    { href: `/${academySlug}/admin/teachers`, label: t("teachers"), Icon: UserCheck, adminOnly: false, hidden: false },
+    { href: `/${academySlug}/admin/quizzes`, label: t("quizzes"), Icon: ClipboardList, group: "teaching" as const, adminOnly: false, hidden: false },
+    { href: `/${academySlug}/admin/teachers`, label: t("teachers"), Icon: UserCheck, group: "people" as const, adminOnly: false, hidden: false },
     // The mirror image: already a primary tab for her, so listing it again
     // here would just be clutter.
-    { href: reports, label: t("reports"), Icon: BarChart, adminOnly: false, hidden: canSupervise },
-    { href: `/${academySlug}/admin/progress`, label: t("progress"), Icon: TrendingUp, adminOnly: false, hidden: false },
-    { href: `/${academySlug}/admin/circle-types`, label: t("circleTypes"), Icon: Tags, adminOnly: true, hidden: false },
+    { href: reports, label: t("reports"), Icon: BarChart, group: "teaching" as const, adminOnly: false, hidden: canSupervise },
+    { href: `/${academySlug}/admin/progress`, label: t("progress"), Icon: TrendingUp, group: "teaching" as const, adminOnly: false, hidden: false },
+    { href: `/${academySlug}/admin/circle-types`, label: t("circleTypes"), Icon: Tags, group: "circles" as const, adminOnly: true, hidden: false },
     // Boards decide what the public timetable shows, so a مشرفة needs it:
     // she is the one who notices circles missing from the schedule.
-    { href: `/${academySlug}/admin/schedules`, label: t("schedules"), Icon: CalendarDays, adminOnly: false, hidden: !canSupervise },
-    { href: `/${academySlug}/admin`, label: t("adminHome"), Icon: LayoutGrid, adminOnly: false, hidden: false },
+    { href: `/${academySlug}/admin/schedules`, label: t("schedules"), Icon: CalendarDays, group: "circles" as const, adminOnly: false, hidden: !canSupervise },
+    { href: `/${academySlug}/admin`, label: t("adminHome"), Icon: LayoutGrid, group: "circles" as const, adminOnly: false, hidden: false },
   ].filter((link) => (!link.adminOnly || isAdmin) && !link.hidden);
 
   return (
@@ -126,25 +140,48 @@ export function BottomNav({
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5">
-              {sheetLinks.map(({ href, label, Icon }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  // Closed here rather than on a route change: a tap that
-                  // navigates should leave the sheet behind it, and doing it
-                  // in the handler keeps it out of an effect.
-                  onClick={() => setSheetOpen(false)}
-                  className="flex items-center gap-2.5 rounded-2xl border border-border-subtle
-                             bg-surface p-3 transition-colors hover:border-brand-600"
-                >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 dark:bg-brand-900">
-                    <Icon className="h-[18px] w-[18px] text-brand-600 dark:text-brand-300" aria-hidden="true" />
-                  </span>
-                  <span className="min-w-0 text-sm font-semibold leading-tight">{label}</span>
-                </Link>
-              ))}
-            </div>
+            {(
+              [
+                // Deliberately NOT groupTeaching/groupSupervision: those two
+                // are the desktop rail's own headings, and reusing a key here
+                // renamed a heading over there.
+                ["circles", t("sheetCircles")],
+                ["people", t("sheetPeople")],
+                ["teaching", t("sheetTeaching")],
+              ] as const
+            ).map(([group, heading]) => {
+              const items = sheetLinks.filter((link) => link.group === group);
+              if (items.length === 0) return null;
+              return (
+                <section key={group}>
+                  <h3 className="px-0.5 pb-1.5 pt-3 text-[11px] font-bold text-muted-foreground">
+                    {heading}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {items.map(({ href, label, Icon }) => (
+                      <Link
+                        key={href}
+                        href={href}
+                        // Closed here rather than on a route change: a tap that
+                        // navigates should leave the sheet behind it, and doing
+                        // it in the handler keeps it out of an effect.
+                        onClick={() => setSheetOpen(false)}
+                        className="flex min-h-11 items-center gap-2.5 rounded-xl bg-surface-muted px-3
+                                   py-2.5 transition-colors hover:bg-brand-50 dark:hover:bg-brand-900"
+                      >
+                        <Icon
+                          className="h-[18px] w-[18px] shrink-0 text-brand-600 dark:text-brand-300"
+                          aria-hidden="true"
+                        />
+                        <span className="min-w-0 truncate text-sm font-semibold leading-tight">
+                          {label}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
 
             <div className="mt-4 flex items-center justify-between gap-3 border-t border-border-subtle pt-3.5">
               <div className="min-w-0">

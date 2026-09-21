@@ -10,6 +10,7 @@ import {
   LayoutGrid,
   LogOut,
   Plus,
+  Route,
   Tags,
   TrendingUp,
   UserCheck,
@@ -66,6 +67,10 @@ export function SideNav({
 
   const supervision: NavItem[] = [
     { href: `/${academySlug}/admin/circles`, label: t("circles"), Icon: Users, prefix: true },
+    // Directly under the circles, because that is what a مسار is nearest to —
+    // and admin-only, since accepting or removing a student from one is a
+    // مشرفة's decision (see approve_track_enrollment in the tracks migration).
+    { href: `/${academySlug}/admin/tracks`, label: t("tracks"), Icon: Route, prefix: true, adminOnly: true },
     { href: `/${academySlug}/admin/students`, label: t("students"), Icon: GraduationCap, prefix: true },
     // Open to every معلمة rather than admin-only: she is the one who prepares
     // the lesson she is about to teach.
