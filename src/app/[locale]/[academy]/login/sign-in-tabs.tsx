@@ -25,9 +25,12 @@ import { Link } from "@/i18n/navigation";
  * can never fill is how she ends up messaging her معلمة to ask for a password
  * that was never issued.
  *
- * The student tab opens by default for nobody — the staff tab does. Staff are
- * the ones who came here to sign IN; a student who lands here took a wrong
- * turn, and the tab she needs is one tap away and clearly labelled.
+ * THE STUDENT TAB COMES FIRST, and opens. The staff tab held that place on the
+ * reasoning that staff are the ones who came here to sign IN — true, and
+ * beside the point: this academy has a hundred and thirteen students and a few
+ * dozen معلمات, so the screen opens on the person most likely to be reading
+ * it. A معلمة signing in knows she is staff and the tab says so; a student
+ * does not necessarily know she is not.
  */
 export function SignInTabs({
   academySlug,
@@ -38,7 +41,7 @@ export function SignInTabs({
   staffForm: ReactNode;
 }) {
   const t = useTranslations("auth");
-  const [tab, setTab] = useState<"staff" | "student">("staff");
+  const [tab, setTab] = useState<"staff" | "student">("student");
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border-subtle bg-surface shadow-sm">
@@ -48,16 +51,16 @@ export function SignInTabs({
         className="grid grid-cols-2 gap-1.5 bg-surface-muted p-1.5"
       >
         <TabButton
-          active={tab === "staff"}
-          onClick={() => setTab("staff")}
-          Icon={GraduationCap}
-          label={t("tabs.staff")}
-        />
-        <TabButton
           active={tab === "student"}
           onClick={() => setTab("student")}
           Icon={UserRound}
           label={t("tabs.student")}
+        />
+        <TabButton
+          active={tab === "staff"}
+          onClick={() => setTab("staff")}
+          Icon={GraduationCap}
+          label={t("tabs.staff")}
         />
       </div>
 
@@ -65,6 +68,27 @@ export function SignInTabs({
         {tab === "staff" ? (
           <>
             {staffForm}
+
+            {/*
+              Registering used to be one grey line under the whole card, below
+              the fold on a phone — so a new معلمة scrolled past the form she
+              could not fill and found nothing. The two things a person can do
+              here are sign in and make an account; they belong next to each
+              other, and the second one is a button like the first.
+            */}
+            <div className="mt-5 border-t border-border-subtle pt-5">
+              <p className="mb-2.5 text-center text-sm text-muted-foreground">
+                {t("noAccountYet")}
+              </p>
+              <Link
+                href={`/${academySlug}/register-teacher`}
+                className="btn-secondary w-full"
+              >
+                <UserRoundPlus aria-hidden="true" className="h-5 w-5" />
+                {t("registerAccount")}
+              </Link>
+            </div>
+
             <p className="mt-4 text-center text-sm text-muted-foreground">
               {t("studentsNote")}
             </p>

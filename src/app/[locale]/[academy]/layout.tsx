@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { LogIn } from "lucide-react";
+import { LogIn, LogOut } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 import { BottomNav } from "@/components/bottom-nav";
@@ -144,24 +144,47 @@ export default async function AcademyLayout({
                 from the bottom bar (phone) or the side rail (desktop), and
                 repeating them here is what made this row too crowded to read.
               */}
-              {!teacher && (
-                <>
-                  {/* الجدول used to sit here for `sm` and up, because that is
-                      where the bottom bar stops. `<PublicNavDesktop>` now
-                      carries it along with everything else, so keeping it would
-                      be the same destination twice in one header. */}
-                  <Link
-                    href={`/${academySlug}/admin`}
-                    aria-label={tNav("adminSignIn")}
+              {teacher ? (
+                /*
+                  The way out, at the top, where she looks for it. It existed
+                  only inside the «المزيد» sheet at the bottom of the phone —
+                  three taps and a guess — while the header showed nothing at
+                  all about being signed in. `sm:hidden` because the side rail
+                  carries the same button from `sm` up.
+                */
+                <form action={signOut.bind(null, academySlug)} className="sm:hidden">
+                  <button
+                    type="submit"
                     className="inline-flex items-center gap-1.5 rounded-xl border border-border-subtle
-                               px-3 py-1.5 text-sm font-medium text-muted-foreground
-                               transition-colors hover:border-brand-600 hover:text-brand-700
-                               dark:hover:text-brand-300 whitespace-nowrap"
+                               px-3 py-1.5 text-sm font-semibold text-muted-foreground
+                               transition-colors hover:border-absent hover:text-absent
+                               whitespace-nowrap"
                   >
-                    <LogIn className="h-4 w-4" aria-hidden="true" />
-                    <span className="hidden sm:inline">{tNav("adminSignIn")}</span>
-                  </Link>
-                </>
+                    <LogOut className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" />
+                    {tNav("signOut")}
+                  </button>
+                </form>
+              ) : (
+                /*
+                  One door, labelled, and it is the right one. This used to be
+                  an unlabelled icon on phones — `sm:inline` on the text — that
+                  pointed at /admin, so the only visible way in said "الدخول
+                  كأدمن" to a معلمة and looked like a sign-OUT arrow to
+                  everyone: lucide draws it pointing right, which in Arabic
+                  reads as leaving. Mirrored in RTL, labelled at every width,
+                  and pointing at the sign-in page, where staff, students and
+                  the admin link all are.
+                */
+                <Link
+                  href={`/${academySlug}/login`}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-brand-600
+                             bg-brand-50 px-3 py-1.5 text-sm font-bold text-brand-700
+                             transition-colors hover:bg-brand-100
+                             dark:bg-brand-900 dark:text-brand-200 whitespace-nowrap"
+                >
+                  <LogIn className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" />
+                  {tNav("signIn")}
+                </Link>
               )}
               <LanguageToggle />
             </div>

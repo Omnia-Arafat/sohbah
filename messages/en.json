@@ -27,7 +27,9 @@
     "admin": "Admin dashboard",
     "reports": "Attendance reports",
     "adminSignIn": "Admin sign in",
-    "schedule": "Schedule"
+    "schedule": "Schedule",
+    "signIn": "Sign in",
+    "signOut": "Sign out"
   },
   "home": {
     "title": "Sohbah Academy",

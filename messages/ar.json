@@ -27,7 +27,9 @@
     "admin": "لوحة المشرف",
     "reports": "تقارير الحضور",
     "adminSignIn": "الدخول كأدمن",
-    "schedule": "الجدول"
+    "schedule": "الجدول",
+    "signIn": "دخول",
+    "signOut": "خروج"
   },
   "home": {
     "title": "أكاديمية صحبة",
