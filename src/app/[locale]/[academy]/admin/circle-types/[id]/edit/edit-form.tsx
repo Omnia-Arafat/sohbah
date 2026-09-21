@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { updateCircleType, type UpdateCircleTypeState } from "../../actions";
 
@@ -24,6 +24,7 @@ export function EditCircleTypeForm({
   academySlug: string;
 }) {
   const t = useTranslations("admin.circleTypes");
+  const locale = useLocale();
   const [state, formAction] = useActionState<UpdateCircleTypeState, FormData>(
     updateCircleType,
     { status: "idle" },
@@ -39,6 +40,7 @@ export function EditCircleTypeForm({
     <form action={formAction} className="card flex flex-col gap-4" noValidate>
       <input type="hidden" name="typeId" value={type.id} />
       <input type="hidden" name="academySlug" value={academySlug} />
+      <input type="hidden" name="locale" value={locale} />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>

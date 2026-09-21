@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { requireAdminSession } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
@@ -154,6 +155,7 @@ export async function updateCircleType(
 ): Promise<UpdateCircleTypeState> {
   const typeId = String(formData.get("typeId") ?? "");
   const academySlug = String(formData.get("academySlug") ?? "").trim();
+  const locale = String(formData.get("locale") ?? "").trim();
   const nameAr = String(formData.get("nameAr") ?? "").trim();
   const nameEn = String(formData.get("nameEn") ?? "").trim();
   const values = { nameAr, nameEn };
@@ -185,7 +187,10 @@ export async function updateCircleType(
   }
 
   refresh(academySlug);
-  return { status: "idle" };
+
+  // Back to the list, the same way the circle edit form ends — otherwise the
+  // admin saves and the page just sits there with nothing to say it worked.
+  redirect(`/${locale}/${academySlug}/admin/circle-types`);
 }
 
 /**
