@@ -4,12 +4,9 @@ import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { useTranslations } from "next-intl";
 import { SURAHS, surahByNumber } from "@/lib/quran/surahs";
-import { nextAyah } from "@/lib/quran/reference";
 import type { DayRow } from "@/lib/track-week-dal";
+import { fillWeekStarts, MEMORISE_DAYS } from "@/lib/track-week-fill";
 import { saveWeek, type SaveWeekState } from "./actions";
-
-/** 1..5 are the memorisation days; 0 is the meeting and 6 is Friday. */
-const MEMORISE_DAYS = [1, 2, 3, 4, 5];
 
 type Draft = {
   fromSurah: string;
@@ -74,45 +71,13 @@ export function WeekForm({
   }
 
   /*
-    THE ONE THING THAT MAKES FORTY WEEKS BEARABLE.
-
-    A track only moves forward, so a day's start is the day before's end plus
-    one ayah — the only number anyone actually has to decide is where the day
-    STOPS. This fills every start from the previous end (and day one from last
-    week's), leaving five numbers to type per week instead of twenty.
-
-    It never overwrites something already entered, and every field stays
-    editable: it is a default, not a rule.
+    THE ONE THING THAT MAKES FORTY WEEKS BEARABLE: five ends and one start
+    are the whole week. The rule it follows — and why a day's start is NOT
+    the previous day's end — is in src/lib/track-week-fill.ts, which is also
+    what scripts/check-week-fill.mjs exercises against the real sheets.
   */
   function fillStarts() {
-    setDrafts((prev) => {
-      const next = [...prev];
-      let cursor = continueFrom;
-
-      // A start already typed into day one wins over last week's end.
-      const first = next[1];
-      if (first?.fromSurah && first?.fromAyah) {
-        cursor = { surah: Number(first.fromSurah), ayah: Number(first.fromAyah) };
-      }
-
-      for (const i of MEMORISE_DAYS) {
-        const d = next[i];
-        if (cursor && !d.fromSurah && !d.fromAyah) {
-          next[i] = {
-            ...d,
-            fromSurah: String(cursor.surah),
-            fromAyah: String(cursor.ayah),
-          };
-        }
-        const endSurah = Number(next[i].toSurah);
-        const endAyah = Number(next[i].toAyah);
-        cursor =
-          endSurah && endAyah
-            ? nextAyah({ surah: endSurah, ayah: endAyah })
-            : null;
-      }
-      return next;
-    });
+    setDrafts((prev) => fillWeekStarts(prev, continueFrom));
   }
 
   const canFill =
@@ -159,6 +124,12 @@ export function WeekForm({
             placeholder={t("fields.titlePlaceholder")}
           />
         </div>
+
+        {/* Stated before the fields, not after: someone who reads it first
+            types five numbers, someone who does not types twenty. */}
+        <p className="rounded-xl bg-surface-muted px-3 py-2.5 text-xs leading-relaxed text-muted-foreground">
+          {t("cumulativeNote")}
+        </p>
 
         <div className="flex flex-wrap items-center gap-3">
           <button

@@ -1714,8 +1714,8 @@
     "prevWeek": "Previous",
     "nextWeek": "Next",
     "fillStarts": "Fill the starts",
-    "continueFrom": "Last week ended at {ref} — the button starts after it.",
-    "continueFromNone": "Type where day one starts; the button carries each day on from the one before.",
+    "continueFrom": "Last week ended at {ref} — type the ends and the button sets the start.",
+    "continueFromNone": "Type day one’s start and each day’s end; the button copies that start down the week.",
     "publish": "Publish the week",
     "publishHint": "Only a published week reaches students as their assignment. Leave it unpublished while preparing.",
     "meetingHint": "The meeting day: no new memorisation, but the revision and memorisation questions and the correction.",
@@ -1750,7 +1750,8 @@
       "ayah": "On {day}: the ayah number is past the end of that surah.",
       "backwards": "On {day}: the end comes before the start.",
       "saveFailed": "Not saved. Try again, and tell the developer if it keeps failing."
-    }
+    },
+    "cumulativeNote": "The week is cumulative: every day begins at the same ayah and the end grows — 2:203–206, then 203–211, then 203–213."
   },
   "cohort": {
     "title": "Cohort",
