@@ -1797,7 +1797,10 @@
     },
     "back": "Back to the track",
     "addStudents": "Add students",
-    "goToRoster": "Add students"
+    "goToRoster": "Add students",
+    "searchHint": "Type the first letters of a name to search {count} students",
+    "narrowSearch": "and {count} more — type more to narrow it",
+    "removeChosen": "Remove {name} from the selection"
   },
   "cohortEdit": {
     "title": "Edit the cohort",

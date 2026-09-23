@@ -1797,7 +1797,10 @@
     },
     "back": "رجوع إلى المسار",
     "addStudents": "إضافة الطالبات",
-    "goToRoster": "إضافة الطالبات"
+    "goToRoster": "إضافة الطالبات",
+    "searchHint": "اكتبي أول حروف الاسم للبحث بين {count} طالبة",
+    "narrowSearch": "و{count} أخريات — اكتبي المزيد لتضييق البحث",
+    "removeChosen": "إزالة {name} من الاختيار"
   },
   "cohortEdit": {
     "title": "تعديل الدفعة",
