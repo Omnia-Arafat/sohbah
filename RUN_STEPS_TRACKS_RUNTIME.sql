@@ -1,0 +1,55 @@
+-- RUN STEPS — المسارات، المرحلة الثانية (the daily loop)
+--
+-- Apply: supabase/migrations/20260923100000_tracks_runtime.sql
+--   https://supabase.com/dashboard/project/emkcdhydsmrcugxiutvb/sql/new
+--
+-- Phase one is already applied. This adds no tables: only the way in and the
+-- way out of the ones it made.
+--
+--   track_today(p_student_id)          what her home screen shows
+--   log_track_recitation(…)            she records her own daily سرد
+--   track_week_scores  (view)          the score out of the week's own total
+--   cohort_week_grid(cohort, week)     the معلمة's seven-character day strip
+--
+-- ADDITIVE. No ALTER, no DROP, no row touched. Wrapped in BEGIN/COMMIT, so a
+-- failure anywhere leaves the database as it was.
+--
+-- VERIFIED  Parsed with Postgres's own grammar (libpg_query).
+-- VERIFIED  Every object it leans on exists in phase one:
+--           track_current_week(uuid), can_manage_cohort(uuid),
+--           uq_recitation_per_day (enrollment_id, session_date).
+-- NOT DONE  Never executed. No database reachable from where it was written,
+--           so the SQL is unproven beyond its syntax.
+--
+-- AFTER APPLYING — these need a running cohort with a student on it, so run
+-- them once the first cohort exists.
+--
+--   -- 1. Nothing broke.
+--   select count(*) from circles;    -- unchanged
+--   select count(*) from students;   -- unchanged
+--
+--   -- 2. The four objects are there.
+--   select proname from pg_proc
+--    where proname in ('track_today','log_track_recitation','cohort_week_grid')
+--    order by proname;                -- three rows
+--   select 1 from pg_views where viewname = 'track_week_scores';
+--
+--   -- 3. What a real student sees. Take an id from the cohort's roster.
+--   select week_number, day_index, new_from_surah, new_from_ayah,
+--          new_to_surah, new_to_ayah, is_published, partner_name, logged_today
+--     from track_today('<student-id>');
+--   -- day_index 0 = لقاء المعلمة · 1..5 = the memorisation days · 6 = الجمعة,
+--   -- counted from the cohort's start date, so a cohort that starts on a
+--   -- Tuesday has its rest day fall on a Friday mid-week.
+--
+--   -- 4. The معلمة's grid for the current week.
+--   select student_name, days, recitation_days, total_points, possible_points
+--     from cohort_week_grid('<cohort-id>');
+--   -- `days` reads r = recited · x = missed · e = excused · - = not a
+--   -- recitation day · . = still to come.
+--
+-- WHAT IS STILL NOT AUTOMATIC
+--   Absences are not generated: a missed day shows as 'x' in the grid, but
+--   nothing writes a track_absences row or raises a warning yet. That is
+--   deliberate — the ladder ends in removing a student, and it should not
+--   start running before someone has watched a full week of real data.
