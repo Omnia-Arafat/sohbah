@@ -1636,7 +1636,9 @@
     "notReadyFile": "File: supabase/migrations/20260921140000_tracks.sql",
     "adminOnly": "Managing tracks is limited to supervisors and admins.",
     "back": "Back to the admin board",
-    "cohortCount": "{count} cohorts"
+    "cohortCount": "{count} cohorts",
+    "noTeacherCount": "{count} without a teacher",
+    "schedulesEmpty": "No schedules yet"
   },
   "track": {
     "notFound": "No track at this address",

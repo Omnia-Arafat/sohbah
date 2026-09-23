@@ -14,6 +14,8 @@ export type TrackCohortRow = {
   name: string;
   status: string;
   maxStudents: number | null;
+  /** Null until a معلمة is assigned. The list counts how many are still null. */
+  teacherId: string | null;
   activeCount: number;
   pendingCount: number;
 };
@@ -43,6 +45,7 @@ type RawTrack = {
         name_ar: string;
         status: string;
         max_students: number | null;
+        teacher_id: string | null;
         track_enrollments: { status: string }[] | null;
       }[]
     | null;
@@ -59,7 +62,7 @@ export async function listTracks(academyId: string): Promise<TrackRow[] | null> 
     .select(
       "id, name_ar, scope_ar, duration_weeks, is_active, display_order, " +
         "track_weeks(is_published, cohort_id), " +
-        "track_cohorts(id, name_ar, status, max_students, track_enrollments(status))",
+        "track_cohorts(id, name_ar, status, max_students, teacher_id, track_enrollments(status))",
     )
     .eq("academy_id" as never, academyId as never)
     .order("display_order" as never, { ascending: true } as never);
@@ -88,6 +91,7 @@ export async function listTracks(academyId: string): Promise<TrackRow[] | null> 
           name: cohort.name_ar,
           status: cohort.status,
           maxStudents: cohort.max_students,
+          teacherId: cohort.teacher_id,
           activeCount: enrolments.filter(
             (e) => e.status === "active" || e.status === "warned",
           ).length,

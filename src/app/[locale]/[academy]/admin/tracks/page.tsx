@@ -4,7 +4,6 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Route, TriangleAlert, Users } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { BackLink } from "@/components/back-link";
-import { WeekTicks } from "@/components/week-ticks";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
 import { canSupervise } from "@/lib/auth/roles";
@@ -112,6 +111,14 @@ export default async function TracksPage({ params }: PageProps) {
                     count: track.cohorts.length,
                   })}
                   seatsLabel={seatsAcross(track, t)}
+                  unassigned={
+                    track.cohorts.filter((c) => c.teacherId === null).length
+                  }
+                  noTeacherLabel={t("noTeacherCount", {
+                    count: track.cohorts.filter((c) => c.teacherId === null)
+                      .length,
+                  })}
+                  schedulesEmptyLabel={t("schedulesEmpty")}
                 />
               </li>
             ))}
@@ -181,6 +188,9 @@ function TrackCard({
   weeksLabel,
   cohortsLabel,
   seatsLabel,
+  unassigned,
+  noTeacherLabel,
+  schedulesEmptyLabel,
 }: {
   track: TrackRow;
   index: number;
@@ -190,6 +200,9 @@ function TrackCard({
   weeksLabel: string;
   cohortsLabel: string;
   seatsLabel: string;
+  unassigned: number;
+  noTeacherLabel: string;
+  schedulesEmptyLabel: string;
 }) {
   const pending = track.cohorts.reduce((n, c) => n + c.pendingCount, 0);
 
@@ -230,10 +243,6 @@ function TrackCard({
             )}
           </div>
 
-          <div className="mt-2.5">
-            <WeekTicks total={track.durationWeeks} filled={track.publishedWeeks} />
-          </div>
-
           {/*
             Counted, not listed. Twelve chips reading "الدفعة الخامسة ٠/٨"
             said nothing twelve times and made one card taller than the
@@ -242,14 +251,31 @@ function TrackCard({
             there are and whether the seats are filling. The names are one
             tap away, on the track itself.
           */}
-          <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-muted-foreground">
-            <span>{weeksLabel}</span>
-            {track.cohorts.length > 0 && (
-              <>
-                <span>{cohortsLabel}</span>
-                <span className="tabular-nums">{seatsLabel}</span>
-              </>
+          {track.cohorts.length > 0 && (
+            <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-muted-foreground">
+              <span className="font-semibold text-foreground">{cohortsLabel}</span>
+              <span className="tabular-nums">{seatsLabel}</span>
+            </div>
+          )}
+
+          {/*
+            What is still missing, and nothing else. Both chips vanish as the
+            work gets done, so a bare card is the finished state rather than
+            the default one — which is the opposite of a progress bar, whose
+            emptiest reading takes the most ink.
+          */}
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            {unassigned > 0 && (
+              <span className="rounded-full bg-accent-100 px-2 py-0.5 text-[11px] font-bold text-accent-700 dark:bg-accent-700/20 dark:text-accent-200">
+                {noTeacherLabel}
+              </span>
             )}
+            <ScheduleMeter
+              filled={track.publishedWeeks}
+              total={track.durationWeeks}
+              emptyLabel={schedulesEmptyLabel}
+              label={weeksLabel}
+            />
           </div>
         </div>
       </div>
@@ -291,5 +317,63 @@ function SetupPending({
         </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * How much of the forty-week schedule is written.
+ *
+ * Forty hairline ticks do not resolve at phone width, and with none of them
+ * filled they drew a grey smear carrying no number — repeated identically on
+ * all six cards, since none of the six has a single week entered yet. So:
+ *
+ *   nothing entered → no bar at all, just the words. An empty bar reads as a
+ *     broken control rather than as "not started".
+ *   otherwise → ten blocks of four weeks each, chunky enough to count, with
+ *     the part-finished block in a lighter fill, and the number in writing.
+ */
+function ScheduleMeter({
+  filled,
+  total,
+  emptyLabel,
+  label,
+}: {
+  filled: number;
+  total: number;
+  emptyLabel: string;
+  label: string;
+}) {
+  if (filled === 0) {
+    return (
+      <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+        {emptyLabel}
+      </span>
+    );
+  }
+
+  const BLOCKS = 10;
+  const perBlock = total / BLOCKS;
+  const whole = Math.floor(filled / perBlock);
+
+  return (
+    <span className="flex min-w-0 flex-grow items-center gap-2">
+      <span className="flex flex-grow gap-[3px]" aria-hidden="true">
+        {Array.from({ length: BLOCKS }, (_, i) => (
+          <span
+            key={i}
+            className={`h-2 flex-grow rounded-sm ${
+              i < whole
+                ? "bg-brand-600"
+                : i === whole
+                  ? "bg-brand-300"
+                  : "bg-surface-muted"
+            }`}
+          />
+        ))}
+      </span>
+      <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
+        {label}
+      </span>
+    </span>
   );
 }

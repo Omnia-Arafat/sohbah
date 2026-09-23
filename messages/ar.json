@@ -1636,7 +1636,9 @@
     "notReadyFile": "الملف: supabase/migrations/20260921140000_tracks.sql",
     "adminOnly": "إدارة المسارات متاحة للمشرفات والمديرات فقط.",
     "back": "رجوع إلى لوحة المشرف",
-    "cohortCount": "{count} دفعة"
+    "cohortCount": "{count} دفعة",
+    "noTeacherCount": "{count} بلا معلمة",
+    "schedulesEmpty": "الجداول فارغة"
   },
   "track": {
     "notFound": "لا يوجد مسار بهذا العنوان",
