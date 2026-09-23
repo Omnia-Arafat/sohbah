@@ -213,9 +213,6 @@ export default async function AcademyLayout({
           academySlug={academySlug}
           isAdmin={isAdminRole(teacher)}
           canSupervise={canSupervise(teacher)}
-          teacherName={getTeacherDisplayLabel(teacher, academySlug, locale)}
-          roleLabel={tDashboard(`role.${primaryRoleKey(teacher)}`)}
-          signOutAction={signOut.bind(null, academySlug)}
         />
       )}
     </>

@@ -9,7 +9,6 @@ import {
   GraduationCap,
   House,
   LayoutGrid,
-  LogOut,
   Plus,
   Route,
   Tags,
@@ -35,19 +34,12 @@ export function BottomNav({
   academySlug,
   isAdmin,
   canSupervise,
-  teacherName,
-  roleLabel,
-  signOutAction,
 }: {
   academySlug: string;
   isAdmin: boolean;
   /** Supervisors and admins get the reports tab in place of the schedule
    *  tab — the schedule is still one tap away in "المزيد" for them. */
   canSupervise: boolean;
-  teacherName: string;
-  roleLabel: string;
-  /** Bound to this academy by the layout; posted from the sheet. */
-  signOutAction: () => void;
 }) {
   const t = useTranslations("bottomNav");
   const pathname = usePathname();
@@ -60,8 +52,26 @@ export function BottomNav({
       if (event.key === "Escape") setSheetOpen(false);
     }
 
+    /*
+      Freeze the page underneath while the sheet is up.
+
+      The sheet has always been scrollable, but nothing stopped the page
+      behind it, so a drag that ran past the end of the sheet carried on into
+      the page — which then slid around under the dimmed backdrop. That is
+      what made scrolling in here feel broken, and it matters more now that
+      the grid inside scrolls by design.
+
+      The previous value is restored rather than cleared, so this cannot
+      clobber an `overflow` some other screen had set.
+    */
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      document.body.style.overflow = previousOverflow;
+    };
   }, [sheetOpen]);
 
   const home = `/${academySlug}/dashboard`;
@@ -77,38 +87,47 @@ export function BottomNav({
   /*
     Sections that live in the sheet rather than on a tab of their own.
 
-    `group` is the only thing new here. The sheet had grown to a dozen
-    identical tiles in one undifferentiated grid — every feature added one
-    more, and finding "المناهج" meant reading all twelve. Four small headings
-    let the eye jump to a group and then to a tile, and cost no extra tap,
-    which an accordion would. Nothing was renamed, moved out or removed.
+    ORDER IS THE DESIGN. The sheet shows two rows of four and scrolls for the
+    rest, so the first eight entries here are what a reader sees without
+    moving her thumb — the daily ones — and the tail is what gets set up once
+    and then forgotten: which boards the timetable draws, what kinds of حلقة
+    exist.
+
+    The group headings this list used to carry are gone. They cost 84px of a
+    sheet whose whole problem was height, and an icon over a word is
+    recognised by shape, which is the work a heading was doing.
   */
   const sheetLinks = [
+    { href: `/${academySlug}/admin/students`, label: t("students"), Icon: GraduationCap, adminOnly: false, hidden: false },
+    { href: `/${academySlug}/admin/teachers`, label: t("teachers"), Icon: UserCheck, adminOnly: false, hidden: false },
     // A plain teacher already has this as her primary second tab; a
     // supervisor/admin has "التقارير" there instead, so it only needs a
     // place in the sheet for her.
-    { href: schedule, label: t("schedule"), Icon: CalendarDays, group: "circles" as const, adminOnly: false, hidden: !canSupervise },
-    { href: `/${academySlug}/admin/students`, label: t("students"), Icon: GraduationCap, group: "people" as const, adminOnly: false, hidden: false },
+    { href: schedule, label: t("schedule"), Icon: CalendarDays, adminOnly: false, hidden: !canSupervise },
     // A مسار does not get a tab of its own: the five slots below are the five
     // things every role does daily, and a tab for something only a مشرفة
     // touches would push one of them off. Same rule that keeps this sheet
     // from growing back into /admin's old wall of cards.
-    { href: `/${academySlug}/admin/tracks`, label: t("tracks"), Icon: Route, group: "teaching" as const, adminOnly: true, hidden: false },
+    { href: `/${academySlug}/admin/tracks`, label: t("tracks"), Icon: Route, adminOnly: true, hidden: false },
     // Open to every معلمة rather than admin-only: she is the one who prepares
     // the lesson she is about to teach.
-    { href: `/${academySlug}/admin/curricula`, label: t("curricula"), Icon: BookOpen, group: "teaching" as const, adminOnly: false, hidden: false },
+    { href: `/${academySlug}/admin/curricula`, label: t("curricula"), Icon: BookOpen, adminOnly: false, hidden: false },
     // Also open to every معلمة: she writes the quiz on what she taught.
-    { href: `/${academySlug}/admin/quizzes`, label: t("quizzes"), Icon: ClipboardList, group: "teaching" as const, adminOnly: false, hidden: false },
-    { href: `/${academySlug}/admin/teachers`, label: t("teachers"), Icon: UserCheck, group: "people" as const, adminOnly: false, hidden: false },
-    // The mirror image: already a primary tab for her, so listing it again
-    // here would just be clutter.
-    { href: reports, label: t("reports"), Icon: BarChart, group: "teaching" as const, adminOnly: false, hidden: canSupervise },
-    { href: `/${academySlug}/admin/progress`, label: t("progress"), Icon: TrendingUp, group: "teaching" as const, adminOnly: false, hidden: false },
-    { href: `/${academySlug}/admin/circle-types`, label: t("circleTypes"), Icon: Tags, group: "circles" as const, adminOnly: true, hidden: false },
+    { href: `/${academySlug}/admin/quizzes`, label: t("quizzes"), Icon: ClipboardList, adminOnly: false, hidden: false },
+    { href: `/${academySlug}/admin/progress`, label: t("progress"), Icon: TrendingUp, adminOnly: false, hidden: false },
+    // The mirror image of the schedule above: already a primary tab for a
+    // supervisor, so listing it again here would just be clutter.
+    { href: reports, label: t("reports"), Icon: BarChart, adminOnly: false, hidden: canSupervise },
+    // Not a menu of links but a board of alerts and summaries, and it is NOT
+    // a tab — so the sheet is its only way in from a phone.
+    { href: `/${academySlug}/admin`, label: t("adminHome"), Icon: LayoutGrid, adminOnly: false, hidden: false },
+
+    // ---- from here down is below the fold: set once, then forgotten ----
+
     // Boards decide what the public timetable shows, so a مشرفة needs it:
     // she is the one who notices circles missing from the schedule.
-    { href: `/${academySlug}/admin/schedules`, label: t("schedules"), Icon: CalendarDays, group: "circles" as const, adminOnly: false, hidden: !canSupervise },
-    { href: `/${academySlug}/admin`, label: t("adminHome"), Icon: LayoutGrid, group: "circles" as const, adminOnly: false, hidden: false },
+    { href: `/${academySlug}/admin/schedules`, label: t("schedules"), Icon: CalendarDays, adminOnly: false, hidden: !canSupervise },
+    { href: `/${academySlug}/admin/circle-types`, label: t("circleTypes"), Icon: Tags, adminOnly: true, hidden: false },
   ].filter((link) => (!link.adminOnly || isAdmin) && !link.hidden);
 
   return (
@@ -140,60 +159,53 @@ export function BottomNav({
               </button>
             </div>
 
-            {(
-              [
-                // Deliberately NOT groupTeaching/groupSupervision: those two
-                // are the desktop rail's own headings, and reusing a key here
-                // renamed a heading over there.
-                ["circles", t("sheetCircles")],
-                ["people", t("sheetPeople")],
-                ["teaching", t("sheetTeaching")],
-              ] as const
-            ).map(([group, heading]) => {
-              const items = sheetLinks.filter((link) => link.group === group);
-              if (items.length === 0) return null;
-              return (
-                <section key={group}>
-                  <h3 className="px-0.5 pb-1.5 pt-3 text-[11px] font-bold text-muted-foreground">
-                    {heading}
-                  </h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    {items.map(({ href, label, Icon }) => (
-                      <Link
-                        key={href}
-                        href={href}
-                        // Closed here rather than on a route change: a tap that
-                        // navigates should leave the sheet behind it, and doing
-                        // it in the handler keeps it out of an effect.
-                        onClick={() => setSheetOpen(false)}
-                        className="flex min-h-11 items-center gap-2.5 rounded-xl bg-surface-muted px-3
-                                   py-2.5 transition-colors hover:bg-brand-50 dark:hover:bg-brand-900"
-                      >
-                        <Icon
-                          className="h-[18px] w-[18px] shrink-0 text-brand-600 dark:text-brand-300"
-                          aria-hidden="true"
-                        />
-                        <span className="min-w-0 truncate text-sm font-semibold leading-tight">
-                          {label}
-                        </span>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
-              );
-            })}
+            {/*
+              The cap is on the GRID, not on the sheet. That is the whole
+              point: what grows when a section ships is the scrollable length
+              inside it, so the sheet itself stays the height it is today, for
+              good.
 
-            <div className="mt-4 flex items-center justify-between gap-3 border-t border-border-subtle pt-3.5">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-bold">{teacherName}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">{roleLabel}</p>
+              166px is two rows of 72 plus their 6px gap, and then 16 more so
+              the third row's tiles are visibly CUT. A grid cropped exactly at
+              a row boundary looks finished, and nobody drags something that
+              looks finished.
+
+              overscroll-contain keeps the drag in here: without it, reaching
+              the end of this list hands the gesture to the page underneath.
+            */}
+            <div className="relative">
+              <div className="max-h-[166px] overflow-y-auto overscroll-contain">
+                <div className="grid grid-cols-4 gap-1.5">
+                  {sheetLinks.map(({ href, label, Icon }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      // Closed here rather than on a route change: a tap that
+                      // navigates should leave the sheet behind it, and doing
+                      // it in the handler keeps it out of an effect.
+                      onClick={() => setSheetOpen(false)}
+                      className="flex min-h-[72px] flex-col items-center gap-1.5 rounded-xl bg-surface-muted
+                                 px-1 py-2.5 transition-colors hover:bg-brand-50 dark:hover:bg-brand-900"
+                    >
+                      <Icon
+                        className="h-5 w-5 shrink-0 text-brand-600 dark:text-brand-300"
+                        aria-hidden="true"
+                      />
+                      <span className="text-center text-[11px] font-semibold leading-tight">
+                        {label}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
               </div>
-              <form action={signOutAction}>
-                <button type="submit" className="btn-danger inline-flex items-center gap-1.5">
-                  <LogOut className="h-4 w-4" aria-hidden="true" />
-                  {t("signOut")}
-                </button>
-              </form>
+
+              {/* Only drawn when something is actually cut off. */}
+              {sheetLinks.length > 8 && (
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-surface to-transparent"
+                />
+              )}
             </div>
           </div>
         </div>

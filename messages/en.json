@@ -1276,10 +1276,7 @@
     "adhkar": "Adhkar",
     "register": "New student",
     "install": "Install the app",
-    "tracks": "Tracks",
-    "sheetCircles": "Circles",
-    "sheetPeople": "People",
-    "sheetTeaching": "Learning"
+    "tracks": "Tracks"
   },
   "lesson": {
     "today": "Today's lesson",
