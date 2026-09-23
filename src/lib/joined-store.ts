@@ -68,3 +68,23 @@ export function subscribeJoined(listener: () => void) {
     listeners.delete(listener);
   };
 }
+
+/**
+ * "Who am I", kept across circles and across days.
+ *
+ * `joinedKey` above is scoped to one circle on one date, and rightly so: it
+ * answers "am I in TODAY's queue here", which must expire. But it was also
+ * carrying the student's identity, so the same girl was asked to find her own
+ * name again in every other circle, and again the next morning — a search
+ * through the academy's whole roster, every time, for something she had
+ * already told us.
+ *
+ * Identity does not expire, so it gets its own key, scoped to the academy
+ * rather than to a circle or a day. Still browser-only: students have no
+ * accounts, and this is a convenience for a device, not a claim about who
+ * someone is — every write the queue makes is still keyed by the student id
+ * the server resolved, never by this.
+ */
+export function meKey(academySlug: string) {
+  return `sohbah:me:${academySlug}`;
+}

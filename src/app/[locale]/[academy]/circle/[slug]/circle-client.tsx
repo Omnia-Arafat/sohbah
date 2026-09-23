@@ -17,6 +17,7 @@ import {
   getJoined,
   clearJoined,
   joinedKey,
+  meKey,
   setJoined,
   subscribeJoined,
 } from "@/lib/joined-store";
@@ -149,6 +150,21 @@ export function CircleClient({
   const joined = useSyncExternalStore(
     subscribeJoined,
     () => getJoined(storageKey),
+    () => null,
+  );
+
+  /*
+    Who this browser belongs to, remembered across circles and across days —
+    unlike `joined`, which is this circle on this date and must expire.
+
+    Without it, a student who told us her name in one حلقة was asked to find
+    herself again in the next one, and again the next morning: a search
+    through the academy's whole roster every single time, for something she
+    had already answered.
+  */
+  const me = useSyncExternalStore(
+    subscribeJoined,
+    () => getJoined(meKey(academySlug)),
     () => null,
   );
 
@@ -286,6 +302,8 @@ export function CircleClient({
     await refreshQueue();
     shouldScrollRef.current = true;
     setJoined(storageKey, { studentId: student.id, name: student.name });
+    // Remembered for every other circle and every later day, not just here.
+    setJoined(meKey(academySlug), { studentId: student.id, name: student.name });
   }
 
   const myPosition = joined
@@ -354,7 +372,42 @@ export function CircleClient({
         <p className="mt-1 text-sm text-muted-foreground">{t("removed.body")}</p>
       </MotionSection>
 
-      <MotionSection show={!joined && registrationOpen && !isFull} className="card">
+      {/*
+        She has told us her name before, so do not make her find it again.
+        One button joins; the link underneath is the escape hatch for a shared
+        phone — a sister borrowing it must be able to say "not me" and get the
+        search back, or this shortcut becomes a trap that signs in the wrong
+        girl.
+      */}
+      <MotionSection
+        show={!joined && Boolean(me) && registrationOpen && !isFull}
+        className="card"
+      >
+        <p className="text-sm text-muted-foreground">{t("me.question")}</p>
+        <p className="mt-0.5 font-display text-xl font-bold">{me?.name}</p>
+        <button
+          type="button"
+          onClick={() =>
+            me && join({ id: me.studentId, name: me.name, father_name: "" })
+          }
+          disabled={joining !== null}
+          className="btn-primary mt-3 w-full disabled:opacity-60"
+        >
+          {joining ? t("search.joining") : t("me.join")}
+        </button>
+        <button
+          type="button"
+          onClick={() => clearJoined(meKey(academySlug))}
+          className="mt-2 w-full min-h-11 text-sm font-semibold text-muted-foreground underline"
+        >
+          {t("me.notMe")}
+        </button>
+      </MotionSection>
+
+      <MotionSection
+        show={!joined && !me && registrationOpen && !isFull}
+        className="card"
+      >
         <label className="field-label" htmlFor="student-search">
           {t("search.label")}
         </label>

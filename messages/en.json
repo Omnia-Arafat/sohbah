@@ -211,7 +211,7 @@
     "joined": {
       "title": "You are on the list, {name}",
       "position": "You are number {position} in the queue.",
-      "greeting": "Welcome, {name} 🌿"
+      "greeting": "Welcome, {name}"
     },
     "full": {
       "title": "This circle is full",
@@ -241,6 +241,11 @@
     "removed": {
       "title": "Your teacher removed you from the queue",
       "body": "Search for your name below and join again."
+    },
+    "me": {
+      "question": "Joining as",
+      "join": "Join the circle",
+      "notMe": "Not me — search for another name"
     }
   },
   "auth": {
