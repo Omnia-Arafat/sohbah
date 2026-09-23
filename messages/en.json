@@ -1674,7 +1674,8 @@
     "nextWeek": "Next week",
     "jumpToWeek": "Week {n}",
     "needTeacher": "{count} cohorts are waiting for a teacher — tap to assign",
-    "allAtWeek": "All of them are on week {current} of {total}"
+    "allAtWeek": "All of them are on week {current} of {total}",
+    "clusterAtWeek": "{count, plural, one {1 cohort on week {week}} other {# cohorts on week {week}}}"
   },
   "cohortNew": {
     "title": "New cohort",

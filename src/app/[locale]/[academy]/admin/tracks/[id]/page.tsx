@@ -119,6 +119,24 @@ export default async function TrackPage({ params }: PageProps) {
       ? (track.cohorts[0].currentWeek ?? null)
       : null;
 
+  /*
+    How the cohorts are spread through the forty weeks — "٨ في الأسبوع ٢٥ ·
+    ٤ في الأسبوع ٢١".
+
+    This is the shape of a track, and it was invisible: twelve tiles each
+    carrying its own week number tell you WHICH cohort is where but never
+    that there are two clusters. A مسار is one schedule read by cohorts
+    standing at different points in it, so where those points are is the
+    fact the page should open with.
+  */
+  const clusters = [...weeks]
+    .filter((w): w is number => w !== null)
+    .map((week) => ({
+      week,
+      count: track.cohorts.filter((c) => c.currentWeek === week).length,
+    }))
+    .sort((a, b) => b.week - a.week);
+
   return (
     <div className="flex flex-col gap-5">
       <BackLink href={`/${academySlug}/admin/tracks`}>{t("back")}</BackLink>
@@ -191,16 +209,37 @@ export default async function TrackPage({ params }: PageProps) {
               </Link>
             )}
 
-            {/* When every cohort sits at the same week — the normal case, since
-                they start together — that week belongs here rather than on
-                each of the twelve tiles. */}
-            {sharedWeek !== null && (
+            {/* One schedule, read from more than one place in it. When every
+                cohort sits at the same week that is one sentence; when they
+                cluster, the clusters ARE the state of the track. */}
+            {sharedWeek !== null ? (
               <p className="border-b border-border-subtle px-4 py-2 text-xs text-muted-foreground">
                 {t("allAtWeek", {
                   current: sharedWeek,
                   total: track.durationWeeks,
                 })}
               </p>
+            ) : (
+              clusters.length > 1 && (
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-border-subtle px-4 py-2 text-xs text-muted-foreground">
+                  {clusters.map((cluster, i) => (
+                    <span key={cluster.week} className="flex items-center gap-2">
+                      {i > 0 && (
+                        <span
+                          aria-hidden
+                          className="h-1 w-1 rounded-full bg-border-subtle"
+                        />
+                      )}
+                      <span>
+                        {t("clusterAtWeek", {
+                          count: cluster.count,
+                          week: cluster.week,
+                        })}
+                      </span>
+                    </span>
+                  ))}
+                </p>
+              )
             )}
 
             {/*

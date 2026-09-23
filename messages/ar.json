@@ -1674,7 +1674,8 @@
     "nextWeek": "الأسبوع التالي",
     "jumpToWeek": "الأسبوع {n}",
     "needTeacher": "{count} دفعة تنتظر معلمة — اضغطي للإسناد",
-    "allAtWeek": "كلهنّ في الأسبوع {current} من {total}"
+    "allAtWeek": "كلهنّ في الأسبوع {current} من {total}",
+    "clusterAtWeek": "{count, plural, one {دفعة في الأسبوع {week}} two {دفعتان في الأسبوع {week}} few {# دفعات في الأسبوع {week}} many {# دفعة في الأسبوع {week}} other {# دفعة في الأسبوع {week}}}"
   },
   "cohortNew": {
     "title": "دفعة جديدة",
