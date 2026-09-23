@@ -1764,7 +1764,9 @@
       "saveFailed": "Not saved. Try again, and tell the developer if it keeps failing."
     },
     "cumulativeNote": "The week is cumulative: every day begins at the same ayah and the end grows — 2:203–206, then 203–211, then 203–213.",
-    "back": "Back to the track"
+    "back": "Back to the track",
+    "readThisWeek": "{count, plural, one {1 cohort is on this week now} other {# cohorts are on this week now}}",
+    "readNoneYet": "No cohort is on this week yet — every cohort reads it when it gets here, so nothing written here is wasted."
   },
   "cohort": {
     "title": "Cohort",

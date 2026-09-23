@@ -138,3 +138,55 @@ export async function getPreviousWeekEnd(
   if (!last || last.new_to_surah === null) return null;
   return { surah: last.new_to_surah, ayah: last.new_to_ayah ?? 1 };
 }
+
+/**
+ * Which cohorts are sitting on a given week of a track right now.
+ *
+ * The schedule hangs off the TRACK, so "which cohorts does this week apply
+ * to" is not a choice anyone makes — it is a fact of where each cohort has
+ * reached, and it changes by itself every Saturday. Asking the reader to
+ * pick an audience would let her pick a wrong one; showing her the audience
+ * cannot.
+ *
+ * Same arithmetic as track-detail-dal's weekFromStart, deliberately: two
+ * screens disagreeing about which week a cohort is on would be worse than
+ * either being wrong.
+ */
+export async function cohortsOnWeek(
+  trackId: string,
+  weekNumber: number,
+  durationWeeks: number,
+): Promise<{ id: string; name: string; teacherName: string | null }[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("track_cohorts" as never)
+    .select("id, name_ar, start_date, status, teachers(name)")
+    .eq("track_id" as never, trackId as never)
+    .eq("status" as never, "running" as never);
+
+  if (error) {
+    console.error("cohortsOnWeek failed", error);
+    return [];
+  }
+
+  const rows = (data ?? []) as unknown as {
+    id: string;
+    name_ar: string;
+    start_date: string;
+    teachers: { name: string } | null;
+  }[];
+
+  return rows
+    .filter((c) => {
+      const start = new Date(`${c.start_date}T00:00:00Z`).getTime();
+      const days = Math.floor((Date.now() - start) / 86_400_000);
+      if (days < 0) return false;
+      return Math.min(Math.floor(days / 7) + 1, durationWeeks) === weekNumber;
+    })
+    .map((c) => ({
+      id: c.id,
+      name: c.name_ar,
+      teacherName: c.teachers?.name ?? null,
+    }));
+}

@@ -8,7 +8,11 @@ import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
 import { canSupervise } from "@/lib/auth/roles";
 import { getAcademyBySlug } from "@/lib/academy-dal";
-import { getTrackWeek, getPreviousWeekEnd } from "@/lib/track-week-dal";
+import {
+  getTrackWeek,
+  getPreviousWeekEnd,
+  cohortsOnWeek,
+} from "@/lib/track-week-dal";
 import { WeekForm } from "./week-form";
 
 type PageProps = {
@@ -68,6 +72,14 @@ export default async function WeekPage({ params }: PageProps) {
 
   if (weekData === "missing-schema" || !weekData) notFound();
 
+  /*
+    Who this week reaches. Not a setting — a consequence of where each cohort
+    has got to, which moves on its own every week. The question "which
+    cohorts does this apply to" has an answer already, so the screen states
+    it rather than asking.
+  */
+  const readers = await cohortsOnWeek(id, weekNumber, weekData.durationWeeks);
+
   const prev = weekNumber > 1 ? weekNumber - 1 : null;
   const next = weekNumber < weekData.durationWeeks ? weekNumber + 1 : null;
 
@@ -104,6 +116,32 @@ export default async function WeekPage({ params }: PageProps) {
           />
         </div>
       </section>
+
+      {/*
+        Who this week is for. Written once and read by whoever reaches it —
+        so the answer is never "pick some cohorts", it is "these, today, and
+        every cohort that gets here later".
+
+        The empty case is the one that needed saying out loud: filling week
+        30 while everyone is on week 25 looks like writing into a void, and
+        without this line it is easy to think the work went nowhere.
+      */}
+      {readers.length > 0 ? (
+        <section className="rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3 dark:border-brand-700 dark:bg-brand-900/40">
+          <p className="text-xs font-bold text-brand-800 dark:text-brand-100">
+            {t("readThisWeek", { count: readers.length })}
+          </p>
+          <p className="mt-1 text-xs text-brand-800/80 dark:text-brand-100/80">
+            {readers
+              .map((c) => c.teacherName ?? c.name)
+              .join(locale === "ar" ? "، " : ", ")}
+          </p>
+        </section>
+      ) : (
+        <p className="rounded-2xl border border-border-subtle px-4 py-3 text-xs text-muted-foreground">
+          {t("readNoneYet")}
+        </p>
+      )}
 
       <WeekForm
         academySlug={academySlug}
