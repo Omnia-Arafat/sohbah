@@ -1668,7 +1668,12 @@
     "noTeacher": "No teacher yet",
     "rules": "Rules and scoring",
     "rulesNote": "The weekly total, the warning ladder and the absence policy — they apply to every cohort of this track.",
-    "back": "Back to the tracks"
+    "back": "Back to the tracks",
+    "openWeek": "Open the week",
+    "prevWeek": "Previous week",
+    "nextWeek": "Next week",
+    "jumpToWeek": "Week {n}",
+    "moreCohorts": "{count} more cohorts"
   },
   "cohortNew": {
     "title": "New cohort",

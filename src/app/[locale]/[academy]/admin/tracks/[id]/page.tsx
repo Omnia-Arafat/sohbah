@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { CalendarDays, Plus, ScrollText, TriangleAlert } from "lucide-react";
+import {
+  CalendarDays,
+  ChevronDown,
+  Plus,
+  ScrollText,
+  TriangleAlert,
+} from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { BackLink } from "@/components/back-link";
 import { WeekTicks } from "@/components/week-ticks";
+import { WeekBand } from "./week-band";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
 import { canSupervise } from "@/lib/auth/roles";
@@ -12,7 +19,7 @@ import { getAcademyBySlug } from "@/lib/academy-dal";
 import {
   getTrackDetail,
   type TrackCohortDetail,
-  type TrackWeek,
+
 } from "@/lib/track-detail-dal";
 
 type PageProps = {
@@ -20,6 +27,9 @@ type PageProps = {
 };
 
 export const dynamic = "force-dynamic";
+
+/** Cohorts shown before the rest fold away. Roughly a phone screen of them. */
+const VISIBLE_COHORTS = 6;
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
@@ -85,6 +95,18 @@ export default async function TrackPage({ params }: PageProps) {
 
   const publishedWeeks = track.weeks.filter((w) => w.isPublished).length;
 
+  /*
+    The week the band opens on: the furthest any cohort has reached. When two
+    cohorts sit at different weeks the far one is the urgent one — it is the
+    week whose schedule is needed next, and the week behind it is already
+    written.
+  */
+  const focusWeek =
+    track.cohorts.reduce<number | null>(
+      (far, c) => (c.currentWeek && c.currentWeek > (far ?? 0) ? c.currentWeek : far),
+      null,
+    ) ?? null;
+
   return (
     <div className="flex flex-col gap-5">
       <BackLink href={`/${academySlug}/admin/tracks`}>{t("back")}</BackLink>
@@ -135,8 +157,8 @@ export default async function TrackPage({ params }: PageProps) {
             </p>
           </div>
         ) : (
-          <ul>
-            {track.cohorts.map((cohort) => (
+          (() => {
+            const rows = track.cohorts.map((cohort) => (
               <li
                 key={cohort.id}
                 className="border-t border-border-subtle first:border-t-0"
@@ -172,8 +194,35 @@ export default async function TrackPage({ params }: PageProps) {
                   }}
                 />
               </li>
-            ))}
-          </ul>
+            ));
+
+            /*
+              Twelve معلمات on one track is normal here, and twelve rows is
+              more scroll than the schedule below it. Show a screenful; the
+              rest open on demand. <details> rather than state because this
+              page is otherwise a server component and a disclosure triangle
+              is the one interaction the platform already does.
+            */
+            if (rows.length <= VISIBLE_COHORTS) return <ul>{rows}</ul>;
+
+            return (
+              <>
+                <ul>{rows.slice(0, VISIBLE_COHORTS)}</ul>
+                <details className="group border-t border-border-subtle">
+                  <summary className="flex min-h-11 cursor-pointer list-none items-center justify-center gap-1.5 px-4 text-xs font-semibold text-brand-700 dark:text-brand-300">
+                    <ChevronDown
+                      className="h-3.5 w-3.5 transition-transform group-open:rotate-180"
+                      aria-hidden="true"
+                    />
+                    {t("moreCohorts", { count: rows.length - VISIBLE_COHORTS })}
+                  </summary>
+                  <ul className="border-t border-border-subtle">
+                    {rows.slice(VISIBLE_COHORTS)}
+                  </ul>
+                </details>
+              </>
+            );
+          })()
         )}
       </section>
 
@@ -202,28 +251,12 @@ export default async function TrackPage({ params }: PageProps) {
           {t("scheduleNote")}
         </p>
 
-        {/* A dense grid, not forty rows: the point is to see which weeks
-            are done at a glance and open one, not to read them all. */}
-        <ul className="grid grid-cols-2 gap-px bg-border-subtle sm:grid-cols-4 lg:grid-cols-5">
-          {track.weeks.map((week) => (
-            <li key={week.id}>
-              <WeekCell
-                week={week}
-                academySlug={academySlug}
-                trackId={track.id}
-                label={t("weekN", { n: week.weekNumber })}
-                daysLabel={
-                  week.filledDays === 0
-                    ? t("empty")
-                    : t("daysFilled", {
-                        filled: week.filledDays,
-                        total: week.totalDays,
-                      })
-                }
-              />
-            </li>
-          ))}
-        </ul>
+        <WeekBand
+          weeks={track.weeks}
+          academySlug={academySlug}
+          trackId={track.id}
+          currentWeek={focusWeek}
+        />
       </section>
 
       {/* The rules screen is seeded in the database and editable there, but
@@ -316,38 +349,6 @@ function CohortRow({
         <span>{cohort.currentWeek ? labels.week : labels.notStarted}</span>
         <span>{labels.seats}</span>
       </div>
-    </Link>
-  );
-}
-
-function WeekCell({
-  week,
-  academySlug,
-  trackId,
-  label,
-  daysLabel,
-}: {
-  week: TrackWeek;
-  academySlug: string;
-  trackId: string;
-  label: string;
-  daysLabel: string;
-}) {
-  return (
-    <Link
-      href={`/${academySlug}/admin/tracks/${trackId}/weeks/${week.weekNumber}`}
-      className={`flex min-h-16 flex-col justify-center gap-0.5 px-3 py-2.5 transition-colors hover:bg-surface-muted ${
-        week.isPublished ? "bg-brand-50 dark:bg-brand-900/40" : "bg-surface"
-      }`}
-    >
-      <span className="text-sm font-semibold">{label}</span>
-      <span
-        className={`text-[11px] ${
-          week.filledDays === 0 ? "text-muted-foreground" : "text-brand-700 dark:text-brand-300"
-        }`}
-      >
-        {daysLabel}
-      </span>
     </Link>
   );
 }
