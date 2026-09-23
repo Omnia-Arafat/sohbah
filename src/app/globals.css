@@ -157,6 +157,32 @@
 }
 
 @layer components {
+  /*
+   * Put the space back between Quranic words.
+   *
+   * DigitalKhatt's space glyph is 100 units on a 1000-unit em — 0.1em, where
+   * an ordinary Arabic face gives 0.2–0.25. That is not a defect: the file is
+   * a VARIABLE font (CFF2) built for the Madinah page, where lines are
+   * justified by stretching the letters themselves with a kashida axis, not
+   * by opening the gaps. Its narrow space is one input to that machinery.
+   *
+   * We do not drive that machinery — we set the text in a flowing centred
+   * paragraph — so we get the narrow space with none of the stretching, and
+   * the words read as though they were glued together.
+   *
+   * word-spacing is added rather than the font being edited: the .otf is
+   * redistributed under the OFL, the two are reversible in very different
+   * ways, and 0.14em simply brings the gap to where any other Arabic face
+   * would have put it.
+   *
+   * It rides on the `font-quran` utility so every ayah in the app gets it —
+   * the mushaf, the self-test, the recitation sheet, the teaser — without
+   * seven call sites having to remember.
+   */
+  .font-quran {
+    word-spacing: 0.14em;
+  }
+
   .card {
     @apply rounded-2xl border border-border-subtle bg-surface p-5 shadow-sm;
   }
