@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { UserPlus } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { BackLink } from "@/components/back-link";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
 import { canSupervise } from "@/lib/auth/roles";
@@ -64,6 +66,7 @@ export default async function EditCohortPage({ params }: PageProps) {
   const t = await getTranslations("cohortEdit");
   const tTracks = await getTranslations("tracks");
   const tAdmin = await getTranslations("admin");
+  const tCohort = await getTranslations("cohort");
   const session = await getTeacherSession();
 
   if (!session || !isActiveTeacher(session)) {
@@ -108,14 +111,9 @@ export default async function EditCohortPage({ params }: PageProps) {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5">
-      <nav className="text-xs text-muted-foreground">
-        <Link
-          href={`/${academySlug}/admin/tracks/${id}/cohorts/${cohortId}`}
-          className="hover:underline"
-        >
-          {cohort.name_ar}
-        </Link>
-      </nav>
+      <BackLink href={`/${academySlug}/admin/tracks/${id}/cohorts/${cohortId}`}>
+        {t("back")}
+      </BackLink>
 
       <section>
         <h1 className="font-display text-2xl font-bold sm:text-3xl">
@@ -141,6 +139,17 @@ export default async function EditCohortPage({ params }: PageProps) {
           status: cohort.status,
         }}
       />
+
+      {/* Where she is going next. Fixing the date is a stop on the way to the
+          roster, not a destination, and leaving only a small back link at the
+          top made this screen feel like a dead end. */}
+      <Link
+        href={`/${academySlug}/admin/tracks/${id}/cohorts/${cohortId}#add`}
+        className="btn-secondary flex items-center justify-center gap-2"
+      >
+        <UserPlus className="h-4 w-4" aria-hidden="true" />
+        {tCohort("addStudents")}
+      </Link>
     </div>
   );
 }

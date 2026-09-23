@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
+import { BackLink } from "@/components/back-link";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
 import { canSupervise } from "@/lib/auth/roles";
@@ -65,14 +65,9 @@ export default async function NewCohortPage({ params }: PageProps) {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-5">
-      <nav className="text-xs text-muted-foreground">
-        <Link
-          href={`/${academySlug}/admin/tracks/${track.id}`}
-          className="hover:underline"
-        >
-          {track.name}
-        </Link>
-      </nav>
+      <BackLink href={`/${academySlug}/admin/tracks/${track.id}`}>
+        {t("back")}
+      </BackLink>
 
       <section>
         <h1 className="font-display text-2xl font-bold sm:text-3xl">

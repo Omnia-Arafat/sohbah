@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { UserMinus, Pencil } from "lucide-react";
+import { UserMinus, UserPlus, Pencil } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { BackLink } from "@/components/back-link";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
 import { canSupervise } from "@/lib/auth/roles";
@@ -79,14 +80,7 @@ export default async function CohortPage({ params }: PageProps) {
 
   return (
     <div className="flex flex-col gap-5">
-      <nav className="text-xs text-muted-foreground">
-        <Link
-          href={`/${academySlug}/admin/tracks/${id}`}
-          className="hover:underline"
-        >
-          {cohort.trackName}
-        </Link>
-      </nav>
+      <BackLink href={`/${academySlug}/admin/tracks/${id}`}>{t("back")}</BackLink>
 
       <section className="flex items-start gap-3">
         <div className="min-w-0 flex-grow">
@@ -143,11 +137,16 @@ export default async function CohortPage({ params }: PageProps) {
           Adding the existing roster. This is the screen the academy uses
           once per cohort, to stop working on paper.
       --------------------------------------------------------------- */}
-      <section className="overflow-hidden rounded-2xl border border-border-subtle bg-surface">
-        <div className="flex items-center gap-2.5 bg-surface-muted px-4 py-2.5">
-          <h2 className="flex-grow text-sm font-bold text-foreground/80">
-            {t("addTitle")}
-          </h2>
+      {/* The one panel on this page that is louder than the others, because
+          it is the only thing the admin came here to do. The rest of the
+          screen reports; this acts. */}
+      <section
+        id="add"
+        className="overflow-hidden rounded-2xl border border-brand-600 bg-surface"
+      >
+        <div className="flex items-center gap-2.5 bg-brand-900 px-4 py-3 text-white">
+          <UserPlus className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <h2 className="flex-grow text-sm font-bold">{t("addTitle")}</h2>
         </div>
         <p className="border-b border-border-subtle px-4 py-2.5 text-xs leading-relaxed text-muted-foreground">
           {t("addNote")}

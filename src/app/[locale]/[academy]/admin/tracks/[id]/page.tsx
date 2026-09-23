@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { CalendarDays, Plus, ScrollText, TriangleAlert } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { BackLink } from "@/components/back-link";
 import { WeekTicks } from "@/components/week-ticks";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
@@ -86,11 +87,7 @@ export default async function TrackPage({ params }: PageProps) {
 
   return (
     <div className="flex flex-col gap-5">
-      <nav aria-label={t("backToTracks")} className="text-xs text-muted-foreground">
-        <Link href={`/${academySlug}/admin/tracks`} className="hover:underline">
-          {t("backToTracks")}
-        </Link>
-      </nav>
+      <BackLink href={`/${academySlug}/admin/tracks`}>{t("back")}</BackLink>
 
       <section className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
