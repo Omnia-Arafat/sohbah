@@ -3,10 +3,11 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import {
   CalendarDays,
-  ChevronDown,
   Plus,
   ScrollText,
   TriangleAlert,
+  UserPlus,
+  UserRound,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { BackLink } from "@/components/back-link";
@@ -26,9 +27,6 @@ type PageProps = {
 };
 
 export const dynamic = "force-dynamic";
-
-/** Cohorts shown before the rest fold away. Roughly a phone screen of them. */
-const VISIBLE_COHORTS = 6;
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
@@ -106,6 +104,21 @@ export default async function TrackPage({ params }: PageProps) {
       null,
     ) ?? null;
 
+  const unassigned = track.cohorts.filter((c) => !c.teacherName).length;
+  const firstUnassignedId = track.cohorts.find((c) => !c.teacherName)?.id;
+
+  /*
+    The week every cohort shares, or null when they differ. Cohorts of one
+    track normally start together, so printing the same week on each of twelve
+    tiles is the repetition this screen exists to remove — it goes once above
+    them instead. When they genuinely differ, each tile carries its own.
+  */
+  const weeks = new Set(track.cohorts.map((c) => c.currentWeek));
+  const sharedWeek =
+    weeks.size === 1 && track.cohorts.length > 1
+      ? (track.cohorts[0].currentWeek ?? null)
+      : null;
+
   return (
     <div className="flex flex-col gap-5">
       <BackLink href={`/${academySlug}/admin/tracks`}>{t("back")}</BackLink>
@@ -156,71 +169,89 @@ export default async function TrackPage({ params }: PageProps) {
             </p>
           </div>
         ) : (
-          (() => {
-            const rows = track.cohorts.map((cohort) => (
-              <li
-                key={cohort.id}
-                className="border-t border-border-subtle first:border-t-0"
+          <>
+            {/*
+              One fact said once. Twelve rows each reading "بلا معلمة" is the
+              same sentence twelve times; here it is a single line she can act
+              on. Gold, because the app spends gold only on what is waiting
+              for her — and it disappears the moment every cohort has one.
+            */}
+            {unassigned > 0 && (
+              <Link
+                href={`/${academySlug}/admin/tracks/${track.id}/cohorts/${firstUnassignedId}/edit`}
+                className="flex items-center gap-2.5 border-b border-accent-300 bg-accent-100 px-4 py-2.5 dark:border-accent-700 dark:bg-accent-700/20"
               >
-                <CohortRow
-                  cohort={cohort}
-                  href={`/${academySlug}/admin/tracks/${track.id}/cohorts/${cohort.id}`}
-                  locale={locale}
-                  labels={{
-                    week: t("weekOf", {
-                      current: cohort.currentWeek ?? 0,
-                      total: track.durationWeeks,
-                    }),
-                    notStarted: t("notStarted", {
-                      date: new Intl.DateTimeFormat(
-                        locale === "ar" ? "ar-EG" : "en-GB",
-                        { day: "numeric", month: "long" },
-                      ).format(new Date(`${cohort.startDate}T00:00:00Z`)),
-                    }),
-                    seats: cohort.maxStudents
-                      ? t("seats", {
-                          taken: cohort.activeCount,
-                          capacity: cohort.maxStudents,
-                        })
-                      : t("seatsOpen"),
-                    pending:
-                      cohort.pendingCount > 0
-                        ? t("pending", { count: cohort.pendingCount })
-                        : null,
-                    noTeacher: t("noTeacher"),
-                    status: t(statusKey(cohort.status)),
-                  }}
+                <UserPlus
+                  className="h-4 w-4 shrink-0 text-accent-700 dark:text-accent-200"
+                  aria-hidden="true"
                 />
-              </li>
-            ));
+                <span className="flex-grow text-xs font-bold text-accent-700 dark:text-accent-200">
+                  {t("needTeacher", { count: unassigned })}
+                </span>
+              </Link>
+            )}
 
-            /*
-              Twelve معلمات on one track is normal here, and twelve rows is
-              more scroll than the schedule below it. Show a screenful; the
-              rest open on demand. <details> rather than state because this
-              page is otherwise a server component and a disclosure triangle
-              is the one interaction the platform already does.
-            */
-            if (rows.length <= VISIBLE_COHORTS) return <ul>{rows}</ul>;
+            {/* When every cohort sits at the same week — the normal case, since
+                they start together — that week belongs here rather than on
+                each of the twelve tiles. */}
+            {sharedWeek !== null && (
+              <p className="border-b border-border-subtle px-4 py-2 text-xs text-muted-foreground">
+                {t("allAtWeek", {
+                  current: sharedWeek,
+                  total: track.durationWeeks,
+                })}
+              </p>
+            )}
 
-            return (
-              <>
-                <ul>{rows.slice(0, VISIBLE_COHORTS)}</ul>
-                <details className="group border-t border-border-subtle">
-                  <summary className="flex min-h-11 cursor-pointer list-none items-center justify-center gap-1.5 px-4 text-xs font-semibold text-brand-700 dark:text-brand-300">
-                    <ChevronDown
-                      className="h-3.5 w-3.5 transition-transform group-open:rotate-180"
-                      aria-hidden="true"
-                    />
-                    {t("moreCohorts", { count: rows.length - VISIBLE_COHORTS })}
-                  </summary>
-                  <ul className="border-t border-border-subtle">
-                    {rows.slice(VISIBLE_COHORTS)}
-                  </ul>
-                </details>
-              </>
-            );
-          })()
+            {/*
+              A grid, not a folded list. A cohort needs three facts — who
+              teaches it, which one it is, how full it is — and three facts fit
+              a tile two to a line. Twelve tiles are SHORTER than six rows plus
+              a "show the rest" button, and nothing hides behind a tap. An
+              inner scrollbox was the other option and is the one thing ruled
+              out: on a phone it fights the page for the same drag.
+            */}
+            <ul className="grid grid-cols-2 gap-2 p-3 sm:grid-cols-3 lg:grid-cols-4">
+              {track.cohorts.map((cohort) => (
+                <li key={cohort.id}>
+                  <CohortTile
+                    cohort={cohort}
+                    href={`/${academySlug}/admin/tracks/${track.id}/cohorts/${cohort.id}`}
+                    labels={{
+                      // Only when it is NOT what every other cohort says.
+                      week:
+                        sharedWeek === null && cohort.currentWeek
+                          ? t("weekN", { n: cohort.currentWeek })
+                          : sharedWeek === null
+                            ? t("notStarted", {
+                                date: new Intl.DateTimeFormat(
+                                  locale === "ar" ? "ar-EG" : "en-GB",
+                                  { day: "numeric", month: "long" },
+                                ).format(
+                                  new Date(`${cohort.startDate}T00:00:00Z`),
+                                ),
+                              })
+                            : null,
+                      seats: cohort.maxStudents
+                        ? `${cohort.activeCount}/${cohort.maxStudents}`
+                        : String(cohort.activeCount),
+                      pending:
+                        cohort.pendingCount > 0
+                          ? String(cohort.pendingCount)
+                          : null,
+                      // Eleven chips reading "جارية" are the repetition this
+                      // whole screen is losing; only a status that differs
+                      // from the ordinary one is worth the ink.
+                      status:
+                        cohort.status === "running"
+                          ? null
+                          : t(statusKey(cohort.status)),
+                    }}
+                  />
+                </li>
+              ))}
+            </ul>
+          </>
         )}
       </section>
 
@@ -289,71 +320,104 @@ function statusKey(status: string) {
   }
 }
 
-function CohortRow({
+
+/**
+ * One cohort, small enough that twelve of them need no folding.
+ *
+ * The معلمة takes the position the eye checks first, because a cohort IS its
+ * معلمة — "الدفعة السابعة" is a filing number. An unassigned one is a dashed
+ * ring rather than grey italic text, so down a column of twelve the missing
+ * teachers read as a SHAPE rather than as a sentence repeated twelve times.
+ */
+function CohortTile({
   cohort,
   href,
   labels,
 }: {
   cohort: TrackCohortDetail;
   href: string;
-  locale: string;
   labels: {
-    week: string;
-    notStarted: string;
+    /** Null when every cohort shares a week and it is stated once above. */
+    week: string | null;
     seats: string;
     pending: string | null;
-    noTeacher: string;
-    status: string;
+    /** Null while the status is the ordinary "جارية". */
+    status: string | null;
   };
 }) {
+  const assigned = Boolean(cohort.teacherName);
+
   return (
     <Link
       href={href}
-      className="flex flex-col gap-2.5 px-4 py-3 transition-colors hover:bg-surface-muted"
+      className="flex h-full flex-col gap-2 rounded-xl border border-border-subtle p-2.5 transition-colors hover:border-brand-600"
     >
-      {/*
-        Two justified lines, not one wrapping pile. Twelve of these sit under
-        each other, so the eye should be able to run straight down a column:
-        names down one edge, status and seats down the other. The loose
-        arrangement wrapped differently on every row depending on how long the
-        معلمة's name was, which is what made the list read as unsorted.
-      */}
-      <div className="flex items-baseline gap-2">
-        <h3 className="min-w-0 flex-grow truncate text-sm font-bold">
-          {cohort.name}
-        </h3>
-        {labels.pending && (
-          <span className="shrink-0 rounded-full bg-accent-500 px-2 py-0.5 text-[11px] font-semibold text-white">
-            {labels.pending}
+      <div className="flex items-center gap-2">
+        {assigned ? (
+          <span
+            aria-hidden="true"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-600 font-display text-sm font-bold text-white"
+          >
+            {/* Array spread, not [0]: an Arabic name can open with a surrogate
+                pair, and slicing one in half prints a replacement glyph. */}
+            {[...cohort.teacherName!][0]}
+          </span>
+        ) : (
+          <span
+            aria-hidden="true"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-border-subtle text-muted-foreground"
+          >
+            <UserRound className="h-3.5 w-3.5" />
           </span>
         )}
-        <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
-            cohort.status === "running"
-              ? "bg-brand-50 text-brand-700 dark:bg-brand-900 dark:text-brand-100"
-              : cohort.status === "registering"
-                ? "bg-accent-100 text-accent-700 dark:bg-accent-700/20 dark:text-accent-200"
-                : "bg-surface-muted text-muted-foreground"
-          }`}
-        >
-          {labels.status}
+        <span className="min-w-0 flex-grow truncate text-[13px] font-bold">
+          {cohort.teacherName ?? cohort.name}
         </span>
       </div>
 
-      <div className="flex items-baseline gap-2 text-xs text-muted-foreground">
+      {(assigned || labels.week || labels.status || labels.pending) && (
+        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] text-muted-foreground">
+          {assigned && <span className="truncate">{cohort.name}</span>}
+          {labels.week && <span>{labels.week}</span>}
+          {labels.status && (
+            <span className="rounded-full bg-surface-muted px-1.5 py-0.5 font-medium">
+              {labels.status}
+            </span>
+          )}
+          {labels.pending && (
+            <span className="rounded-full bg-accent-500 px-1.5 py-0.5 font-bold text-white">
+              {labels.pending}
+            </span>
+          )}
+        </div>
+      )}
+
+      <div className="mt-auto flex items-center gap-1.5">
+        {/* Eight pips are counted by looking; "٠ من ٨" is read. The number
+            stays beside them for the screen reader and for a cohort whose
+            capacity is not eight. */}
+        <span className="flex flex-grow flex-wrap gap-[3px]" aria-hidden="true">
+          {cohort.maxStudents !== null &&
+            Array.from({ length: cohort.maxStudents }, (_, i) => (
+              <span
+                key={i}
+                className={`h-1.5 w-1.5 rounded-full ${
+                  i < cohort.activeCount ? "bg-brand-500" : "bg-surface-muted"
+                }`}
+              />
+            ))}
+        </span>
         <span
-          className={`min-w-0 flex-grow truncate ${
-            cohort.teacherName ? "" : "italic"
+          className={`shrink-0 text-[11px] tabular-nums ${
+            cohort.maxStudents !== null &&
+            cohort.activeCount >= cohort.maxStudents
+              ? "font-bold text-brand-700 dark:text-brand-300"
+              : "text-muted-foreground"
           }`}
         >
-          {cohort.teacherName ?? labels.noTeacher}
+          {labels.seats}
         </span>
-        <span className="shrink-0 tabular-nums">
-          {cohort.currentWeek ? labels.week : labels.notStarted}
-        </span>
-        <span className="shrink-0 tabular-nums">{labels.seats}</span>
       </div>
-
     </Link>
   );
 }

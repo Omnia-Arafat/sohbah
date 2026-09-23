@@ -1674,7 +1674,8 @@
     "prevWeek": "الأسبوع السابق",
     "nextWeek": "الأسبوع التالي",
     "jumpToWeek": "الأسبوع {n}",
-    "moreCohorts": "{count} دفعة أخرى"
+    "needTeacher": "{count} دفعة تنتظر معلمة — اضغطي للإسناد",
+    "allAtWeek": "كلهنّ في الأسبوع {current} من {total}"
   },
   "cohortNew": {
     "title": "دفعة جديدة",
