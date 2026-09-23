@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { UserMinus } from "lucide-react";
+import { UserMinus, Pencil } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
@@ -39,6 +39,7 @@ export default async function CohortPage({ params }: PageProps) {
   const tTrack = await getTranslations("track");
   const tTracks = await getTranslations("tracks");
   const tAdmin = await getTranslations("admin");
+  const tEdit = await getTranslations("cohortEdit");
   const session = await getTeacherSession();
 
   if (!session || !isActiveTeacher(session)) {
@@ -87,16 +88,31 @@ export default async function CohortPage({ params }: PageProps) {
         </Link>
       </nav>
 
-      <section>
-        <h1 className="font-display text-2xl font-bold sm:text-3xl">
-          {cohort.name}
-        </h1>
-        <p className="mt-1.5 text-sm text-muted-foreground">
-          {[
-            cohort.teacherName ?? tTrack("noTeacher"),
-            t("startedOn", { date: startLabel }),
-          ].join(" · ")}
-        </p>
+      <section className="flex items-start gap-3">
+        <div className="min-w-0 flex-grow">
+          <h1 className="font-display text-2xl font-bold sm:text-3xl">
+            {cohort.name}
+          </h1>
+          {/* The teacher and the start date, because the start date is the one
+              field a mistake hides behind: it decides the week number and which
+              weekday is "اليوم الأول". Printing it here is how a wrong one gets
+              noticed; the pencil is how it gets fixed. */}
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            {[
+              cohort.teacherName ?? tTrack("noTeacher"),
+              t("startedOn", { date: startLabel }),
+            ].join(" · ")}
+          </p>
+        </div>
+
+        <Link
+          href={`/${academySlug}/admin/tracks/${id}/cohorts/${cohort.id}/edit`}
+          title={tEdit("edit")}
+          aria-label={tEdit("edit")}
+          className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg border border-border-subtle px-3 text-sm text-muted-foreground transition-colors hover:border-brand-500 hover:text-brand-700"
+        >
+          <Pencil className="h-4 w-4" aria-hidden="true" />
+        </Link>
       </section>
 
       {/* Seats, plainly. The number the admin needs before adding anyone. */}

@@ -1784,5 +1784,39 @@
       "alreadyOnATrack": "One of them is already on another track — two tracks are not allowed.",
       "saveFailed": "Not saved. Try again, and tell the developer if it keeps failing."
     }
+  },
+  "cohortEdit": {
+    "title": "Edit the cohort",
+    "subtitle": "On {track}.",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "edit": "Edit the cohort",
+    "preview": "With this date: the cohort is in week {week}, and \"day one\" is {weekday}.",
+    "previewFuture": "A future date — the cohort has not started. \"Day one\" will be {weekday}.",
+    "fields": {
+      "name": "Cohort name",
+      "startDate": "Start date",
+      "capacity": "Seats",
+      "capacityHint": "Leave empty for no cap.",
+      "teacher": "Teacher",
+      "teacherNone": "Assign later",
+      "status": "Status"
+    },
+    "status": {
+      "draft": "Draft",
+      "registering": "Registration open",
+      "running": "Running",
+      "paused": "Paused",
+      "finished": "Finished"
+    },
+    "errors": {
+      "notAuthorized": "Editing cohorts is limited to supervisors and admins.",
+      "notFound": "Cohort not found.",
+      "nameRequired": "Give the cohort a name.",
+      "startRequired": "Choose a start date.",
+      "capacityInvalid": "Seats must be a whole number above zero.",
+      "statusInvalid": "Unknown status.",
+      "saveFailed": "Not saved. Try again, and tell the developer if it keeps failing."
+    }
   }
 }
