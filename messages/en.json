@@ -1638,7 +1638,8 @@
     "notReadyNote": "This screen reads tables created by the tracks migration. Apply it to the database, then reload.",
     "notReadyFile": "File: supabase/migrations/20260921140000_tracks.sql",
     "adminOnly": "Managing tracks is limited to supervisors and admins.",
-    "back": "Back to the admin board"
+    "back": "Back to the admin board",
+    "cohortCount": "{count} cohorts"
   },
   "track": {
     "notFound": "No track at this address",

@@ -19,7 +19,6 @@ import { getAcademyBySlug } from "@/lib/academy-dal";
 import {
   getTrackDetail,
   type TrackCohortDetail,
-
 } from "@/lib/track-detail-dal";
 
 type PageProps = {
@@ -165,7 +164,6 @@ export default async function TrackPage({ params }: PageProps) {
               >
                 <CohortRow
                   cohort={cohort}
-                  durationWeeks={track.durationWeeks}
                   href={`/${academySlug}/admin/tracks/${track.id}/cohorts/${cohort.id}`}
                   locale={locale}
                   labels={{
@@ -293,12 +291,10 @@ function statusKey(status: string) {
 
 function CohortRow({
   cohort,
-  durationWeeks,
   href,
   labels,
 }: {
   cohort: TrackCohortDetail;
-  durationWeeks: number;
   href: string;
   locale: string;
   labels: {
@@ -358,12 +354,6 @@ function CohortRow({
         <span className="shrink-0 tabular-nums">{labels.seats}</span>
       </div>
 
-      <WeekTicks
-        total={durationWeeks}
-        filled={0}
-        currentWeek={cohort.currentWeek}
-        height={8}
-      />
     </Link>
   );
 }

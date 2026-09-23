@@ -108,6 +108,10 @@ export default async function TracksPage({ params }: PageProps) {
                     published: track.publishedWeeks,
                     total: track.durationWeeks,
                   })}
+                  cohortsLabel={t("cohortCount", {
+                    count: track.cohorts.length,
+                  })}
+                  seatsLabel={seatsAcross(track, t)}
                 />
               </li>
             ))}
@@ -156,6 +160,18 @@ async function Totals({
   );
 }
 
+/**
+ * Seats across all of a track's cohorts.
+ *
+ * A track with no capacity set anywhere reads "بلا حدّ" rather than a total
+ * of zero, which would look like a full track with nowhere to put anyone.
+ */
+function seatsAcross(track: TrackRow, t: (k: string, v?: Record<string, number>) => string) {
+  const taken = track.cohorts.reduce((n, c) => n + c.activeCount, 0);
+  const capacity = track.cohorts.reduce((n, c) => n + (c.maxStudents ?? 0), 0);
+  return capacity === 0 ? t("noSeatCap") : t("seatsOf", { taken, capacity });
+}
+
 function TrackCard({
   track,
   index,
@@ -163,6 +179,8 @@ function TrackCard({
   inactiveLabel,
   locale,
   weeksLabel,
+  cohortsLabel,
+  seatsLabel,
 }: {
   track: TrackRow;
   index: number;
@@ -170,6 +188,8 @@ function TrackCard({
   inactiveLabel: string;
   locale: string;
   weeksLabel: string;
+  cohortsLabel: string;
+  seatsLabel: string;
 }) {
   const pending = track.cohorts.reduce((n, c) => n + c.pendingCount, 0);
 
@@ -214,25 +234,22 @@ function TrackCard({
             <WeekTicks total={track.durationWeeks} filled={track.publishedWeeks} />
           </div>
 
-          <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
-            <span className="text-xs text-muted-foreground">{weeksLabel}</span>
-            {track.cohorts.map((cohort) => (
-              <span
-                key={cohort.id}
-                className={`rounded-full px-2.5 py-1 text-xs ${
-                  cohort.status === "registering"
-                    ? "bg-accent-100 text-accent-700 dark:bg-accent-700/20 dark:text-accent-200"
-                    : "bg-surface-muted text-foreground/80"
-                }`}
-              >
-                <span className="font-medium">{cohort.name}</span>
-                <span className="text-muted-foreground">
-                  {" "}
-                  {cohort.activeCount}
-                  {cohort.maxStudents ? `/${cohort.maxStudents}` : ""}
-                </span>
-              </span>
-            ))}
+          {/*
+            Counted, not listed. Twelve chips reading "الدفعة الخامسة ٠/٨"
+            said nothing twelve times and made one card taller than the
+            screen — and a list of six tracks is for choosing which one to
+            open, so the only cohort facts that belong here are how many
+            there are and whether the seats are filling. The names are one
+            tap away, on the track itself.
+          */}
+          <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-muted-foreground">
+            <span>{weeksLabel}</span>
+            {track.cohorts.length > 0 && (
+              <>
+                <span>{cohortsLabel}</span>
+                <span className="tabular-nums">{seatsLabel}</span>
+              </>
+            )}
           </div>
         </div>
       </div>
