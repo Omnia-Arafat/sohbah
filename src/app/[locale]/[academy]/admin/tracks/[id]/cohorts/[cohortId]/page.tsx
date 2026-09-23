@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { UserMinus, UserPlus, Pencil } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { BackLink } from "@/components/back-link";
+import { BackLink, ChevronForward } from "@/components/back-link";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
 import { canSupervise } from "@/lib/auth/roles";
@@ -37,7 +37,7 @@ export default async function CohortPage({ params }: PageProps) {
   if (!academy) notFound();
 
   const t = await getTranslations("cohort");
-  const tTrack = await getTranslations("track");
+
   const tTracks = await getTranslations("tracks");
   const tAdmin = await getTranslations("admin");
   const tEdit = await getTranslations("cohortEdit");
@@ -87,15 +87,16 @@ export default async function CohortPage({ params }: PageProps) {
           <h1 className="font-display text-2xl font-bold sm:text-3xl">
             {cohort.name}
           </h1>
-          {/* The teacher and the start date, because the start date is the one
-              field a mistake hides behind: it decides the week number and which
-              weekday is "اليوم الأول". Printing it here is how a wrong one gets
-              noticed; the pencil is how it gets fixed. */}
+          {/* The start date is the one field a mistake hides behind: it decides
+              the week number and which weekday is "اليوم الأول". Printing it
+              here is how a wrong one gets noticed; the pencil is how it gets
+              fixed. The معلمة is no longer in this line — see below. */}
           <p className="mt-1.5 text-sm text-muted-foreground">
-            {[
-              cohort.teacherName ?? tTrack("noTeacher"),
-              t("startedOn", { date: startLabel }),
-            ].join(" · ")}
+            {cohort.teacherName
+              ? [cohort.teacherName, t("startedOn", { date: startLabel })].join(
+                  " · ",
+                )
+              : t("startedOn", { date: startLabel })}
           </p>
         </div>
 
@@ -109,48 +110,103 @@ export default async function CohortPage({ params }: PageProps) {
         </Link>
       </section>
 
-      {/* Seats, plainly. The number the admin needs before adding anyone. */}
-      <section className="flex overflow-hidden rounded-2xl border border-border-subtle bg-surface">
-        <div className="flex-grow px-2 py-4 text-center">
-          <p className="text-2xl font-bold leading-tight">
-            {cohort.enrolled.length}
-          </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">{t("onTrack")}</p>
-        </div>
-        <div aria-hidden="true" className="w-px bg-border-subtle" />
-        <div className="flex-grow px-2 py-4 text-center">
-          <p className="text-2xl font-bold leading-tight">
-            {seatsLeft === null ? "—" : seatsLeft}
-          </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">{t("free")}</p>
-        </div>
-        <div aria-hidden="true" className="w-px bg-border-subtle" />
-        <div className="flex-grow px-2 py-4 text-center">
-          <p className="text-2xl font-bold leading-tight">
-            {cohort.waiting.length}
-          </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">{t("waiting")}</p>
-        </div>
+      {/*
+        The most consequential gap on the screen, and it used to be a grey
+        caption under the title — the quietest voice on the page for the one
+        thing that stops the cohort running. Gold, and a button rather than a
+        statement. It disappears the moment she has one.
+      */}
+      {!cohort.teacherName && (
+        <Link
+          href={`/${academySlug}/admin/tracks/${id}/cohorts/${cohort.id}/edit`}
+          className="flex min-h-14 items-center gap-2.5 rounded-2xl border border-accent-300 bg-accent-100 px-4 dark:border-accent-700 dark:bg-accent-700/20"
+        >
+          <UserPlus
+            className="h-[18px] w-[18px] shrink-0 text-accent-700 dark:text-accent-200"
+            aria-hidden="true"
+          />
+          <span className="min-w-0 flex-grow">
+            <span className="block text-sm font-bold text-accent-700 dark:text-accent-200">
+              {t("assignTeacher")}
+            </span>
+            <span className="block text-xs text-accent-700/85 dark:text-accent-200/85">
+              {t("assignTeacherNote")}
+            </span>
+          </span>
+          <ChevronForward className="h-4 w-4" />
+        </Link>
+      )}
+
+      {/*
+        One line, not three boxes. "١ ملتحقة / ٧ شاغر / ٠ في الانتظار" is the
+        same fact three times — the second is the first subtracted from the
+        capacity — and the third was zero and stays zero until someone
+        applies, so it earns its place only when it is not.
+
+        The pips carry the ratio without arithmetic; the words carry it for a
+        screen reader and for a cohort whose capacity is not eight.
+      */}
+      <section className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-border-subtle bg-surface px-4 py-3">
+        {cohort.maxStudents !== null && (
+          <span
+            className="flex shrink-0 gap-1"
+            role="img"
+            aria-label={t("seatsTaken", {
+              taken: cohort.enrolled.length,
+              capacity: cohort.maxStudents,
+            })}
+          >
+            {Array.from({ length: cohort.maxStudents }, (_, i) => (
+              <span
+                key={i}
+                className={`h-2.5 w-2.5 rounded-full ${
+                  i < cohort.enrolled.length ? "bg-brand-500" : "bg-surface-muted"
+                }`}
+              />
+            ))}
+          </span>
+        )}
+        <p className="min-w-0 flex-grow text-xs text-muted-foreground">
+          <span className="font-bold text-foreground">
+            {cohort.maxStudents === null
+              ? cohort.enrolled.length
+              : t("seatsTaken", {
+                  taken: cohort.enrolled.length,
+                  capacity: cohort.maxStudents,
+                })}
+          </span>
+          {seatsLeft !== null && ` · ${t("seatsFree", { count: seatsLeft })}`}
+        </p>
+        {cohort.waiting.length > 0 && (
+          <span className="shrink-0 rounded-full bg-accent-500 px-2.5 py-0.5 text-[11px] font-bold text-white">
+            {t("waitingCount", { count: cohort.waiting.length })}
+          </span>
+        )}
       </section>
 
       {/* ---------------------------------------------------------------
           Adding the existing roster. This is the screen the academy uses
           once per cohort, to stop working on paper.
       --------------------------------------------------------------- */}
-      {/* The one panel on this page that is louder than the others, because
-          it is the only thing the admin came here to do. The rest of the
-          screen reports; this acts. */}
+      {/*
+        The panel that acts, and nothing but.
+
+        It had a dark banner, a three-line explanation and a hint box wrapped
+        around one empty search field — several times more chrome than
+        control, for a panel whose entire job is "type a name". A heading and
+        the field say the same thing and leave the roster room to be seen.
+      */}
       <section
         id="add"
-        className="overflow-hidden rounded-2xl border border-brand-600 bg-surface"
+        className="overflow-hidden rounded-2xl border border-border-subtle bg-surface"
       >
-        <div className="flex items-center gap-2.5 bg-brand-900 px-4 py-3 text-white">
-          <UserPlus className="h-4 w-4 shrink-0" aria-hidden="true" />
+        <div className="flex items-center gap-2 px-4 pb-1 pt-3.5">
+          <UserPlus
+            className="h-4 w-4 shrink-0 text-brand-600 dark:text-brand-300"
+            aria-hidden="true"
+          />
           <h2 className="flex-grow text-sm font-bold">{t("addTitle")}</h2>
         </div>
-        <p className="border-b border-border-subtle px-4 py-2.5 text-xs leading-relaxed text-muted-foreground">
-          {t("addNote")}
-        </p>
         <AddStudents
           academySlug={academySlug}
           trackId={id}
@@ -183,10 +239,12 @@ export default async function CohortPage({ params }: PageProps) {
               >
                 <span className="min-w-0 flex-grow truncate text-sm">
                   {enrolment.studentName}
-                  <span className="text-muted-foreground">
-                    {" "}
-                    {enrolment.fatherName}
-                  </span>
+                  {enrolment.fatherName && (
+                    <span className="text-muted-foreground">
+                      {" "}
+                      {enrolment.fatherName}
+                    </span>
+                  )}
                 </span>
 
                 {/* A plain form, so removal works without JavaScript and
@@ -229,10 +287,12 @@ export default async function CohortPage({ params }: PageProps) {
               >
                 <p className="truncate text-sm">
                   {enrolment.studentName}
-                  <span className="text-muted-foreground">
-                    {" "}
-                    {enrolment.fatherName}
-                  </span>
+                  {enrolment.fatherName && (
+                    <span className="text-muted-foreground">
+                      {" "}
+                      {enrolment.fatherName}
+                    </span>
+                  )}
                 </p>
               </li>
             ))}

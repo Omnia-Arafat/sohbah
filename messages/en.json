@@ -1804,7 +1804,12 @@
     "goToRoster": "Add students",
     "searchHint": "Type the first letters of a name to search {count} students",
     "narrowSearch": "and {count} more — type more to narrow it",
-    "removeChosen": "Remove {name} from the selection"
+    "removeChosen": "Remove {name} from the selection",
+    "assignTeacher": "Assign a teacher",
+    "assignTeacherNote": "The cohort does not start without one",
+    "seatsTaken": "{taken} of {capacity}",
+    "seatsFree": "{count, plural, =0 {no seats left} one {1 seat left} other {# seats left}}",
+    "waitingCount": "{count, plural, one {1 waiting} other {# waiting}}"
   },
   "cohortEdit": {
     "title": "Edit the cohort",

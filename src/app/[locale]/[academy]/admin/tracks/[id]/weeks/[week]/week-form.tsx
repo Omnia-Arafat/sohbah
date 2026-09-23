@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { useTranslations } from "next-intl";
 import { SURAHS, surahByNumber } from "@/lib/quran/surahs";
@@ -138,12 +138,14 @@ export function WeekForm({
     strip moves to it — otherwise the form reads as refusing to save for no
     visible reason.
   */
-  useEffect(() => {
+  const [lastError, setLastError] = useState(state.error);
+  if (state.error !== lastError) {
+    setLastError(state.error);
     const failed = Number(state.error?.split(":")[1]);
     if (Number.isInteger(failed) && failed >= 0 && failed < drafts.length) {
       setDay(failed);
     }
-  }, [state.error, drafts.length]);
+  }
 
   function set(i: number, patch: Partial<Draft>) {
     setDrafts((prev) => prev.map((d, j) => (j === i ? { ...d, ...patch } : d)));

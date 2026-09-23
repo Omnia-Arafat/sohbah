@@ -89,7 +89,7 @@ export async function getCohort(
     id: e.id,
     studentId: e.student_id,
     studentName: e.students?.name ?? "",
-    fatherName: e.students?.father_name ?? "",
+    fatherName: realFatherName(e.students?.father_name),
     status: e.status,
     requestedAt: e.requested_at,
     joinedAt: e.joined_at,
@@ -116,6 +116,23 @@ export async function getCohort(
       // Oldest request first: a queue served out of order is not a queue.
       .sort((a, b) => a.requestedAt.localeCompare(b.requestedAt)),
   };
+}
+
+/**
+ * A father's name, or "" when there is not really one on file.
+ *
+ * 172 of the academy's students carry a literal "-" in `father_name`, left by
+ * the import that filled a required column with a placeholder. Rendered
+ * straight, every roster row reads "ندى مجدي -", which looks like broken
+ * data rather than a missing field.
+ *
+ * Fixed here rather than in the table: the rows are real student records on a
+ * live site, a display convention is reversible, and an UPDATE over 172 of
+ * them is not.
+ */
+function realFatherName(value: string | null | undefined): string {
+  const trimmed = (value ?? "").trim();
+  return trimmed === "-" || trimmed === "—" ? "" : trimmed;
 }
 
 export type Candidate = { id: string; name: string; fatherName: string };
@@ -162,5 +179,9 @@ export async function listAddableStudents(
 
   return (studentsResult.data ?? [])
     .filter((s) => !taken.has(s.id))
-    .map((s) => ({ id: s.id, name: s.name, fatherName: s.father_name }));
+    .map((s) => ({
+      id: s.id,
+      name: s.name,
+      fatherName: realFatherName(s.father_name),
+    }));
 }

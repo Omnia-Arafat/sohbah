@@ -200,10 +200,12 @@ export function AddStudents({
                   />
                   <span className="min-w-0 flex-grow truncate text-sm">
                     {candidate.name}
-                    <span className="text-muted-foreground">
-                      {" "}
-                      {candidate.fatherName}
-                    </span>
+                    {candidate.fatherName && (
+                      <span className="text-muted-foreground">
+                        {" "}
+                        {candidate.fatherName}
+                      </span>
+                    )}
                   </span>
                 </label>
               </li>

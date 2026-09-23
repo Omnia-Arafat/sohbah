@@ -1804,7 +1804,12 @@
     "goToRoster": "إضافة الطالبات",
     "searchHint": "اكتبي أول حروف الاسم للبحث بين {count} طالبة",
     "narrowSearch": "و{count} أخريات — اكتبي المزيد لتضييق البحث",
-    "removeChosen": "إزالة {name} من الاختيار"
+    "removeChosen": "إزالة {name} من الاختيار",
+    "assignTeacher": "أسندي معلمة",
+    "assignTeacherNote": "الدفعة لا تبدأ بدونها",
+    "seatsTaken": "{taken} من {capacity}",
+    "seatsFree": "{count, plural, =0 {لا مقاعد شاغرة} one {مقعد شاغر واحد} two {مقعدان شاغران} few {# مقاعد شاغرة} many {# مقعداً شاغراً} other {# مقعد شاغر}}",
+    "waitingCount": "{count, plural, one {واحدة بالانتظار} two {اثنتان بالانتظار} few {# بالانتظار} many {# بالانتظار} other {# بالانتظار}}"
   },
   "cohortEdit": {
     "title": "تعديل الدفعة",
