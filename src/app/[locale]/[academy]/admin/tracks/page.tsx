@@ -93,7 +93,11 @@ export default async function TracksPage({ params }: PageProps) {
         </section>
       ) : (
         <>
-          <Totals tracks={tracks} enrolledLabel={t("enrolled")} note={t("enrolledNote")} />
+          <Totals
+            tracks={tracks}
+            enrolledLabel={(count) => t("enrolled", { count })}
+            note={t("enrolledNote")}
+          />
           <ul className="flex flex-col gap-3">
             {tracks.map((track, i) => (
               <li key={track.id}>
@@ -136,7 +140,13 @@ async function Totals({
   note,
 }: {
   tracks: TrackRow[];
-  enrolledLabel: string;
+  /*
+    Takes the count, because Arabic counts differently at one, two, and three
+    to ten: "١ ملتحقات" was ungrammatical the moment a single student was
+    enrolled. The numeral is drawn separately and large, so each plural form
+    is the noun as it is counted rather than a whole sentence.
+  */
+  enrolledLabel: (count: number) => string;
   note: string;
 }) {
   const enrolled = tracks.reduce(
@@ -160,7 +170,7 @@ async function Totals({
           aria-hidden="true"
         />
         <p className="text-2xl font-bold">{enrolled}</p>
-        <p className="text-sm text-muted-foreground">{enrolledLabel}</p>
+        <p className="text-sm text-muted-foreground">{enrolledLabel(enrolled)}</p>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">{note}</p>
     </section>
@@ -223,14 +233,7 @@ function TrackCard({
 
         <div className="min-w-0 flex-grow">
           <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-            <h2 className="font-semibold">{track.name}</h2>
-            {/* The range belongs beside the name, not on a line of its own:
-                it is what tells two tracks apart. */}
-            {track.scope && (
-              <span className="min-w-0 truncate text-sm text-muted-foreground">
-                {track.scope}
-              </span>
-            )}
+            <h2 className="min-w-0 flex-grow font-semibold">{track.name}</h2>
             {pending > 0 && (
               <span className="rounded-full bg-accent-500 px-2 py-0.5 text-[11px] font-semibold text-white">
                 {pending}
@@ -242,6 +245,18 @@ function TrackCard({
               </span>
             )}
           </div>
+
+          {/*
+            The range moves off the name's baseline and down a size. Beside
+            it, at text-sm, it was reading as part of the heading and the two
+            competed for the same glance; the name is what she is choosing
+            between, and the range is how she confirms she chose right.
+          */}
+          {track.scope && (
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+              {track.scope}
+            </p>
+          )}
 
           {/*
             Counted, not listed. Twelve chips reading "الدفعة الخامسة ٠/٨"

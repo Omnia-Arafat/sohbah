@@ -1626,7 +1626,7 @@
     "seats": "Seats",
     "seatsOf": "{taken} of {capacity}",
     "requests": "Applications",
-    "enrolled": "Enrolled on a track",
+    "enrolled": "{count, plural, one {enrolled on a track} other {enrolled on a track}}",
     "enrolledNote": "A track is optional — the other students are in circles.",
     "noSeatCap": "no cap",
     "empty": "No tracks yet",
@@ -1636,8 +1636,8 @@
     "notReadyFile": "File: supabase/migrations/20260921140000_tracks.sql",
     "adminOnly": "Managing tracks is limited to supervisors and admins.",
     "back": "Back to the admin board",
-    "cohortCount": "{count} cohorts",
-    "noTeacherCount": "{count} without a teacher",
+    "cohortCount": "{count, plural, one {1 cohort} other {# cohorts}}",
+    "noTeacherCount": "{count, plural, one {1 without a teacher} other {# without a teacher}}",
     "schedulesEmpty": "No schedules yet"
   },
   "track": {

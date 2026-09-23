@@ -1626,7 +1626,7 @@
     "seats": "المقاعد",
     "seatsOf": "{taken} من {capacity}",
     "requests": "طلبات الالتحاق",
-    "enrolled": "ملتحقات بمسار",
+    "enrolled": "{count, plural, one {ملتحقة بمسار} two {ملتحقتان بمسار} few {ملتحقات بمسار} many {ملتحقة بمسار} other {ملتحقة بمسار}}",
     "enrolledNote": "المسار اختياري — بقية الطالبات في الحلقات.",
     "noSeatCap": "بلا حدّ",
     "empty": "لا مسارات بعد",
@@ -1636,8 +1636,8 @@
     "notReadyFile": "الملف: supabase/migrations/20260921140000_tracks.sql",
     "adminOnly": "إدارة المسارات متاحة للمشرفات والمديرات فقط.",
     "back": "رجوع إلى لوحة المشرف",
-    "cohortCount": "{count} دفعة",
-    "noTeacherCount": "{count} بلا معلمة",
+    "cohortCount": "{count, plural, one {دفعة واحدة} two {دفعتان} few {# دفعات} many {# دفعة} other {# دفعة}}",
+    "noTeacherCount": "{count, plural, one {دفعة بلا معلمة} two {دفعتان بلا معلمة} few {# دفعات بلا معلمة} many {# دفعة بلا معلمة} other {# دفعة بلا معلمة}}",
     "schedulesEmpty": "الجداول فارغة"
   },
   "track": {
