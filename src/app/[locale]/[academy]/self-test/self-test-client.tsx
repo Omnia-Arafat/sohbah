@@ -1100,8 +1100,11 @@ function HiddenPageCard({
                     />
                   );
                 })}
-                <span className="mx-1 inline-block align-middle text-xs text-accent-600 dark:text-accent-400">
-                  ﴿{toArabicDigits(line.ayah)}﴾
+                {/* Same marker as the mushaf page: U+06DD from the font
+                    itself, not ornate brackets it does not carry. */}
+                <span className="mx-0.5 align-baseline text-[1.05em] text-accent-700 dark:text-accent-300">
+                  {"۝"}
+                  {toArabicDigits(line.ayah)}
                 </span>{" "}
               </span>
             ))}

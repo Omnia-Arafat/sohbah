@@ -195,7 +195,17 @@ export function MushafPageView({
             <p
               dir="rtl"
               lang="ar"
-              className="font-quran text-center text-[1.35rem] leading-[2.6]"
+              /*
+                Uthmani text carries far more marks per letter than ordinary
+                Arabic, and at 1.35rem they had too few pixels to stay apart —
+                a fatha over a shadda over a dagger alef merged into a smudge,
+                which read as broken text rather than as small text.
+
+                1.7rem is the smallest size at which they separate cleanly on
+                a 375px phone, checked in the browser at that width with no
+                horizontal overflow. Wider screens get more.
+              */
+              className="font-quran text-center text-[1.7rem] leading-[2.35] sm:text-[2rem] sm:leading-[2.4]"
             >
               {ayahs.map((entry) => (
                 <Ayah key={`${entry.surah}:${entry.ayah}`} entry={entry} />
@@ -284,8 +294,26 @@ function Ayah({ entry }: { entry: MushafAyah }) {
       <span className={entry.sajda ? "text-brand-800 dark:text-brand-200" : undefined}>
         {entry.text}
       </span>
-      <span className="mx-1 inline-block align-middle text-sm text-accent-600 dark:text-accent-400">
-        ﴿{toArabicDigits(entry.ayah)}﴾
+      {/*
+        The ayah marker, in the mushaf's own glyph.
+
+        It used to be ﴿N﴾ at text-sm — three problems in one small mark.
+        DigitalKhatt has the Arabic-Indic digits but NOT the ornate brackets
+        U+FD3E/U+FD3F, so each bracket fell back to Amiri: two typefaces
+        either side of the number, in a mark barely two thirds the height of
+        the words around it.
+
+        U+06DD ARABIC END OF AYAH is the character this actually is, and the
+        font does have it. It is a prepended concatenation mark: the digits
+        that follow are drawn INSIDE the rosette, which is how a mushaf sets
+        an ayah number, and it comes from the same hand as the text.
+
+        Sized in `em` so it tracks the ayah text wherever this renders, rather
+        than a fixed size that only suits the mushaf page.
+      */}
+      <span className="mx-0.5 align-baseline text-[1.05em] text-accent-700 dark:text-accent-300">
+        {"۝"}
+        {toArabicDigits(entry.ayah)}
       </span>{" "}
     </>
   );
