@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { useTranslations } from "next-intl";
 import { SURAHS, surahByNumber } from "@/lib/quran/surahs";
@@ -26,6 +26,65 @@ function toDraft(day: DayRow): Draft {
     review: day.reviewText,
     notes: day.notes,
   };
+}
+
+/** Anything typed at all. Used only to mark the strip and pick the opening day. */
+function isFilled(d: Draft) {
+  return (
+    d.fromSurah !== "" ||
+    d.toSurah !== "" ||
+    d.review.trim() !== "" ||
+    d.notes.trim() !== ""
+  );
+}
+
+/**
+ * The seven days as a strip, with a dot on the ones already written.
+ *
+ * Small enough to sit on one phone line, so the whole week stays visible
+ * while only one day's fields are.
+ */
+function DayStrip({
+  active,
+  onPick,
+  filled,
+  t,
+}: {
+  active: number;
+  onPick: (i: number) => void;
+  filled: boolean[];
+  t: ReturnType<typeof useTranslations>;
+}) {
+  return (
+    <div role="tablist" className="flex gap-1.5 overflow-x-auto pb-1">
+      {filled.map((isSet, i) => (
+        <button
+          key={i}
+          type="button"
+          role="tab"
+          aria-selected={i === active}
+          onClick={() => onPick(i)}
+          className={`flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl border px-3 text-xs font-semibold transition-colors ${
+            i === active
+              ? "border-brand-600 bg-brand-600 text-white"
+              : "border-border-subtle hover:border-brand-600"
+          }`}
+        >
+          {dayLabelFor(i, t)}
+          <span
+            aria-hidden
+            className={`h-1.5 w-1.5 rounded-full ${
+              !isSet
+                ? "bg-transparent"
+                : i === active
+                  ? "bg-white"
+                  : "bg-brand-600 dark:bg-brand-300"
+            }`}
+          />
+        </button>
+      ))}
+    </div>
+  );
 }
 
 function SubmitButton() {
@@ -65,6 +124,26 @@ export function WeekForm({
   });
 
   const [drafts, setDrafts] = useState<Draft[]>(() => days.map(toDraft));
+
+  // Open on the first day still empty — the one she came to fill. A week
+  // already written opens on its لقاء, where reading it starts.
+  const [day, setDay] = useState(() => {
+    const next = days.map(toDraft).findIndex((d) => !isFilled(d));
+    return next === -1 ? 0 : next;
+  });
+
+  /*
+    A rejected save names the day that failed ("code:index"). With only one
+    day on screen that message could point at a card she cannot see, so the
+    strip moves to it — otherwise the form reads as refusing to save for no
+    visible reason.
+  */
+  useEffect(() => {
+    const failed = Number(state.error?.split(":")[1]);
+    if (Number.isInteger(failed) && failed >= 0 && failed < drafts.length) {
+      setDay(failed);
+    }
+  }, [state.error, drafts.length]);
 
   function set(i: number, patch: Partial<Draft>) {
     setDrafts((prev) => prev.map((d, j) => (j === i ? { ...d, ...patch } : d)));
@@ -150,25 +229,42 @@ export function WeekForm({
         </div>
       </div>
 
-      {/* The meeting day, then the five memorisation days, then Friday —
-          the order the week is actually lived in. */}
-      <MeetingCard
-        value={drafts[0]}
-        onChange={(patch) => set(0, patch)}
+      {/*
+        One day at a time. Seven stacked cards ran past 1300px on a phone,
+        which is a lot of scrolling for a form whose days are filled one
+        after another — and the same shape as the schedule band above it:
+        the day in hand is focused, the rest are a strip to flip through.
+
+        Every card stays MOUNTED and merely hidden, so one save still posts
+        the whole week and a half-typed day is never lost by switching away.
+      */}
+      <DayStrip
+        active={day}
+        onPick={setDay}
+        filled={drafts.map(isFilled)}
         t={t}
       />
 
+      {/* The meeting day, then the five memorisation days, then Friday —
+          the order the week is actually lived in. */}
+      <div hidden={day !== 0}>
+        <MeetingCard value={drafts[0]} onChange={(patch) => set(0, patch)} t={t} />
+      </div>
+
       {MEMORISE_DAYS.map((i) => (
-        <DayCard
-          key={i}
-          index={i}
-          value={drafts[i]}
-          onChange={(patch) => set(i, patch)}
-          t={t}
-        />
+        <div key={i} hidden={day !== i}>
+          <DayCard
+            index={i}
+            value={drafts[i]}
+            onChange={(patch) => set(i, patch)}
+            t={t}
+          />
+        </div>
       ))}
 
-      <FridayCard value={drafts[6]} onChange={(patch) => set(6, patch)} t={t} />
+      <div hidden={day !== 6}>
+        <FridayCard value={drafts[6]} onChange={(patch) => set(6, patch)} t={t} />
+      </div>
 
       <div className="card flex flex-col gap-3 sm:flex-row sm:items-center">
         <label className="flex min-h-11 flex-grow items-center gap-2.5">
