@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { useTranslations } from "next-intl";
+import { SearchableSelect } from "@/components/searchable-select";
 import { createCohort, type CohortFormState } from "./actions";
 
 function SubmitButton() {
@@ -100,14 +101,21 @@ export function CohortForm({
         <label className="field-label" htmlFor="teacherId">
           {t("fields.teacher")}
         </label>
-        <select id="teacherId" name="teacherId" className="input" defaultValue="">
-          <option value="">{t("fields.teacherNone")}</option>
-          {teachers.map((teacher) => (
-            <option key={teacher.id} value={teacher.id}>
-              {teacher.name}
-            </option>
-          ))}
-        </select>
+        {/* Same combobox as every other teacher picker in the admin. */}
+        <SearchableSelect
+          id="teacherId"
+          name="teacherId"
+          options={[
+            { value: "", label: t("fields.teacherNone") },
+            ...teachers.map((teacher) => ({
+              value: teacher.id,
+              label: teacher.name,
+            })),
+          ]}
+          defaultValue=""
+          placeholder={t("fields.teacherSearch")}
+          noMatches={t("fields.teacherNoMatches")}
+        />
       </div>
 
       <fieldset className="min-w-0">

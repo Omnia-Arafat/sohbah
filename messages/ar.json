@@ -1690,7 +1690,9 @@
       "capacityHint": "الافتراضي {n} لكل معلمة. اتركيه فارغًا لدفعة بلا حدّ.",
       "teacher": "المعلمة",
       "teacherNone": "تُسنَد لاحقًا",
-      "status": "الحالة عند الإنشاء"
+      "status": "الحالة عند الإنشاء",
+      "teacherSearch": "ابحثي باسم المعلمة",
+      "teacherNoMatches": "لا توجد معلمة بهذا الاسم"
     },
     "status": {
       "draft": "مسودة",
@@ -1812,7 +1814,9 @@
       "capacityHint": "اتركيه فارغًا لدفعة بلا حدّ.",
       "teacher": "المعلمة",
       "teacherNone": "تُسنَد لاحقًا",
-      "status": "الحالة"
+      "status": "الحالة",
+      "teacherSearch": "ابحثي باسم المعلمة",
+      "teacherNoMatches": "لا توجد معلمة بهذا الاسم"
     },
     "status": {
       "draft": "مسودة",

@@ -1690,7 +1690,9 @@
       "capacityHint": "Defaults to {n} per teacher. Leave empty for no cap.",
       "teacher": "Teacher",
       "teacherNone": "Assign later",
-      "status": "Status at creation"
+      "status": "Status at creation",
+      "teacherSearch": "Search by teacher name",
+      "teacherNoMatches": "No teacher by that name"
     },
     "status": {
       "draft": "Draft",
@@ -1812,7 +1814,9 @@
       "capacityHint": "Leave empty for no cap.",
       "teacher": "Teacher",
       "teacherNone": "Assign later",
-      "status": "Status"
+      "status": "Status",
+      "teacherSearch": "Search by teacher name",
+      "teacherNoMatches": "No teacher by that name"
     },
     "status": {
       "draft": "Draft",

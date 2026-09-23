@@ -315,13 +315,24 @@ function CohortRow({
       href={href}
       className="flex flex-col gap-2.5 px-4 py-3 transition-colors hover:bg-surface-muted"
     >
-      <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-        <h3 className="text-sm font-bold">{cohort.name}</h3>
-        <span className="text-xs text-muted-foreground">
-          {cohort.teacherName ?? labels.noTeacher}
-        </span>
+      {/*
+        Two justified lines, not one wrapping pile. Twelve of these sit under
+        each other, so the eye should be able to run straight down a column:
+        names down one edge, status and seats down the other. The loose
+        arrangement wrapped differently on every row depending on how long the
+        معلمة's name was, which is what made the list read as unsorted.
+      */}
+      <div className="flex items-baseline gap-2">
+        <h3 className="min-w-0 flex-grow truncate text-sm font-bold">
+          {cohort.name}
+        </h3>
+        {labels.pending && (
+          <span className="shrink-0 rounded-full bg-accent-500 px-2 py-0.5 text-[11px] font-semibold text-white">
+            {labels.pending}
+          </span>
+        )}
         <span
-          className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
+          className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
             cohort.status === "running"
               ? "bg-brand-50 text-brand-700 dark:bg-brand-900 dark:text-brand-100"
               : cohort.status === "registering"
@@ -331,24 +342,28 @@ function CohortRow({
         >
           {labels.status}
         </span>
-        {labels.pending && (
-          <span className="rounded-full bg-accent-500 px-2 py-0.5 text-[11px] font-semibold text-white">
-            {labels.pending}
-          </span>
-        )}
+      </div>
+
+      <div className="flex items-baseline gap-2 text-xs text-muted-foreground">
+        <span
+          className={`min-w-0 flex-grow truncate ${
+            cohort.teacherName ? "" : "italic"
+          }`}
+        >
+          {cohort.teacherName ?? labels.noTeacher}
+        </span>
+        <span className="shrink-0 tabular-nums">
+          {cohort.currentWeek ? labels.week : labels.notStarted}
+        </span>
+        <span className="shrink-0 tabular-nums">{labels.seats}</span>
       </div>
 
       <WeekTicks
         total={durationWeeks}
         filled={0}
         currentWeek={cohort.currentWeek}
-        height={12}
+        height={8}
       />
-
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-        <span>{cohort.currentWeek ? labels.week : labels.notStarted}</span>
-        <span>{labels.seats}</span>
-      </div>
     </Link>
   );
 }

@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { useTranslations, useLocale } from "next-intl";
+import { SearchableSelect } from "@/components/searchable-select";
 import { updateCohort, type EditCohortState } from "./actions";
 
 function SubmitButton() {
@@ -147,40 +148,52 @@ export function EditCohortForm({
         <label className="field-label" htmlFor="teacherId">
           {t("fields.teacher")}
         </label>
-        <select
+        {/* The app's own combobox, not a native select: thirty-one معلمات is
+            a list you search, and it is what every other teacher picker in
+            the admin uses. The status below stays native — a fixed five. */}
+        <SearchableSelect
           id="teacherId"
           name="teacherId"
-          className="input"
+          options={[
+            { value: "", label: t("fields.teacherNone") },
+            ...teachers.map((teacher) => ({
+              value: teacher.id,
+              label: teacher.name,
+            })),
+          ]}
           defaultValue={initial.teacherId ?? ""}
-        >
-          <option value="">{t("fields.teacherNone")}</option>
-          {teachers.map((teacher) => (
-            <option key={teacher.id} value={teacher.id}>
-              {teacher.name}
-            </option>
-          ))}
-        </select>
+          placeholder={t("fields.teacherSearch")}
+          noMatches={t("fields.teacherNoMatches")}
+        />
       </div>
 
-      <div>
-        <label className="field-label" htmlFor="status">
-          {t("fields.status")}
-        </label>
-        <select
-          id="status"
-          name="status"
-          className="input"
-          defaultValue={initial.status}
-        >
+      {/* Radios, like the "new cohort" form beside it. Five fixed choices are
+          worth seeing at once — and on a phone a dropdown is the one control
+          that can close under the thumb mid-choice. */}
+      <fieldset className="min-w-0">
+        <legend className="field-label">{t("fields.status")}</legend>
+        <div className="mt-1 flex flex-col gap-2">
           {(["draft", "registering", "running", "paused", "finished"] as const).map(
             (value) => (
-              <option key={value} value={value}>
-                {t(`status.${value}`)}
-              </option>
+              <label
+                key={value}
+                className="flex min-h-11 items-center gap-2.5 rounded-xl border border-border-subtle px-3 py-2.5"
+              >
+                <input
+                  type="radio"
+                  name="status"
+                  value={value}
+                  defaultChecked={value === initial.status}
+                  className="accent-brand-600"
+                />
+                <span className="min-w-0 text-sm font-medium">
+                  {t(`status.${value}`)}
+                </span>
+              </label>
             ),
           )}
-        </select>
-      </div>
+        </div>
+      </fieldset>
 
       <SubmitButton />
     </form>
