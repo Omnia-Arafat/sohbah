@@ -38,6 +38,52 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
+/**
+ * The last thing between a student and the browser's own error page.
+ *
+ * Every navigation strategy here can run out of options: the network fails
+ * and the cache has nothing to offer — on a first visit, or after
+ * `purgeOnQuotaError` has emptied a cache to free space. Returning undefined
+ * at that point hands her "This page couldn't load", which is exactly the
+ * outcome the mushaf caching notes say all this machinery exists to prevent.
+ *
+ * Built as a string rather than a precached route on purpose. A precached
+ * fallback is one more thing that has to have been fetched successfully at
+ * least once, and this has to work in the case where nothing was. It ships
+ * inside the worker itself, so it cannot be missing.
+ */
+function offlinePage(): Response {
+  const html = `<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>لا يوجد اتصال</title>
+<style>
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+         background:#f6f9f7; color:#0e1f19; font-family:system-ui,sans-serif; padding:24px; }
+  main { max-width:22rem; text-align:center; }
+  h1 { font-size:1.25rem; margin:0 0 .5rem; }
+  p { margin:0 0 1.25rem; font-size:.9rem; color:#5a6e66; line-height:1.8; }
+  button { min-height:44px; padding:0 22px; border:0; border-radius:12px;
+           background:#1e6e51; color:#fff; font:inherit; font-weight:700; cursor:pointer; }
+</style>
+</head>
+<body>
+  <main>
+    <h1>لا يوجد اتصال</h1>
+    <p>لم نستطع فتح هذه الصفحة، ولم تُفتح من قبل على هذا الجهاز حتى نعرضها من الذاكرة. افتحيها مرة واحدة وأنتِ متصلة، وبعدها تعمل بدون إنترنت.</p>
+    <button type="button" onclick="location.reload()">إعادة المحاولة</button>
+  </main>
+</body>
+</html>`;
+
+  return new Response(html, {
+    status: 200,
+    headers: { "Content-Type": "text/html; charset=utf-8" },
+  });
+}
+
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
@@ -116,7 +162,11 @@ const serwist = new Serwist({
             handlerDidError: async () => {
               const cache = await caches.open("sohbah-mushaf-pages");
               const [any] = await cache.keys();
-              return any ? await cache.match(any) : undefined;
+              const cached = any ? await cache.match(any) : undefined;
+              // An EMPTY cache used to fall through to `undefined` here, which
+              // is the browser's own error page — the exact outcome the note
+              // above says all this machinery exists to avoid. See offlinePage.
+              return cached ?? offlinePage();
             },
           },
         ],
@@ -136,6 +186,12 @@ const serwist = new Serwist({
         networkTimeoutSeconds: 3,
         plugins: [
           new ExpirationPlugin({ maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 7 }),
+          {
+            // Same gap as the mushaf had: no network and nothing cached for
+            // this page meant the browser's error. A page she has never
+            // opened cannot be conjured, but it can be said in her language.
+            handlerDidError: async () => offlinePage(),
+          },
         ],
       }),
     },
