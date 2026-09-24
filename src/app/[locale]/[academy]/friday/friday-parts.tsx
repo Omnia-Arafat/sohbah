@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { BackLink } from "@/components/back-link";
+import { Link } from "@/i18n/navigation";
 
 /** The header every تحدي الجمعة screen opens with. */
 export function FridayHeader({
@@ -43,5 +44,29 @@ export function FridayClosed({ startsAt, locale }: { startsAt: Date; locale: str
       <p className="font-bold">{t("closedTitle")}</p>
       <p className="text-sm text-muted-foreground">{t("closedBody", { when })}</p>
     </div>
+  );
+}
+
+/**
+ * For a student this browser does not know yet — and only for her. Her count
+ * works regardless and is kept on the phone, but the مشرفة cannot see it
+ * until صفحتي has been opened once here.
+ *
+ * One quiet line at the END of the screen, not a card at the top: it is a
+ * footnote to the counter, not a condition for using it. It was a gold card
+ * above the counter once, and read as a warning to everyone it was shown to.
+ */
+export function FridayNotKnown({ academySlug }: { academySlug: string }) {
+  const t = useTranslations("friday");
+  return (
+    <p className="text-center text-xs text-muted-foreground">
+      {t.rich("notKnown", {
+        link: (chunks) => (
+          <Link href={`/${academySlug}/me`} className="font-semibold text-brand-700 underline-offset-2 hover:underline dark:text-brand-300">
+            {chunks}
+          </Link>
+        ),
+      })}
+    </p>
   );
 }

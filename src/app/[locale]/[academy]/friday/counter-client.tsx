@@ -14,14 +14,14 @@ import {
 } from "@/lib/friday";
 import { addSalawat, getFriday } from "@/lib/friday-store";
 import { useFriday } from "@/lib/use-friday";
-import { FridayClosed, FridayHeader } from "./friday-parts";
+import { FridayClosed, FridayHeader, FridayNotKnown } from "./friday-parts";
 
 /** How long after the last tap the count is sent. */
 const FLUSH_AFTER_MS = 1500;
 
 export function CounterClient({ academySlug, locale }: { academySlug: string; locale: string }) {
   const t = useTranslations("friday");
-  const { window, key, entry, flush } = useFriday(academySlug);
+  const { window, key, entry, who, flush } = useFriday(academySlug);
   const [earned, setEarned] = useState<number | null>(null);
 
   /*
@@ -142,6 +142,8 @@ export function CounterClient({ academySlug, locale }: { academySlug: string; lo
             <Share2 aria-hidden="true" className="h-4 w-4" />
             {t("shareShort")}
           </Link>
+
+          {who === null && <FridayNotKnown academySlug={academySlug} />}
         </>
       )}
     </div>

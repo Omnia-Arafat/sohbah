@@ -13,7 +13,7 @@ import {
 } from "@/lib/friday";
 import { addKahf } from "@/lib/friday-store";
 import { useFriday } from "@/lib/use-friday";
-import { FridayClosed, FridayHeader } from "../friday-parts";
+import { FridayClosed, FridayHeader, FridayNotKnown } from "../friday-parts";
 
 /**
  * سورة الكهف, as twelve pages.
@@ -25,7 +25,7 @@ import { FridayClosed, FridayHeader } from "../friday-parts";
  */
 export function KahfClient({ academySlug, locale }: { academySlug: string; locale: string }) {
   const t = useTranslations("friday");
-  const { window, key, entry, flush } = useFriday(academySlug);
+  const { window, key, entry, who, flush } = useFriday(academySlug);
 
   if (!window) return null;
 
@@ -110,6 +110,8 @@ export function KahfClient({ academySlug, locale }: { academySlug: string; local
               </button>
             </>
           )}
+
+          {who === null && <FridayNotKnown academySlug={academySlug} />}
         </>
       )}
     </div>

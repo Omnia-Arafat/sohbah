@@ -1928,6 +1928,7 @@
       "kahfNone": "Al-Kahf not started",
       "empty": "Nobody recorded this Friday.",
       "tieNote": "Ranked by count; at a tie, whoever reached it first."
-    }
+    },
+    "notKnown": "So your supervisor can see your count, <link>open My page</link> once."
   }
 }
