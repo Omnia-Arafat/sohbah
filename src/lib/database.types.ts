@@ -233,6 +233,18 @@ export type CircleRecitationLog = Pick<
   | "note"
 >;
 
+/** One person's تحدي الجمعة week, as a save returns it (merged). */
+export type FridayChallengeRow = { salawat: number; kahf_pages: number };
+
+/** One line of the مشرفات's board, from `friday_challenge_board`. */
+export type FridayBoardRow = {
+  name: string;
+  kind: "student" | "teacher" | "supervisor";
+  salawat: number;
+  kahf_pages: number;
+  salawat_at: string;
+};
+
 /**
  * A student's own view of one recorded turn, from `my_recitations`.
  *
@@ -1037,6 +1049,24 @@ export type Database = {
           p_points?: number | null;
         };
         Returns: { auto_score: number; max_score: number; pending_count: number }[];
+      };
+      friday_challenge_save_student: {
+        Args: {
+          p_student_id: string;
+          p_phone: string;
+          p_friday: string;
+          p_salawat: number;
+          p_kahf: number;
+        };
+        Returns: FridayChallengeRow[];
+      };
+      friday_challenge_save_staff: {
+        Args: { p_friday: string; p_salawat: number; p_kahf: number };
+        Returns: FridayChallengeRow[];
+      };
+      friday_challenge_board: {
+        Args: { p_academy_id: string; p_friday: string };
+        Returns: FridayBoardRow[];
       };
     };
     Enums: Empty;

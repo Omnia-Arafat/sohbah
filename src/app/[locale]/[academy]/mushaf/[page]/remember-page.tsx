@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 import { bookmarkKey, setBookmark } from "@/lib/bookmark-store";
+import { noteMushafPage } from "@/lib/friday-store";
+import { createClient } from "@/lib/supabase/client";
 
 /**
  * Records the page being read, so the home screen can say "أكملي من حيث
@@ -29,6 +31,9 @@ export function RememberPage({
       surah,
       savedAt: new Date().toISOString(),
     });
+    // تحدي الجمعة: a page of الكهف read between مغرب الخميس and مغرب الجمعة
+    // ticks itself. Does nothing on any other page or day.
+    void noteMushafPage(academySlug, page, createClient);
   }, [academySlug, page, surah]);
 
   return null;

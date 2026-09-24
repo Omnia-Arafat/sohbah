@@ -11,6 +11,7 @@ import type { Circle } from "@/lib/database.types";
 import { formatTime } from "@/lib/format-time";
 import { createClient } from "@/lib/supabase/server";
 import { ListSearch } from "@/components/list-search";
+import { FridayCard } from "@/components/friday-card";
 
 type DashboardPageProps = {
   params: Promise<{ locale: string; academy: string }>;
@@ -95,6 +96,10 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
       <div className="max-sm:hidden">
         <DashboardHeader teacher={session.teacher} academySlug={academySlug} />
       </div>
+
+      {/* تحدي الجمعة is for the معلمات and مشرفات too — the same card the
+          students get, counted as her own. Renders nothing outside Friday. */}
+      <FridayCard academySlug={academySlug} locale={locale} />
 
       {(todayCircles.length > 0 || otherCircles.length > 0) && (
         <ListSearch

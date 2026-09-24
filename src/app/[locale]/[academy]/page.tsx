@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AyahTeaser } from "@/components/ayah-teaser";
 import { ProgressStrip } from "@/components/progress-strip";
 import { DailyTiles } from "@/components/daily-tiles";
+import { FridayCard } from "@/components/friday-card";
 import { Link } from "@/i18n/navigation";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { getLocalizedAcademyName } from "@/lib/academy-display";
@@ -181,6 +182,10 @@ export default async function AcademyHome({ params }: AcademyHomeProps) {
           ))}
         </section>
       )}
+
+      {/* تحدي الجمعة — only from مغرب الخميس to مغرب الجمعة, and under any
+          live circle: gold stays first. */}
+      <FridayCard academySlug={academySlug} locale={locale} />
 
       {next && (
         <section className="flex flex-col gap-3">
