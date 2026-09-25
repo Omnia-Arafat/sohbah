@@ -577,3 +577,37 @@ $$;
 
 revoke execute on function public.decide_excuse(uuid, boolean) from public;
 grant  execute on function public.decide_excuse(uuid, boolean) to authenticated;
+
+create or replace function public.pending_excuses(p_academy_id uuid)
+returns table (
+  request_id    uuid,
+  student_name  text,
+  father_name   text,
+  absence_date  date,
+  reason        text,
+  cohort_name   text,
+  track_name    text,
+  asked_at      timestamptz
+)
+language sql stable security definer set search_path = public
+as $$
+  select r.id, s.name, s.father_name, r.absence_date, r.reason,
+         c.name_ar, t.name_ar, r.created_at
+    from public.track_excuse_requests r
+    join public.students s on s.id = r.student_id
+    join public.track_enrollments e on e.id = r.enrollment_id
+    join public.track_cohorts c on c.id = e.cohort_id
+    join public.tracks t on t.id = c.track_id
+   where c.academy_id = p_academy_id
+     and r.status = 'pending'
+     and exists (
+       select 1 from public.teachers te
+        where te.academy_id = p_academy_id
+          and te.auth_user_id = auth.uid()
+          and te.is_active
+     )
+   order by r.absence_date desc, r.created_at;
+$$;
+
+revoke execute on function public.pending_excuses(uuid) from public;
+grant  execute on function public.pending_excuses(uuid) to authenticated;

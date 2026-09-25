@@ -9,6 +9,7 @@ import {
   GraduationCap,
   House,
   LayoutGrid,
+  MailQuestion,
   Plus,
   Route,
   Tags,
@@ -122,6 +123,9 @@ export function BottomNav({
     // The mirror image of the schedule above: already a primary tab for a
     // supervisor, so listing it again here would just be clutter.
     { href: reports, label: t("reports"), Icon: BarChart, adminOnly: false, hidden: canSupervise },
+    // A queue with someone waiting at the other end of it, so it sits with
+    // the daily work rather than below the fold with the settings.
+    { href: `/${academySlug}/admin/excuses`, label: t("excuses"), Icon: MailQuestion, adminOnly: false, hidden: false },
     // Not a menu of links but a board of alerts and summaries, and it is NOT
     // a tab — so the sheet is its only way in from a phone.
     { href: `/${academySlug}/admin`, label: t("adminHome"), Icon: LayoutGrid, adminOnly: false, hidden: false },

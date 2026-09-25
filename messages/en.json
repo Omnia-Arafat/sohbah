@@ -1299,7 +1299,8 @@
     "register": "New student",
     "install": "Install the app",
     "tracks": "Tracks",
-    "challenges": "Challenges"
+    "challenges": "Challenges",
+    "excuses": "Excuses"
   },
   "lesson": {
     "today": "Today's lesson",
@@ -2093,5 +2094,18 @@
       "heard_recitation": "Heard the portion from a skilled reciter",
       "prayed_with_memorised": "Prayed with what is memorised"
     }
+  },
+  "excuses": {
+    "title": "Excuse requests",
+    "subtitle": "Days a student could not manage, waiting on your decision.",
+    "back": "Back to the admin board",
+    "loading": "One moment…",
+    "failed": "Could not complete that. Please try again.",
+    "empty": "Nothing waiting",
+    "emptyNote": "When a student asks for a day to be excused, it appears here.",
+    "noReason": "She gave no reason.",
+    "accept": "Accept the excuse",
+    "decline": "Decline",
+    "note": "Accepting is what actually forgives the day, and it is recorded in your name. Declining leaves the day as it was."
   }
 }

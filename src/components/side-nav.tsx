@@ -8,6 +8,7 @@ import {
   GraduationCap,
   House,
   LayoutGrid,
+  MailQuestion,
   LogOut,
   Plus,
   Route,
@@ -88,6 +89,9 @@ export function SideNav({
     // admin/challenges/page.tsx for why a student never sees a ranking.
     { href: `/${academySlug}/admin/challenges`, label: t("challenges"), Icon: Trophy, prefix: true, supervisorOnly: true },
     { href: `/${academySlug}/admin/progress`, label: t("progress"), Icon: TrendingUp, prefix: true },
+    // A queue with a student waiting at the other end, open to every معلمة:
+    // she is the one who would know whether the excuse is true.
+    { href: `/${academySlug}/admin/excuses`, label: t("excuses"), Icon: MailQuestion, prefix: true },
     { href: `/${academySlug}/admin/circle-types`, label: t("circleTypes"), Icon: Tags, prefix: true, adminOnly: true },
     // Boards decide what the public timetable shows, so a مشرفة needs this:
     // she is the one who notices circles missing from the schedule.
