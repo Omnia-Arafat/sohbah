@@ -520,3 +520,173 @@ $$;
 
 revoke execute on function public.cohort_day_reports(uuid, date) from public;
 grant  execute on function public.cohort_day_reports(uuid, date) to authenticated;
+
+-- =============================================================================
+-- العذر — a day the student could not do, and said so.
+--
+-- `track_absences` already exists for exactly this, with `kind = 'excused'`
+-- and a `created_by`. What it cannot take is a request: a student has no
+-- account, so she cannot be the author of her own excuse, and an excuse
+-- nobody accepted is not an excuse.
+--
+-- So her side records the ASKING, and a معلمة turns it into the absence row.
+-- Writing a سرد that never happened would have been the other way to make the
+-- day look fine, and it is the one thing that must not be possible: the card
+-- says «تمّ بفضل الله».
+-- =============================================================================
+
+create table if not exists public.track_excuse_requests (
+  id            uuid primary key default gen_random_uuid(),
+  enrollment_id uuid not null references public.track_enrollments(id) on delete cascade,
+  student_id    uuid not null references public.students(id) on delete cascade,
+  absence_date  date not null,
+  reason        text,
+  status text not null default 'pending'
+    check (status in ('pending', 'accepted', 'declined')),
+  decided_by uuid references public.teachers(id) on delete set null,
+  decided_at timestamptz,
+  created_at timestamptz not null default now(),
+  constraint uq_excuse_request unique (enrollment_id, absence_date)
+);
+
+create index if not exists idx_excuse_requests_pending
+  on public.track_excuse_requests (enrollment_id, absence_date desc)
+  where status = 'pending';
+
+comment on table public.track_excuse_requests is
+  'A student asking for a day to be excused. Accepting one writes the track_absences row; the request itself is never the excuse.';
+
+alter table public.track_excuse_requests enable row level security;
+
+create policy excuse_requests_staff on public.track_excuse_requests
+  for all
+  using (
+    exists (
+      select 1
+        from public.track_enrollments e
+        join public.track_cohorts c on c.id = e.cohort_id
+        join public.teachers t on t.academy_id = c.academy_id
+       where e.id = track_excuse_requests.enrollment_id
+         and t.auth_user_id = auth.uid()
+         and t.is_active
+    )
+  )
+  with check (
+    exists (
+      select 1
+        from public.track_enrollments e
+        join public.track_cohorts c on c.id = e.cohort_id
+        join public.teachers t on t.academy_id = c.academy_id
+       where e.id = track_excuse_requests.enrollment_id
+         and t.auth_user_id = auth.uid()
+         and t.is_active
+    )
+  );
+
+revoke all on public.track_excuse_requests from anon, authenticated;
+
+create or replace function public.ask_for_excuse(
+  p_student_id uuid,
+  p_phone      text,
+  p_date       date,
+  p_reason     text
+)
+returns void
+language plpgsql security definer set search_path = public
+as $$
+declare
+  v_student public.students%rowtype;
+  v_given   text;
+  v_mine    uuid;
+begin
+  select * into v_student from public.students where id = p_student_id;
+  if not found then
+    raise exception 'student_not_found' using errcode = 'P0002';
+  end if;
+
+  v_given := regexp_replace(coalesce(p_phone, ''), '\D', '', 'g');
+
+  if v_student.phone_key is null
+     or char_length(v_given) < 9
+     or (v_student.phone_key <> v_given
+         and right(v_student.phone_key, 9) <> right(v_given, 9)) then
+    raise exception 'phone_mismatch' using errcode = '42501';
+  end if;
+
+  select e.id into v_mine
+    from public.track_enrollments e
+   where e.student_id = p_student_id
+     and e.status in ('active', 'warned')
+   limit 1;
+
+  if v_mine is null then
+    raise exception 'not_on_a_track' using errcode = 'P0002';
+  end if;
+
+  if p_date > (now() at time zone 'Africa/Cairo')::date then
+    raise exception 'day_in_future' using errcode = '22023';
+  end if;
+
+  insert into public.track_excuse_requests (enrollment_id, student_id, absence_date, reason)
+  values (v_mine, p_student_id, p_date, nullif(btrim(coalesce(p_reason, '')), ''))
+  on conflict (enrollment_id, absence_date) do update
+     set reason = excluded.reason,
+         -- Asking again after a refusal reopens it; a decided day does not
+         -- silently keep its old answer while she believes she has asked.
+         status = 'pending',
+         decided_by = null,
+         decided_at = null;
+end
+$$;
+
+revoke execute on function public.ask_for_excuse(uuid, text, date, text) from public;
+grant  execute on function public.ask_for_excuse(uuid, text, date, text) to anon, authenticated;
+
+-- Accepting is a معلمة's act, and it is what actually forgives the day.
+create or replace function public.decide_excuse(
+  p_request_id uuid,
+  p_accept     boolean
+)
+returns void
+language plpgsql security definer set search_path = public
+as $$
+declare
+  v_req public.track_excuse_requests%rowtype;
+  v_me  uuid;
+begin
+  select * into v_req from public.track_excuse_requests where id = p_request_id;
+  if not found then
+    raise exception 'request_not_found' using errcode = 'P0002';
+  end if;
+
+  select t.id into v_me
+    from public.teachers t
+    join public.track_enrollments e on e.id = v_req.enrollment_id
+    join public.track_cohorts c on c.id = e.cohort_id
+   where t.auth_user_id = auth.uid()
+     and t.is_active
+     and t.academy_id = c.academy_id;
+
+  if v_me is null then
+    raise exception 'not_staff_here' using errcode = '42501';
+  end if;
+
+  update public.track_excuse_requests
+     set status = case when p_accept then 'accepted' else 'declined' end,
+         decided_by = v_me,
+         decided_at = now()
+   where id = p_request_id;
+
+  if p_accept then
+    insert into public.track_absences (enrollment_id, absence_date, kind, reason, created_by)
+    values (v_req.enrollment_id, v_req.absence_date, 'excused', v_req.reason, v_me)
+    on conflict (enrollment_id, absence_date) do update
+       set kind = 'excused',
+           reason = excluded.reason,
+           created_by = excluded.created_by;
+  end if;
+end
+$$;
+
+revoke execute on function public.decide_excuse(uuid, boolean) from public;
+grant  execute on function public.decide_excuse(uuid, boolean) to authenticated;

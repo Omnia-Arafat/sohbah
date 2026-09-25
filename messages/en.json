@@ -2000,7 +2000,8 @@
     },
     "changePartner": "Change",
     "pickPartner": "Choose your partner",
-    "pickPartnerNote": "Her name goes on the card"
+    "pickPartnerNote": "Her name goes on the card",
+    "openCard": "Open the card"
   },
   "partner": {
     "title": "My partner",
@@ -2042,6 +2043,50 @@
       "heard_recitation": "Reciter",
       "prayed_with_memorised": "Prayer"
     },
+    "items": {
+      "recited_new": "Recited the new portion",
+      "recited_review": "Recited the review portion",
+      "heard_recitation": "Heard the portion from a skilled reciter",
+      "prayed_with_memorised": "Prayed with what is memorised"
+    }
+  },
+  "excuse": {
+    "title": "I had an excuse",
+    "subtitle": "A day you could not manage. You send it; your teacher accepts it.",
+    "day": "Day",
+    "reason": "Reason",
+    "reasonPlaceholder": "A line about why",
+    "reasonHint": "Optional, but it helps your teacher accept it.",
+    "send": "Send to my teacher",
+    "sending": "Sending…",
+    "sent": "Your request arrived",
+    "sentNote": "Your teacher can see it now, and it counts as an excuse once she accepts.",
+    "backToDay": "Back to my portion",
+    "failed": "Could not send. Please try again.",
+    "signInFirst": "Sign in with your name first from",
+    "myPage": "my page",
+    "note": "An excuse is not a recitation that did not happen: the card says «تمّ بفضل الله», and it is never written about a day that was not."
+  },
+  "card": {
+    "title": "Completion card",
+    "heading": "{day}'s portion — completion card",
+    "place": "{track} · week {week}",
+    "student": "Student",
+    "partner": "Partner",
+    "praise": "Completed, by the grace of Allah",
+    "studentLine": "Student: {name}",
+    "partnerLine": "Partner: {name}",
+    "share": "Share the card",
+    "copied": "Copied — paste it anywhere",
+    "edit": "Edit",
+    "loading": "One moment…",
+    "failed": "Could not show the card.",
+    "notYet": "The card is not complete yet",
+    "notYetNote": "It completes with both the new and the review portions. The rest is mentioned if it happened.",
+    "backToDay": "Back to my portion",
+    "signInFirst": "Sign in with your name first from",
+    "myPage": "my page",
+    "note": "The card lists only what was done. A day without both required recitations has no card — which is what makes one arriving mean something.",
     "items": {
       "recited_new": "Recited the new portion",
       "recited_review": "Recited the review portion",

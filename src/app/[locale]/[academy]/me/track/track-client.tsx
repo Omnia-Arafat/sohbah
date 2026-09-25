@@ -350,12 +350,24 @@ export function TrackClient({
       </ul>
 
       {state === "saved" && (
-        <p
+        <div
           role="status"
-          className="rounded-2xl border border-present/40 bg-present/5 px-4 py-3 text-sm text-present"
+          className="rounded-2xl border border-present/40 bg-present/5 px-4 py-3"
         >
-          {core ? t("savedCard") : t("savedPartial")}
-        </p>
+          <p className="text-sm text-present">
+            {core ? t("savedCard") : t("savedPartial")}
+          </p>
+          {/* The card is the reason she filled this in, so it is one tap from
+              the confirmation rather than somewhere she has to go looking. */}
+          {core && (
+            <Link
+              href={`/${academySlug}/me/track/card`}
+              className="mt-2 inline-block text-sm font-bold text-brand-700 underline dark:text-brand-300"
+            >
+              {t("openCard")}
+            </Link>
+          )}
+        </div>
       )}
 
       <button
@@ -368,7 +380,7 @@ export function TrackClient({
       </button>
 
       <Link
-        href={`/${academySlug}/me`}
+        href={`/${academySlug}/me/track/excuse`}
         className="min-h-11 text-center text-sm font-semibold text-muted-foreground underline"
       >
         {t("excuse")}
