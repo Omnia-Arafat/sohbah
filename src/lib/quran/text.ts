@@ -5,22 +5,36 @@
  * the plain-text edition that a printed mushaf does not have.
  */
 
+/** The waqf signs: صلى ۖ قلى ۗ م ۘ لا ۙ ج ۚ and the معانقة ۛ. */
+export const WAQF = /[ۖ-ۛ]/;
+
 /**
- * Put every waqf and سكتة mark back on the word it belongs to.
+ * Seat the سكتة and waqf marks the way the Madinah page does.
  *
- * The edition stores them after a SPACE — «عِوَجَا ۜ», «فِيهِ ۛ» — because in
- * plain text a mark needs something to sit on. A combining mark on a space has
- * no letter under it, so the browser draws it flat on the line, glued to the
- * side of the word: the small سين of الكهف ١ looked like a stray letter stuck
- * to the alif. On the word itself it rises above the last letter, where the
- * Madinah page prints it. The space AFTER the mark is kept, so the gap to the
- * next word is unchanged.
+ * The edition stores both after a SPACE — «عِوَجَا ۜ», «فِيهِ ۛ» — because in
+ * plain text a mark needs something to sit on. A combining mark on an
+ * ordinary space is drawn flat on the line, glued to the side of the word.
+ * The two kinds then go different ways:
  *
- * Normalise once, where the text is loaded, so every consumer — the page, the
- * word-by-word drills — sees a mark as part of a word and never as a word.
+ * - The سكتة (ۜ) belongs to a LETTER: the small سين of الكهف ١ sits over the
+ *   alif of عِوَجَاۜ. It is joined onto the word.
+ *
+ * - A waqf sign belongs to the GAP between two words, above the line. It
+ *   keeps its own space, made non-breaking so the sign can never start a
+ *   line on its own; <QuranText> raises it into the gap.
+ *
+ * Normalise once, where the text is loaded. Word splitting must then be on
+ * the plain space only (`splitWords`), so a sign travels with its word.
  */
 export function attachMarks(text: string): string {
-  return text.replace(/ +(\p{M})/gu, "$1");
+  return text
+    .replace(/ +ۜ/g, "ۜ")
+    .replace(/ +([ۖ-ۛ])/g, " $1");
+}
+
+/** Words of normalised text: a waqf sign stays with the word before it. */
+export function splitWords(text: string): string[] {
+  return text.split(/ +/).filter(Boolean);
 }
 
 /**
@@ -51,7 +65,7 @@ export function splitBasmala(
 ): { basmala: string | null; rest: string } {
   if (surah === 1 || ayah !== 1) return { basmala: null, rest: text };
 
-  const words = text.split(" ");
+  const words = splitWords(text);
   const opening = words.slice(0, 4).join(" ");
   if (words.length > 4 && opening.replace(/\p{M}/gu, "") === BASMALA_LETTERS) {
     return { basmala: opening, rest: words.slice(4).join(" ") };

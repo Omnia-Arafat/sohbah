@@ -2018,5 +2018,35 @@
     "signInFirst": "Sign in with your name first from",
     "myPage": "my page",
     "note": "Changing your partner leaves earlier cards alone: each one keeps the name of whoever heard you that day."
+  },
+  "cohortDay": {
+    "title": "The day's reports",
+    "subtitle": "Who finished and who did not, for one day.",
+    "back": "Back to the cohort",
+    "day": "Day",
+    "student": "Student",
+    "noPartner": "No partner",
+    "loading": "One moment…",
+    "empty": "No students on this cohort yet.",
+    "behind": "{count, plural, one {1 has not finished the required two} other {# have not finished the required two}}",
+    "doneLabel": "Done: {item}",
+    "missingLabel": "Not done: {item}",
+    "blankLabel": "Not mentioned: {item}",
+    "legendDone": "Done",
+    "legendMissing": "Required, not done",
+    "legendBlank": "Optional, not mentioned",
+    "note": "The last two columns are optional: a blank there is not a shortfall and is not counted.",
+    "short": {
+      "recited_new": "New",
+      "recited_review": "Review",
+      "heard_recitation": "Reciter",
+      "prayed_with_memorised": "Prayer"
+    },
+    "items": {
+      "recited_new": "Recited the new portion",
+      "recited_review": "Recited the review portion",
+      "heard_recitation": "Heard the portion from a skilled reciter",
+      "prayed_with_memorised": "Prayed with what is memorised"
+    }
   }
 }

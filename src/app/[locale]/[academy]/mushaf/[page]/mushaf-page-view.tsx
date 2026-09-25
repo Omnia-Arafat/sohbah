@@ -8,6 +8,7 @@ import type { MushafAyah } from "@/lib/database.types";
 import { PAGE_COUNT } from "@/lib/quran/structure";
 import { surahByNumber } from "@/lib/quran/surahs";
 import { attachMarks, splitBasmala } from "@/lib/quran/text";
+import { QuranText } from "@/components/quran-text";
 import { SwipePages } from "./swipe-pages";
 
 /**
@@ -301,7 +302,7 @@ function Ayah({ entry }: { entry: MushafAyah }) {
       )}
       {basmala && <span className="mb-1 block">{basmala}</span>}
       <span className={entry.sajda ? "text-brand-800 dark:text-brand-200" : undefined}>
-        {rest}
+        <QuranText text={rest} />
       </span>
       {/*
         The ayah marker, in the mushaf's own glyph.

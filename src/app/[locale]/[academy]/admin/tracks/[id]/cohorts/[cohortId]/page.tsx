@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { UserMinus, UserPlus, Pencil } from "lucide-react";
+import { UserMinus, UserPlus, Pencil, CalendarCheck } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { BackLink, ChevronForward } from "@/components/back-link";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
@@ -41,6 +41,7 @@ export default async function CohortPage({ params }: PageProps) {
   const tTracks = await getTranslations("tracks");
   const tAdmin = await getTranslations("admin");
   const tEdit = await getTranslations("cohortEdit");
+  const tDay = await getTranslations("cohortDay");
   const session = await getTeacherSession();
 
   if (!session || !isActiveTeacher(session)) {
@@ -109,6 +110,25 @@ export default async function CohortPage({ params }: PageProps) {
           <Pencil className="h-4 w-4" aria-hidden="true" />
         </Link>
       </section>
+
+      {/* The day's reports. Above the roster because "who is behind today" is
+          asked far more often than "who is on this cohort". */}
+      <Link
+        href={`/${academySlug}/admin/tracks/${id}/cohorts/${cohort.id}/day`}
+        className="flex min-h-14 items-center gap-2.5 rounded-2xl border border-border-subtle bg-surface px-4 transition-colors hover:border-brand-600"
+      >
+        <CalendarCheck
+          className="h-[18px] w-[18px] shrink-0 text-brand-600 dark:text-brand-300"
+          aria-hidden="true"
+        />
+        <span className="min-w-0 flex-grow">
+          <span className="block text-sm font-bold">{tDay("title")}</span>
+          <span className="block text-xs text-muted-foreground">
+            {tDay("subtitle")}
+          </span>
+        </span>
+        <ChevronForward className="h-4 w-4" />
+      </Link>
 
       {/*
         The most consequential gap on the screen, and it used to be a grey

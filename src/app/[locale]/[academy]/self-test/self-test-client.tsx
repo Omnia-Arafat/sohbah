@@ -23,7 +23,8 @@ import { buildProgress } from "@/lib/quran/progress";
 import { pageOf } from "@/lib/quran/reference";
 import { JUZ_STARTS, JUZ_COUNT } from "@/lib/quran/structure";
 import { surahByNumber } from "@/lib/quran/surahs";
-import { attachMarks } from "@/lib/quran/text";
+import { attachMarks, splitWords } from "@/lib/quran/text";
+import { QuranText } from "@/components/quran-text";
 import { createClient } from "@/lib/supabase/client";
 
 /**
@@ -552,7 +553,7 @@ export function SelfTestClient({
           lang="ar"
           className="mt-3 text-center font-quran text-[1.4rem] leading-[2.1]"
         >
-          {question.prompt}
+          <QuranText text={question.prompt} />
           {mode === "complete" && (
             <span className="text-muted-foreground"> …</span>
           )}
@@ -586,7 +587,7 @@ export function SelfTestClient({
               lang="ar"
               className="mt-2 text-center font-quran text-[1.2rem] leading-[2.1]"
             >
-              {question.answer}
+              <QuranText text={question.answer} />
             </p>
 
             <div className="mt-4 grid grid-cols-3 gap-2">
@@ -747,7 +748,7 @@ function buildQuestions(ayahs: QuranRangeAyah[], mode: Mode): RecallQuestion[] {
  * in. The two halves joined back together are byte-for-byte the ayah.
  */
 function wordsOf(text: string): string[] {
-  return text.split(/\s+/).filter(Boolean);
+  return splitWords(text);
 }
 
 /** A random sample without replacement, order shuffled. */
@@ -1022,7 +1023,7 @@ function buildHiddenPage(
   const lines = ayahs.map((entry) => ({
     surah: entry.surah,
     ayah: entry.ayah,
-    words: entry.text.split(/\s+/).filter(Boolean),
+    words: splitWords(entry.text),
   }));
 
   // Every position that may be covered: not the opening word of an ayah.
@@ -1095,7 +1096,12 @@ function HiddenPageCard({
                   const covered =
                     question.hidden.has(at) && !revealed && !peeked.has(at);
 
-                  if (!covered) return <span key={at}>{word} </span>;
+                  if (!covered)
+                    return (
+                      <span key={at}>
+                        <QuranText text={word} />{" "}
+                      </span>
+                    );
 
                   return (
                     <button

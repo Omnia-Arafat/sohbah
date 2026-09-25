@@ -48,8 +48,8 @@ declare const self: ServiceWorkerGlobalScope;
  * phone. Bump the suffix whenever the page's rendering of the text changes;
  * the old caches are deleted on activate below.
  */
-const MUSHAF_PAGES = "sohbah-mushaf-pages-v2";
-const STALE_MUSHAF_PAGES = ["sohbah-mushaf-pages"];
+const MUSHAF_PAGES = "sohbah-mushaf-pages-v3";
+const STALE_MUSHAF_PAGES = ["sohbah-mushaf-pages", "sohbah-mushaf-pages-v2"];
 
 /**
  * The last thing between a student and the browser's own error page.

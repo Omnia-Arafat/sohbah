@@ -2018,5 +2018,35 @@
     "signInFirst": "ادخلي باسمك أولاً من",
     "myPage": "صفحتي",
     "note": "تغيير الرفيقة لا يمسّ بطاقاتك السابقة: كل بطاقة تحفظ اسم من سمعت منكِ يومها."
+  },
+  "cohortDay": {
+    "title": "سرد اليوم",
+    "subtitle": "مَن أتمّت ومَن لم تُتمّ، في يوم واحد.",
+    "back": "رجوع إلى الدفعة",
+    "day": "اليوم",
+    "student": "الطالبة",
+    "noPartner": "بلا رفيقة",
+    "loading": "لحظة…",
+    "empty": "لا طالبات في هذه الدفعة بعد.",
+    "behind": "{count, plural, one {واحدة لم تُتمّ الأساسيين} two {اثنتان لم تُتمّا الأساسيين} few {# لم يُتممن الأساسيين} many {# لم تُتمّ الأساسيين} other {# لم تُتمّ الأساسيين}}",
+    "doneLabel": "تمّ: {item}",
+    "missingLabel": "لم يتمّ: {item}",
+    "blankLabel": "لم يُذكر: {item}",
+    "legendDone": "تمّ",
+    "legendMissing": "أساسي لم يتمّ",
+    "legendBlank": "اختياري لم يُذكر",
+    "note": "العمودان الأخيران اختياريان: فراغهما ليس تقصيراً ولا يدخل في العدّ.",
+    "short": {
+      "recited_new": "حفظ",
+      "recited_review": "مراجعة",
+      "heard_recitation": "شيخ",
+      "prayed_with_memorised": "صلاة"
+    },
+    "items": {
+      "recited_new": "سرد مقرر الحفظ",
+      "recited_review": "سرد مقرر المراجعة",
+      "heard_recitation": "سماع الورد من شيخ متقن",
+      "prayed_with_memorised": "الصلاة بالمحفوظ"
+    }
   }
 }

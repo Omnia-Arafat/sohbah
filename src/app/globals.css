@@ -183,6 +183,13 @@
     word-spacing: 0.14em;
   }
 
+  /* A waqf sign sits above the line in the gap between two words; on the
+     baseline it reads as a letter. See <QuranText>. */
+  .waqf {
+    position: relative;
+    top: -0.5em;
+  }
+
   .card {
     @apply rounded-2xl border border-border-subtle bg-surface p-5 shadow-sm;
   }

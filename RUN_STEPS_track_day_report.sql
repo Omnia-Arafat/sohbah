@@ -371,3 +371,56 @@ $$;
 
 revoke execute on function public.set_my_partner(uuid, text, uuid, text) from public;
 grant  execute on function public.set_my_partner(uuid, text, uuid, text) to anon, authenticated;
+
+create or replace function public.cohort_day_reports(
+  p_cohort_id uuid,
+  p_date      date
+)
+returns table (
+  enrollment_id uuid,
+  student_name  text,
+  father_name   text,
+  partner_name  text,
+  reported      boolean,
+  recited_new    boolean,
+  recited_review boolean,
+  heard_recitation      boolean,
+  prayed_with_memorised boolean
+)
+language sql stable security definer set search_path = public
+as $$
+  select e.id,
+         s.name,
+         s.father_name,
+         coalesce(
+           r.partner_name,
+           (select coalesce(p.external_name, ps.name)
+              from public.track_partners p
+              left join public.track_enrollments pe on pe.id = p.partner_enrollment_id
+              left join public.students ps on ps.id = pe.student_id
+             where p.enrollment_id = e.id and p.active_to is null
+             limit 1)
+         ),
+         r.id is not null,
+         coalesce(r.recited_new, false),
+         coalesce(r.recited_review, false),
+         coalesce(r.heard_recitation, false),
+         coalesce(r.prayed_with_memorised, false)
+    from public.track_enrollments e
+    join public.students s on s.id = e.student_id
+    join public.track_cohorts c on c.id = e.cohort_id
+    left join public.track_day_reports r
+           on r.enrollment_id = e.id and r.session_date = p_date
+   where e.cohort_id = p_cohort_id
+     and e.status in ('active', 'warned')
+     and exists (
+       select 1 from public.teachers t
+        where t.academy_id = c.academy_id
+          and t.auth_user_id = auth.uid()
+          and t.is_active
+     )
+   order by s.name;
+$$;
+
+revoke execute on function public.cohort_day_reports(uuid, date) from public;
+grant  execute on function public.cohort_day_reports(uuid, date) to authenticated;
