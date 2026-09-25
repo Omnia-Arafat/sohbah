@@ -8,10 +8,17 @@ import { matchesSearch } from "@/lib/arabic-search";
 import { getMe, meKey, subscribeMe } from "@/lib/me-store";
 import { createClient } from "@/lib/supabase/client";
 
+/*
+  No father's name.
+
+  `students.father_name` is a column the academy stopped using: all 182 of
+  Sohbah's students carry the import's "-" in it, without exception. It is
+  still NOT NULL in the schema, so the placeholder cannot simply be cleared —
+  but nothing here should read it. The name is written whole, in `name`.
+*/
 type Option = {
   enrollment_id: string;
   student_name: string;
-  father_name: string | null;
   cohort_name: string;
   track_name: string;
   /** Her own دفعة sorts first; the rest of the academy follows. */
@@ -75,11 +82,7 @@ export function PartnerClient({ academySlug }: { academySlug: string }) {
       ? []
       : trimmed === ""
         ? options
-        : options.filter(
-            (o) =>
-              matchesSearch(o.student_name, trimmed) ||
-              matchesSearch(o.father_name ?? "", trimmed),
-          );
+        : options.filter((o) => matchesSearch(o.student_name, trimmed));
 
   async function choose(enrollmentId: string | null, name: string | null) {
     if (!me) return;
@@ -177,12 +180,7 @@ export function PartnerClient({ academySlug }: { academySlug: string }) {
                   className="flex min-h-14 w-full items-center gap-3 px-4 py-2 text-start transition-colors hover:bg-surface-muted disabled:opacity-60"
                 >
                   <span className="min-w-0 flex-grow">
-                    <span className="block truncate text-sm">
-                      {o.student_name}
-                      {o.father_name && (
-                        <span className="text-muted-foreground"> {o.father_name}</span>
-                      )}
-                    </span>
+                    <span className="block truncate text-sm">{o.student_name}</span>
                     {/* The دفعة, because two students can share a name and it
                         is the only thing that tells them apart. Only for the
                         ones outside her own — on her own دفعة it would be the

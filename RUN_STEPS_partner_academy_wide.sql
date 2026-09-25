@@ -1,12 +1,6 @@
-create or replace function public.real_father_name(p_value text)
-returns text
-language sql immutable
-as $$
-  select nullif(nullif(btrim(coalesce(p_value, '')), '-'), '—');
-$$;
-
-comment on function public.real_father_name(text) is
-  'A father name, or NULL when the stored value is the import''s "-" placeholder.';
+drop function if exists public.my_partner_options(uuid, text);
+drop function if exists public.cohort_day_reports(uuid, date);
+drop function if exists public.pending_excuses(uuid);
 
 create or replace function public.my_partner_options(
   p_student_id uuid,
@@ -15,7 +9,6 @@ create or replace function public.my_partner_options(
 returns table (
   enrollment_id uuid,
   student_name  text,
-  father_name   text,
   cohort_name   text,
   track_name    text,
   same_cohort   boolean,
@@ -59,7 +52,6 @@ begin
   return query
     select e.id,
            s.name,
-           public.real_father_name(s.father_name),
            c.name_ar,
            t.name_ar,
            e.cohort_id = v_cohort,
@@ -90,7 +82,6 @@ create or replace function public.cohort_day_reports(
 returns table (
   enrollment_id uuid,
   student_name  text,
-  father_name   text,
   partner_name  text,
   reported      boolean,
   recited_new    boolean,
@@ -102,7 +93,6 @@ language sql stable security definer set search_path = public
 as $$
   select e.id,
          s.name,
-         public.real_father_name(s.father_name),
          coalesce(
            r.partner_name,
            (select coalesce(p.external_name, ps.name)
@@ -140,7 +130,6 @@ create or replace function public.pending_excuses(p_academy_id uuid)
 returns table (
   request_id    uuid,
   student_name  text,
-  father_name   text,
   absence_date  date,
   reason        text,
   cohort_name   text,
@@ -149,7 +138,7 @@ returns table (
 )
 language sql stable security definer set search_path = public
 as $$
-  select r.id, s.name, public.real_father_name(s.father_name),
+  select r.id, s.name,
          r.absence_date, r.reason, c.name_ar, t.name_ar, r.created_at
     from public.track_excuse_requests r
     join public.students s on s.id = r.student_id

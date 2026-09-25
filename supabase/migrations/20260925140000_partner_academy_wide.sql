@@ -1,15 +1,19 @@
 -- =============================================================================
 -- Two corrections to the السرد functions.
 --
--- 1. The placeholder father name. 172 of the academy's students carry a
---    literal "-" in `father_name`, left by the import that had to fill a NOT
---    NULL column. Printed beside a name it reads "سمر مجدي -", which looks
---    like broken data rather than a missing field. The TypeScript readers
---    already drop it (src/lib/cohort-dal.ts); these SQL ones did not, so the
---    dash came back on every screen they feed.
+-- 1. No father's name, anywhere.
 --
---    Fixed here rather than by an UPDATE over 172 live student records: a
---    display convention is reversible and that write is not.
+--    `students.father_name` is a field the academy stopped keeping. Every one
+--    of Sohbah's 182 students holds the import's "-" in it — 182 of 182, not
+--    a single exception — because the column is NOT NULL and something had to
+--    go in. A name here is written whole, in `name`.
+--
+--    So these functions stop returning it rather than stop printing a dash.
+--    Blanking the placeholder would have left a column that is always empty
+--    being carried through three screens; the field is simply gone.
+--
+--    The column itself stays: it is NOT NULL on a table of 182 live records,
+--    and dropping it is a separate decision from not reading it.
 --
 -- 2. الرفيقة is chosen from the whole academy, not one cohort.
 --
@@ -22,15 +26,14 @@
 --    share a name and the دفعة is what tells them apart.
 -- =============================================================================
 
-create or replace function public.real_father_name(p_value text)
-returns text
-language sql immutable
-as $$
-  select nullif(nullif(btrim(coalesce(p_value, '')), '-'), '—');
-$$;
+-- Postgres refuses to change a function's return columns through CREATE OR
+-- REPLACE ('cannot change return type of existing function'), and all three
+-- lose their father_name column here. So each is dropped first. Nothing else
+-- references them — they were written this week.
 
-comment on function public.real_father_name(text) is
-  'A father name, or NULL when the stored value is the import''s "-" placeholder.';
+drop function if exists public.my_partner_options(uuid, text);
+drop function if exists public.cohort_day_reports(uuid, date);
+drop function if exists public.pending_excuses(uuid);
 
 -- --- الرفيقة: the whole academy ---------------------------------------------
 
@@ -41,7 +44,6 @@ create or replace function public.my_partner_options(
 returns table (
   enrollment_id uuid,
   student_name  text,
-  father_name   text,
   cohort_name   text,
   track_name    text,
   same_cohort   boolean,
@@ -85,7 +87,6 @@ begin
   return query
     select e.id,
            s.name,
-           public.real_father_name(s.father_name),
            c.name_ar,
            t.name_ar,
            e.cohort_id = v_cohort,
@@ -120,7 +121,6 @@ create or replace function public.cohort_day_reports(
 returns table (
   enrollment_id uuid,
   student_name  text,
-  father_name   text,
   partner_name  text,
   reported      boolean,
   recited_new    boolean,
@@ -132,7 +132,6 @@ language sql stable security definer set search_path = public
 as $$
   select e.id,
          s.name,
-         public.real_father_name(s.father_name),
          coalesce(
            r.partner_name,
            (select coalesce(p.external_name, ps.name)
@@ -172,7 +171,6 @@ create or replace function public.pending_excuses(p_academy_id uuid)
 returns table (
   request_id    uuid,
   student_name  text,
-  father_name   text,
   absence_date  date,
   reason        text,
   cohort_name   text,
@@ -181,7 +179,7 @@ returns table (
 )
 language sql stable security definer set search_path = public
 as $$
-  select r.id, s.name, public.real_father_name(s.father_name),
+  select r.id, s.name,
          r.absence_date, r.reason, c.name_ar, t.name_ar, r.created_at
     from public.track_excuse_requests r
     join public.students s on s.id = r.student_id

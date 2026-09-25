@@ -8,7 +8,6 @@ import { createClient } from "@/lib/supabase/client";
 type Request = {
   request_id: string;
   student_name: string;
-  father_name: string;
   absence_date: string;
   reason: string | null;
   cohort_name: string;

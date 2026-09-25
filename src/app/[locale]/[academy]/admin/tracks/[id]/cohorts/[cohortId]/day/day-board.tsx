@@ -8,7 +8,6 @@ import { createClient } from "@/lib/supabase/client";
 type Row = {
   enrollment_id: string;
   student_name: string;
-  father_name: string;
   partner_name: string | null;
   reported: boolean;
   recited_new: boolean;
