@@ -19,6 +19,7 @@ export type QuestionValues = {
 
 export type QuestionFormState =
   | { status: "idle" }
+  | { status: "saved"; regraded: number }
   | { status: "invalid"; reason: string; values: QuestionValues }
   | { status: "failed"; reason: string; values: QuestionValues };
 
@@ -136,6 +137,105 @@ export async function deleteQuestion(formData: FormData) {
     .eq("quiz_id", quizId);
 
   if (error) console.error("question delete failed", error);
+  // Scores already given still count the deleted question's points.
+  else await regrade(supabase, quizId);
 
   revalidatePath(`/${academySlug}/admin/quizzes/${quizId}`);
+}
+
+/**
+ * Edits a question in place — wording, points, lesson, options and which one
+ * is correct — even after the quiz is published and students have sat it.
+ *
+ * Options are updated by id rather than replaced, because a student's saved
+ * answer points at option ids: rewording an option must not orphan the answers
+ * that chose it. An option whose text is cleared is removed; a new text in an
+ * empty row is added. The kind is fixed once written — switching a choice
+ * question to a typed one would leave every saved answer meaningless.
+ *
+ * Every finished attempt is then marked again against the new key.
+ */
+export async function updateQuestion(
+  _previous: QuestionFormState,
+  formData: FormData,
+): Promise<QuestionFormState> {
+  const academySlug = String(formData.get("academySlug") ?? "").trim();
+  const quizId = String(formData.get("quizId") ?? "").trim();
+  const questionId = String(formData.get("questionId") ?? "").trim();
+  const kind = String(formData.get("kind") ?? "") as QuestionKind;
+  const prompt = String(formData.get("prompt") ?? "").trim();
+  const unitId = String(formData.get("unitId") ?? "").trim();
+  const points = Number(String(formData.get("points") ?? "1")) || 1;
+
+  const texts = formData.getAll("optionText").map((value) => String(value).trim());
+  const ids = formData.getAll("optionId").map((value) => String(value));
+  const correct = new Set(formData.getAll("optionCorrect").map((v) => String(v)));
+
+  const values: QuestionValues = {
+    prompt,
+    unitId,
+    points: String(formData.get("points") ?? "1"),
+    optionTexts: texts,
+    correct: [...correct],
+  };
+
+  const invalid = validateQuestion(formData);
+  if (invalid) return { status: "invalid", reason: invalid, values };
+
+  await requireStaffSession(`/${academySlug}/admin/quizzes/${quizId}`);
+  const supabase = await createClient();
+
+  const updated: { data: { id: string }[] | null; error: unknown } = await supabase
+    .from("quiz_questions")
+    .update({ prompt, points, ...(formData.has("unitId") ? { unit_id: unitId || null } : {}) })
+    .eq("id", questionId)
+    .eq("quiz_id", quizId)
+    .select("id");
+
+  if (updated.error || !updated.data?.length) {
+    console.error("question update failed", updated.error);
+    return { status: "failed", reason: "generic", values };
+  }
+
+  const isCorrect = (index: number) => kind === "fill_blank" || correct.has(String(index));
+  let position = 0;
+
+  for (const [index, text] of texts.entries()) {
+    const id = ids[index] ?? "";
+    let result;
+
+    if (text) {
+      position += 1;
+      const row = { text, position, is_correct: isCorrect(index) };
+      result = id
+        ? await supabase.from("quiz_options").update(row).eq("id", id).eq("question_id", questionId)
+        : await supabase.from("quiz_options").insert({ ...row, question_id: questionId });
+    } else if (id) {
+      result = await supabase.from("quiz_options").delete().eq("id", id).eq("question_id", questionId);
+    }
+
+    if (result?.error) {
+      console.error("option save failed", result.error);
+      return { status: "failed", reason: "generic", values };
+    }
+  }
+
+  const regraded = await regrade(supabase, quizId);
+
+  revalidatePath(`/${academySlug}/admin/quizzes/${quizId}`);
+  revalidatePath(`/${academySlug}/admin/quizzes/${quizId}/results`);
+  return { status: "saved", regraded };
+}
+
+/** Marks every finished attempt again; returns how many were touched. */
+async function regrade(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  quizId: string,
+): Promise<number> {
+  const { data, error } = await supabase.rpc("regrade_quiz", { p_quiz_id: quizId });
+  if (error) {
+    console.error("regrade_quiz failed", error);
+    return 0;
+  }
+  return data ?? 0;
 }

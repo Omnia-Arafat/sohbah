@@ -12,6 +12,7 @@ import { loadCurricula, loadUnits } from "@/lib/curricula";
 import { createClient } from "@/lib/supabase/server";
 import { setQuizDuration, setQuizPublished } from "../actions";
 import { deleteQuestion } from "./actions";
+import { QuestionEditor } from "./question-editor";
 import { QuestionForm } from "./question-form";
 
 type PageProps = {
@@ -276,16 +277,36 @@ export default async function QuizBuilderPage({ params }: PageProps) {
                     </div>
                   </div>
 
-                  <form action={deleteQuestion}>
-                    <input type="hidden" name="academySlug" value={academySlug} />
-                    <input type="hidden" name="quizId" value={quiz.id} />
-                    <input type="hidden" name="questionId" value={question.id} />
-                    <ConfirmButton
-                      label={tQ("delete")}
-                      confirmMessage={tQ("confirmDelete")}
-                      className="btn-danger"
+                  <div className="flex flex-col gap-3">
+                    <QuestionEditor
+                      academySlug={academySlug}
+                      quizId={quiz.id}
+                      units={units}
+                      locale={locale}
+                      question={{
+                        id: question.id,
+                        kind: question.kind,
+                        unitId: question.unit_id,
+                        prompt: question.prompt,
+                        points: Number(question.points),
+                        options: options.map((option) => ({
+                          id: option.id,
+                          text: option.text,
+                          is_correct: option.is_correct,
+                        })),
+                      }}
                     />
-                  </form>
+                    <form action={deleteQuestion}>
+                      <input type="hidden" name="academySlug" value={academySlug} />
+                      <input type="hidden" name="quizId" value={quiz.id} />
+                      <input type="hidden" name="questionId" value={question.id} />
+                      <ConfirmButton
+                        label={tQ("delete")}
+                        confirmMessage={tQ("confirmDelete")}
+                        className="btn-danger"
+                      />
+                    </form>
+                  </div>
                 </li>
               );
             })}

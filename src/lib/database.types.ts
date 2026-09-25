@@ -1026,6 +1026,10 @@ export type Database = {
         Args: { p_student_id: string; p_phone: string };
         Returns: AcademyQuiz[];
       };
+      regrade_quiz: {
+        Args: { p_quiz_id: string };
+        Returns: number;
+      };
       quiz_attempt_review: {
         Args: { p_attempt_id: string };
         Returns: QuizReviewRow[];
