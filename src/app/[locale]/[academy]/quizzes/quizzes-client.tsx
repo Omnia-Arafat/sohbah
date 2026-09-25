@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 
 import { ClipboardCheck, Lock, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import type { MyQuiz, MyQuizResult } from "@/lib/database.types";
+import type { AcademyQuiz, MyQuizResult } from "@/lib/database.types";
 import { getMe, meKey, subscribeMe } from "@/lib/me-store";
 import { createClient } from "@/lib/supabase/client";
 
@@ -18,9 +18,9 @@ import { createClient } from "@/lib/supabase/client";
  * one list would make the second look like homework and the first look
  * optional.
  *
- * The teacher tab gathers across every circle she attends. That is the whole
- * reason this screen exists: quizzes live on a circle's page, and a student in
- * three circles had to open three links to find out whether anything was set.
+ * The teacher tab lists every open quiz in the academy, not only those of her
+ * own circles, each labelled with its circle type and معلمة so the list stays
+ * readable as it grows.
  */
 export function QuizzesClient({
   academySlug,
@@ -40,7 +40,7 @@ export function QuizzesClient({
   );
 
   const [tab, setTab] = useState<"teacher" | "self">("teacher");
-  const [quizzes, setQuizzes] = useState<MyQuiz[] | null>(null);
+  const [quizzes, setQuizzes] = useState<AcademyQuiz[] | null>(null);
   const [results, setResults] = useState<MyQuizResult[]>([]);
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export function QuizzesClient({
 
     (async () => {
       const [open, done] = await Promise.all([
-        supabase.rpc("my_quizzes", {
+        supabase.rpc("academy_quizzes", {
           p_student_id: me.studentId,
           p_phone: me.phone,
         }),
@@ -59,9 +59,9 @@ export function QuizzesClient({
         }),
       ]);
       if (cancelled) return;
-      if (open.error) console.error("my_quizzes failed", open.error);
+      if (open.error) console.error("academy_quizzes failed", open.error);
       if (done.error) console.error("my_quiz_results failed", done.error);
-      setQuizzes((open.data ?? []) as MyQuiz[]);
+      setQuizzes((open.data ?? []) as AcademyQuiz[]);
       setResults((done.data ?? []) as MyQuizResult[]);
     })();
 
@@ -144,7 +144,7 @@ export function QuizzesClient({
 
               {quizzes.map((quiz) => (
                 <QuizCard
-                  key={`${quiz.quiz_id}-${quiz.circle_id}`}
+                  key={quiz.quiz_id}
                   quiz={quiz}
                   academySlug={academySlug}
                   locale={locale}
@@ -211,7 +211,7 @@ function QuizCard({
   locale,
   t,
 }: {
-  quiz: MyQuiz;
+  quiz: AcademyQuiz;
   academySlug: string;
   locale: string;
   t: ReturnType<typeof useTranslations<"quizzes">>;
@@ -225,8 +225,11 @@ function QuizCard({
     >
       <div className="p-4">
         <h3 className="font-display text-lg font-bold">{quiz.title}</h3>
-        <p className="mt-0.5 text-sm text-muted-foreground">
-          {quiz.circle_name} · {quiz.teacher_name}
+        <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+          <span className="rounded-full bg-brand-100 px-2.5 py-0.5 text-xs font-semibold text-brand-800 dark:bg-brand-900 dark:text-brand-100">
+            {locale === "ar" ? quiz.type_name_ar : quiz.type_name_en}
+          </span>
+          {quiz.teacher_name && <span>{t("byTeacher", { name: quiz.teacher_name })}</span>}
         </p>
 
         <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">

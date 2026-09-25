@@ -1509,7 +1509,7 @@
   "quizzes": {
     "title": "Quizzes",
     "tabs": {
-      "fromTeacher": "From your teacher",
+      "fromTeacher": "From teachers",
       "selfTest": "Test yourself"
     },
     "signInPrompt": "Open your page first, so we know whose quizzes to show.",
@@ -1521,11 +1521,12 @@
     "questions": "{count, plural, one{# question} other{# questions}}",
     "attempts": "{count, plural, one{# attempt} other{# attempts}}",
     "identityNote": "You will need your name and phone number so we know it is you.",
+    "byTeacher": "Teacher {name}",
     "start": "Start the quiz",
     "retake": "Try again",
     "usedUp": "No attempts left",
-    "empty": "No open quizzes from your teacher right now.",
-    "emptyHint": "One will appear here when your teacher opens it.",
+    "empty": "No open quizzes right now.",
+    "emptyHint": "One will appear here when a teacher opens it.",
     "results": "Your results",
     "resultsEmpty": "You have not taken a quiz yet.",
     "awaiting": "Waiting for your teacher to mark it",

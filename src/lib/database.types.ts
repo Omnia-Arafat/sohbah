@@ -286,6 +286,24 @@ export type MyQuiz = {
   last_submitted_at: string | null;
 };
 
+/** One open quiz anywhere in her academy, from `academy_quizzes`. */
+export type AcademyQuiz = {
+  quiz_id: string;
+  title: string;
+  instructions: string | null;
+  duration_minutes: number | null;
+  closes_at: string | null;
+  max_attempts: number;
+  question_count: number;
+  circle_type: string;
+  type_name_ar: string;
+  type_name_en: string;
+  teacher_name: string | null;
+  /** The circle she sits it in — see the migration for how it is chosen. */
+  registration_slug: string;
+  attempts_used: number;
+};
+
 /** One finished attempt, from `my_quiz_results`. */
 export type MyQuizResult = {
   quiz_id: string;
@@ -960,6 +978,10 @@ export type Database = {
       my_quizzes: {
         Args: { p_student_id: string; p_phone: string };
         Returns: MyQuiz[];
+      };
+      academy_quizzes: {
+        Args: { p_student_id: string; p_phone: string };
+        Returns: AcademyQuiz[];
       };
       my_quiz_results: {
         Args: { p_student_id: string; p_phone: string };
