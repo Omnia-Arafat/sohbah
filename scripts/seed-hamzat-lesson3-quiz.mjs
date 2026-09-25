@@ -2,13 +2,9 @@
  * Fills "اختبار الدرس الثالث من باب الهمزات" with its ten questions, 2026-09-25.
  *
  * The quiz row itself was created by the admin from the UI (tajweed, circle
- * وسام لطفي); this only adds questions and options to it. Two fixes to the
- * text as it was handed over:
- *   1. Q1's key said الأسماء. Hamzat al-wasl before a sākin hamzat al-qaṭʿ
- *      (ائذن، اؤتمن، ائتوني، ائت) occurs only in verbs, so the key is الأفعال.
- *   2. Q3's key was longer than its option ب, so no option matched it. Option ب
- *      now carries the full answer. The key's "بحركة ثالث الفعل" is left out:
- *      it fails for ائذن (ذ مفتوحة, yet the wasl is read with kasra).
+ * وسام لطفي); this only adds questions and options to it. The answer key is
+ * the teacher's, as she confirmed it; Q3's option ب carries the key's full
+ * wording, since the shorter option text matched no answer.
  *
  * Refuses to run if the quiz already has questions, so it cannot double them.
  * Dry run by default. Apply with:  node scripts/seed-hamzat-lesson3-quiz.mjs --apply
