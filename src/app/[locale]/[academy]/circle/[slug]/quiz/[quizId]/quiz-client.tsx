@@ -205,8 +205,36 @@ export function QuizClient({
 
   async function handleSubmit() {
     if (!attemptId) return;
+    // Capture as a const so TypeScript and the closures below see `string`,
+    // not `string | null`.
+    const id = attemptId;
     setSubmitting(true);
-    const outcome = await submitAttempt(attemptId);
+
+    // Flush all pending debounced text saves before grading. The server grades
+    // only what is in quiz_answers at the moment submit runs, so any save still
+    // in-flight or waiting on the 600 ms debounce would produce a 0-score gap.
+    for (const qid of Object.keys(textTimers.current)) {
+      window.clearTimeout(textTimers.current[qid]);
+      delete textTimers.current[qid];
+    }
+
+    // Persist the current snapshot of every question unconditionally. For
+    // option-based questions this is idempotent (the DB upserts); for text
+    // answers it replaces whatever the debounce may or may not have saved.
+    // Running in parallel keeps the round-trip cost to one network tick.
+    const currentQuestions = questions; // stable snapshot
+    await Promise.all(
+      currentQuestions.map((q) =>
+        saveAnswer(
+          id,
+          q.id,
+          q.chosen.length > 0 ? q.chosen : null,
+          q.text.trim() || null,
+        ),
+      ),
+    );
+
+    const outcome = await submitAttempt(id);
     setSubmitting(false);
     if (!outcome) return;
     // Results shown on submit go straight to the marked paper, which has the
