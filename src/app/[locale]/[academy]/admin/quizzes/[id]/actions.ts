@@ -4,13 +4,23 @@ import { revalidatePath } from "next/cache";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import type { QuestionKind } from "@/lib/database.types";
+import { validateQuestion } from "./validate-question";
 
 const KINDS: QuestionKind[] = ["mcq", "multi", "true_false", "short_text", "fill_blank"];
 
+/** What she typed, handed back on a failure so the form can refill itself. */
+export type QuestionValues = {
+  prompt: string;
+  unitId: string;
+  points: string;
+  optionTexts: string[];
+  correct: string[];
+};
+
 export type QuestionFormState =
   | { status: "idle" }
-  | { status: "invalid"; reason: string }
-  | { status: "failed"; reason: string };
+  | { status: "invalid"; reason: string; values: QuestionValues }
+  | { status: "failed"; reason: string; values: QuestionValues };
 
 /**
  * Adds one question and its options in a single submit.
@@ -37,36 +47,24 @@ export async function addQuestion(
   const unitId = String(formData.get("unitId") ?? "").trim();
   const points = Number(String(formData.get("points") ?? "1")) || 1;
 
-  if (!prompt) return { status: "invalid", reason: "promptRequired" };
-  if (!KINDS.includes(kind)) return { status: "invalid", reason: "generic" };
-
   const texts = formData.getAll("optionText").map((value) => String(value).trim());
-  // Checkbox values carry the row index, since unchecked boxes are not posted
-  // at all and positional alignment would otherwise be lost.
   const correct = new Set(formData.getAll("optionCorrect").map((v) => String(v)));
+
+  const values: QuestionValues = {
+    prompt,
+    unitId,
+    points: String(formData.get("points") ?? "1"),
+    optionTexts: texts,
+    correct: [...correct],
+  };
+
+  if (!KINDS.includes(kind)) return { status: "invalid", reason: "generic", values };
+  const invalid = validateQuestion(formData);
+  if (invalid) return { status: "invalid", reason: invalid, values };
 
   const options = texts
     .map((text, index) => ({ text, index }))
     .filter((option) => option.text.length > 0);
-
-  const needsOptions = kind === "mcq" || kind === "multi" || kind === "true_false";
-
-  if (needsOptions) {
-    if (options.length < 2) return { status: "invalid", reason: "needTwoOptions" };
-    if (!options.some((option) => correct.has(String(option.index)))) {
-      return { status: "invalid", reason: "needCorrect" };
-    }
-    // A single-answer question with several correct options would be graded by
-    // set equality and become unanswerable in the UI, which offers one radio.
-    if (kind !== "multi") {
-      const correctCount = options.filter((o) => correct.has(String(o.index))).length;
-      if (correctCount > 1) return { status: "invalid", reason: "onlyOneCorrect" };
-    }
-  }
-
-  if (kind === "fill_blank" && options.length === 0) {
-    return { status: "invalid", reason: "needAnswer" };
-  }
 
   await requireStaffSession(`/${academySlug}/admin/quizzes/${quizId}`);
 
@@ -95,7 +93,7 @@ export async function addQuestion(
 
   if (error || !question) {
     console.error("question insert failed", error);
-    return { status: "failed", reason: "generic" };
+    return { status: "failed", reason: "generic", values };
   }
 
   if (options.length > 0) {
@@ -115,7 +113,7 @@ export async function addQuestion(
       // it would be unanswerable and ungradeable. Roll it back by hand, since
       // two client calls are not one transaction.
       await supabase.from("quiz_questions").delete().eq("id", question.id);
-      return { status: "failed", reason: "generic" };
+      return { status: "failed", reason: "generic", values };
     }
   }
 

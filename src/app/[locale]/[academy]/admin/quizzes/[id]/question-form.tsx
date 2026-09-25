@@ -7,6 +7,7 @@ import { BrandSelect } from "@/components/brand-select";
 import { Link } from "@/i18n/navigation";
 import type { CurriculumUnit, QuestionKind } from "@/lib/database.types";
 import { addQuestion, type QuestionFormState } from "./actions";
+import { validateQuestion, type QuestionError } from "./validate-question";
 
 const OPTION_SLOTS = 4;
 
@@ -45,6 +46,13 @@ export function QuestionForm({
   });
 
   const [kind, setKind] = useState<QuestionKind>("mcq");
+  const [clientError, setClientError] = useState<QuestionError | null>(null);
+
+  // After a failed save the server hands back what she typed. React resets a
+  // form once its action finishes, and it resets to these defaults — so the
+  // question comes back filled in rather than wiped.
+  const values = state.status === "idle" ? undefined : state.values;
+  const error = clientError ?? (state.status === "idle" ? null : state.reason);
 
   const needsOptions = kind === "mcq" || kind === "multi" || kind === "true_false";
   const isFillBlank = kind === "fill_blank";
@@ -56,6 +64,13 @@ export function QuestionForm({
   return (
     <form
       action={formAction}
+      // Checked here first: a half-written question never leaves the browser,
+      // so nothing is submitted and nothing she typed is cleared.
+      onSubmit={(event) => {
+        const problem = validateQuestion(new FormData(event.currentTarget));
+        setClientError(problem);
+        if (problem) event.preventDefault();
+      }}
       // Remounting on kind change clears option boxes that no longer apply,
       // so a leftover answer from a previous kind cannot be submitted.
       key={kind}
@@ -102,7 +117,7 @@ export function QuestionForm({
             <BrandSelect
               id="unitId"
               name="unitId"
-              defaultValue=""
+              defaultValue={values?.unitId ?? ""}
               options={[
                 { value: "", label: t("noUnit") },
                 ...units.map((unit) => ({
@@ -126,6 +141,7 @@ export function QuestionForm({
           dir="rtl"
           className="input"
           placeholder={t("placeholders.prompt")}
+          defaultValue={values?.prompt ?? ""}
         />
       </div>
 
@@ -149,6 +165,7 @@ export function QuestionForm({
                     name="optionCorrect"
                     value={String(index)}
                     aria-label={t("markCorrect")}
+                    defaultChecked={values?.correct.includes(String(index)) ?? false}
                     className="h-5 w-5 shrink-0"
                   />
                 )}
@@ -156,7 +173,7 @@ export function QuestionForm({
                   name="optionText"
                   dir="rtl"
                   className="input"
-                  defaultValue={defaults[index] ?? ""}
+                  defaultValue={values?.optionTexts[index] ?? defaults[index] ?? ""}
                   placeholder={
                     isFillBlank
                       ? t("placeholders.answer", { n: String(index + 1) })
@@ -184,12 +201,14 @@ export function QuestionForm({
           min={1}
           step={1}
           className="input"
-          defaultValue="1"
+          defaultValue={values?.points ?? "1"}
         />
       </div>
 
-      {(state.status === "invalid" || state.status === "failed") && (
-        <p className="text-sm text-absent">{t(`errors.${state.reason}`)}</p>
+      {error && (
+        <p role="alert" className="text-sm text-absent">
+          {t(`errors.${error}`)}
+        </p>
       )}
 
       <SubmitButton />
