@@ -144,6 +144,35 @@ export async function setQuizPublished(formData: FormData) {
   revalidatePath(`/${academySlug}/admin/quizzes/${quizId}`);
 }
 
+/**
+ * Changing the time after the quiz exists. Blank means no limit. An attempt in
+ * progress picks up the new length too, since its deadline is always computed
+ * from `started_at` plus the quiz's current duration.
+ */
+export async function setQuizDuration(formData: FormData) {
+  const academySlug = String(formData.get("academySlug") ?? "");
+  const quizId = String(formData.get("quizId") ?? "");
+  const raw = String(formData.get("durationMinutes") ?? "").trim();
+  const duration = raw ? Number(raw) : null;
+
+  if (duration !== null && (!Number.isInteger(duration) || duration < 1 || duration > 480)) {
+    return;
+  }
+
+  await requireStaffSession(`/${academySlug}/admin/quizzes/${quizId}`);
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("quizzes")
+    .update({ duration_minutes: duration })
+    .eq("id", quizId);
+
+  if (error) console.error("quiz duration update failed", error);
+
+  revalidatePath(`/${academySlug}/admin/quizzes`);
+  revalidatePath(`/${academySlug}/admin/quizzes/${quizId}`);
+}
+
 /** The author or a مشرفة. Attempts already sat are deleted with it. */
 export async function deleteQuiz(formData: FormData) {
   const academySlug = String(formData.get("academySlug") ?? "");

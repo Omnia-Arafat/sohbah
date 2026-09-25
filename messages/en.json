@@ -987,6 +987,7 @@
       "draft": "Draft",
       "publish": "Publish",
       "unpublish": "Unpublish",
+      "saveDuration": "Save duration",
       "needQuestions": "Add at least one question before publishing.",
       "results": "Results",
       "delete": "Delete",

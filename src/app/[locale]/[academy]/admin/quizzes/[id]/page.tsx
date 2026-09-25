@@ -9,7 +9,7 @@ import { requireStaffSession } from "@/lib/auth/dal";
 import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import { loadCurricula, loadUnits } from "@/lib/curricula";
 import { createClient } from "@/lib/supabase/server";
-import { setQuizPublished } from "../actions";
+import { setQuizDuration, setQuizPublished } from "../actions";
 import { deleteQuestion } from "./actions";
 import { QuestionForm } from "./question-form";
 
@@ -113,6 +113,35 @@ export default async function QuizBuilderPage({ params }: PageProps) {
             ? ` · ${t("durationLabel", { minutes: String(quiz.duration_minutes) })}`
             : ""}
         </p>
+
+        <form
+          action={setQuizDuration}
+          // Remount after a save so the box shows the stored value.
+          key={quiz.duration_minutes ?? "none"}
+          className="mt-4 flex flex-wrap items-end gap-2"
+        >
+          <input type="hidden" name="academySlug" value={academySlug} />
+          <input type="hidden" name="quizId" value={quiz.id} />
+          <div>
+            <label className="field-label" htmlFor="durationMinutes">
+              {t("fields.duration")}
+            </label>
+            <input
+              id="durationMinutes"
+              name="durationMinutes"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={480}
+              className="input w-40"
+              placeholder={t("placeholders.duration")}
+              defaultValue={quiz.duration_minutes ?? ""}
+            />
+          </div>
+          <button type="submit" className="btn-secondary px-4 py-2 text-sm">
+            {t("saveDuration")}
+          </button>
+        </form>
 
         <div className="mt-4">
           <form action={setQuizPublished}>
