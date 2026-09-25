@@ -39,6 +39,19 @@ declare global {
 declare const self: ServiceWorkerGlobalScope;
 
 /**
+ * The mushaf page cache, VERSIONED.
+ *
+ * "The Quran does not change" is true of the text and not of how we draw it:
+ * cache-first for a year meant a page she had opened kept its old HTML for a
+ * year, so when the البسملة was moved to its own line and the waqf marks were
+ * seated on their words, every الكهف read on a Friday stayed broken on her
+ * phone. Bump the suffix whenever the page's rendering of the text changes;
+ * the old caches are deleted on activate below.
+ */
+const MUSHAF_PAGES = "sohbah-mushaf-pages-v2";
+const STALE_MUSHAF_PAGES = ["sohbah-mushaf-pages"];
+
+/**
  * The last thing between a student and the browser's own error page.
  *
  * Every navigation strategy here can run out of options: the network fails
@@ -141,7 +154,7 @@ const serwist = new Serwist({
       matcher: ({ url, request }) =>
         request.destination === "document" && /\/mushaf\/\d+$/.test(url.pathname),
       handler: new CacheFirst({
-        cacheName: "sohbah-mushaf-pages",
+        cacheName: MUSHAF_PAGES,
         plugins: [
           new ExpirationPlugin({
             maxEntries: 120,
@@ -160,7 +173,7 @@ const serwist = new Serwist({
               which is the one outcome worth this much machinery to avoid.
             */
             handlerDidError: async () => {
-              const cache = await caches.open("sohbah-mushaf-pages");
+              const cache = await caches.open(MUSHAF_PAGES);
               const [any] = await cache.keys();
               const cached = any ? await cache.match(any) : undefined;
               // An EMPTY cache used to fall through to `undefined` here, which
@@ -203,3 +216,9 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    Promise.all(STALE_MUSHAF_PAGES.map((name) => caches.delete(name))),
+  );
+});
