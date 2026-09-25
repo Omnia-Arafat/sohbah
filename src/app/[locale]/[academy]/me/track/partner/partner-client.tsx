@@ -11,7 +11,11 @@ import { createClient } from "@/lib/supabase/client";
 type Option = {
   enrollment_id: string;
   student_name: string;
-  father_name: string;
+  father_name: string | null;
+  cohort_name: string;
+  track_name: string;
+  /** Her own دفعة sorts first; the rest of the academy follows. */
+  same_cohort: boolean;
   is_current: boolean;
 };
 
@@ -74,7 +78,7 @@ export function PartnerClient({ academySlug }: { academySlug: string }) {
         : options.filter(
             (o) =>
               matchesSearch(o.student_name, trimmed) ||
-              matchesSearch(o.father_name, trimmed),
+              matchesSearch(o.father_name ?? "", trimmed),
           );
 
   async function choose(enrollmentId: string | null, name: string | null) {
@@ -170,12 +174,23 @@ export function PartnerClient({ academySlug }: { academySlug: string }) {
                   type="button"
                   disabled={saving}
                   onClick={() => choose(o.enrollment_id, null)}
-                  className="flex min-h-14 w-full items-center gap-3 px-4 text-start transition-colors hover:bg-surface-muted disabled:opacity-60"
+                  className="flex min-h-14 w-full items-center gap-3 px-4 py-2 text-start transition-colors hover:bg-surface-muted disabled:opacity-60"
                 >
-                  <span className="min-w-0 flex-grow truncate text-sm">
-                    {o.student_name}
-                    {o.father_name && (
-                      <span className="text-muted-foreground"> {o.father_name}</span>
+                  <span className="min-w-0 flex-grow">
+                    <span className="block truncate text-sm">
+                      {o.student_name}
+                      {o.father_name && (
+                        <span className="text-muted-foreground"> {o.father_name}</span>
+                      )}
+                    </span>
+                    {/* The دفعة, because two students can share a name and it
+                        is the only thing that tells them apart. Only for the
+                        ones outside her own — on her own دفعة it would be the
+                        same line under every name. */}
+                    {!o.same_cohort && (
+                      <span className="block truncate text-[11px] text-muted-foreground">
+                        {o.track_name} · {o.cohort_name}
+                      </span>
                     )}
                   </span>
                   {o.is_current && (
