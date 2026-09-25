@@ -175,8 +175,13 @@ begin
            s.cohort_name,
            s.track_name,
            least(((s.today - s.start_date) / 7)::int + 1, s.duration_weeks),
-           (select p.external_name
+           -- A رفيقة is either a student on the system or a name typed in,
+           -- and the card needs whichever she is. Reading external_name alone
+           -- left every in-system partner nameless.
+           (select coalesce(p.external_name, ps.name)
               from public.track_partners p
+              left join public.track_enrollments pe on pe.id = p.partner_enrollment_id
+              left join public.students ps on ps.id = pe.student_id
              where p.enrollment_id = s.enrollment_id
                and p.active_to is null
              limit 1),
@@ -310,3 +315,144 @@ create policy day_reports_staff on public.track_day_reports
   );
 
 revoke all on public.track_day_reports from anon, authenticated;
+
+-- =============================================================================
+-- الرفيقة — choosing her, and changing her.
+--
+-- `track_partners` already holds the shape: exactly one of a partner's
+-- enrolment or a typed name, one row current per student, history kept by
+-- closing `active_to`. What was missing is a way for the student to set it,
+-- with the same phone credential as everything else on her page.
+-- =============================================================================
+
+create or replace function public.my_partner_options(
+  p_student_id uuid,
+  p_phone      text
+)
+returns table (
+  enrollment_id uuid,
+  student_name  text,
+  father_name   text,
+  is_current    boolean
+)
+language plpgsql stable security definer set search_path = public
+as $$
+declare
+  v_student public.students%rowtype;
+  v_given   text;
+  v_mine    uuid;
+begin
+  select * into v_student from public.students where id = p_student_id;
+  if not found then
+    raise exception 'student_not_found' using errcode = 'P0002';
+  end if;
+
+  v_given := regexp_replace(coalesce(p_phone, ''), '\D', '', 'g');
+
+  if v_student.phone_key is null
+     or char_length(v_given) < 9
+     or (v_student.phone_key <> v_given
+         and right(v_student.phone_key, 9) <> right(v_given, 9)) then
+    raise exception 'phone_mismatch' using errcode = '42501';
+  end if;
+
+  select e.id into v_mine
+    from public.track_enrollments e
+   where e.student_id = p_student_id
+     and e.status in ('active', 'warned')
+   limit 1;
+
+  if v_mine is null then
+    return;
+  end if;
+
+  -- Her own دفعة only. A رفيقة from another cohort would be reciting a
+  -- different week's portion, and the one name that must never appear is her
+  -- own.
+  return query
+    select e.id,
+           s.name,
+           s.father_name,
+           exists (
+             select 1 from public.track_partners p
+              where p.enrollment_id = v_mine
+                and p.active_to is null
+                and p.partner_enrollment_id = e.id
+           )
+      from public.track_enrollments e
+      join public.students s on s.id = e.student_id
+     where e.cohort_id = (select cohort_id from public.track_enrollments where id = v_mine)
+       and e.id <> v_mine
+       and e.status in ('active', 'warned')
+     order by s.name;
+end
+$$;
+
+revoke execute on function public.my_partner_options(uuid, text) from public;
+grant  execute on function public.my_partner_options(uuid, text) to anon, authenticated;
+
+create or replace function public.set_my_partner(
+  p_student_id uuid,
+  p_phone      text,
+  p_partner_enrollment_id uuid,
+  p_external_name text
+)
+returns void
+language plpgsql security definer set search_path = public
+as $$
+declare
+  v_student public.students%rowtype;
+  v_given   text;
+  v_mine    uuid;
+  v_name    text;
+begin
+  select * into v_student from public.students where id = p_student_id;
+  if not found then
+    raise exception 'student_not_found' using errcode = 'P0002';
+  end if;
+
+  v_given := regexp_replace(coalesce(p_phone, ''), '\D', '', 'g');
+
+  if v_student.phone_key is null
+     or char_length(v_given) < 9
+     or (v_student.phone_key <> v_given
+         and right(v_student.phone_key, 9) <> right(v_given, 9)) then
+    raise exception 'phone_mismatch' using errcode = '42501';
+  end if;
+
+  select e.id into v_mine
+    from public.track_enrollments e
+   where e.student_id = p_student_id
+     and e.status in ('active', 'warned')
+   limit 1;
+
+  if v_mine is null then
+    raise exception 'not_on_a_track' using errcode = 'P0002';
+  end if;
+
+  v_name := nullif(btrim(coalesce(p_external_name, '')), '');
+
+  -- The table's own rule, restated here so the error is a sentence rather
+  -- than a constraint violation: one or the other, never both, never neither.
+  if (p_partner_enrollment_id is not null) = (v_name is not null) then
+    raise exception 'pick_one_partner' using errcode = '22023';
+  end if;
+
+  if p_partner_enrollment_id = v_mine then
+    raise exception 'partner_is_self' using errcode = '22023';
+  end if;
+
+  -- History is kept, not overwritten: today's card should still name the
+  -- رفيقة who heard it, long after a new one is chosen.
+  update public.track_partners
+     set active_to = current_date
+   where enrollment_id = v_mine
+     and active_to is null;
+
+  insert into public.track_partners (enrollment_id, partner_enrollment_id, external_name)
+  values (v_mine, p_partner_enrollment_id, v_name);
+end
+$$;
+
+revoke execute on function public.set_my_partner(uuid, text, uuid, text) from public;
+grant  execute on function public.set_my_partner(uuid, text, uuid, text) to anon, authenticated;

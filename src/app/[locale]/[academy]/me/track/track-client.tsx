@@ -210,18 +210,49 @@ export function TrackClient({
         </p>
       </div>
 
-      {week.partner_name && (
-        <div className="flex items-center gap-2.5 rounded-2xl border border-border-subtle bg-surface px-4 py-3">
-          <Users
-            className="h-4 w-4 shrink-0 text-brand-600 dark:text-brand-300"
-            aria-hidden="true"
-          />
-          <span className="text-xs text-muted-foreground">{t("partner")}</span>
-          <span className="min-w-0 flex-grow truncate text-sm font-bold">
-            {week.partner_name}
+      {/*
+        Her رفيقة, and the way to set one. Without a name here the card goes
+        out unsigned, so when there is none this is not a quiet grey line — it
+        is the one gold thing on the screen, the same treatment a cohort with
+        no معلمة gets on the admin side.
+      */}
+      <Link
+        href={`/${academySlug}/me/track/partner`}
+        className={`flex items-center gap-2.5 rounded-2xl border px-4 py-3 ${
+          week.partner_name
+            ? "border-border-subtle bg-surface"
+            : "border-accent-300 bg-accent-100 dark:border-accent-700 dark:bg-accent-700/20"
+        }`}
+      >
+        <Users
+          className={`h-4 w-4 shrink-0 ${
+            week.partner_name
+              ? "text-brand-600 dark:text-brand-300"
+              : "text-accent-700 dark:text-accent-200"
+          }`}
+          aria-hidden="true"
+        />
+        {week.partner_name ? (
+          <>
+            <span className="text-xs text-muted-foreground">{t("partner")}</span>
+            <span className="min-w-0 flex-grow truncate text-sm font-bold">
+              {week.partner_name}
+            </span>
+            <span className="shrink-0 text-xs font-semibold text-brand-700 dark:text-brand-300">
+              {t("changePartner")}
+            </span>
+          </>
+        ) : (
+          <span className="min-w-0 flex-grow">
+            <span className="block text-sm font-bold text-accent-700 dark:text-accent-200">
+              {t("pickPartner")}
+            </span>
+            <span className="block text-[11px] text-accent-700/85 dark:text-accent-200/85">
+              {t("pickPartnerNote")}
+            </span>
           </span>
-        </div>
-      )}
+        )}
+      </Link>
 
       {/*
         The week as a strip, starting at the لقاء — which is where the week
