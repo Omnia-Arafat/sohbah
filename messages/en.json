@@ -994,6 +994,12 @@
       "confirmDelete": "Delete “{name}” and every attempt on it? This cannot be undone.",
       "questionCount": "{count, plural, =0 {No questions} one {1 question} other {# questions}}",
       "totalPoints": "{points} points",
+      "links": {
+        "title": "Quiz link",
+        "hint": "Copy the link and send it to students. Each one confirms who she is with her phone number before starting.",
+        "draftHint": "This quiz is not published yet, so the link will not open for students until it is.",
+        "none": "No active circle of this type right now."
+      },
       "durationLabel": "{minutes} min",
       "errors": {
         "required": "This field is required.",

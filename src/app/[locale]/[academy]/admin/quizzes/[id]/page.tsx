@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Check } from "lucide-react";
 import { BackLink } from "@/components/back-link";
 import { ConfirmButton } from "@/components/confirm-button";
+import { CopyLinkButton } from "@/components/copy-link-button";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
@@ -48,14 +49,28 @@ export default async function QuizBuilderPage({ params }: PageProps) {
 
   if (!quiz) notFound();
 
-  const [circleTypes, questionsResult] = await Promise.all([
+  // The circles a student can sit it in — one link per circle, since a quiz
+  // is always opened through a circle's slug.
+  let circlesQuery = supabase
+    .from("circles")
+    .select("id, name, registration_slug")
+    .eq("academy_id", academy.id)
+    .eq("type", quiz.circle_type)
+    .eq("is_active", true)
+    .order("created_at");
+  if (quiz.circle_id) circlesQuery = circlesQuery.eq("id", quiz.circle_id);
+
+  const [circleTypes, questionsResult, circlesResult] = await Promise.all([
     loadCircleTypes(supabase, academy.id, { activeOnly: false }),
     supabase
       .from("quiz_questions")
       .select("*")
       .eq("quiz_id", quiz.id)
       .order("position"),
+    circlesQuery,
   ]);
+
+  const quizCircles = circlesResult.data ?? [];
 
   const questions = questionsResult.data ?? [];
 
@@ -168,6 +183,38 @@ export default async function QuizBuilderPage({ params }: PageProps) {
             <p className="mt-2 text-sm text-muted-foreground">{t("needQuestions")}</p>
           )}
         </div>
+      </section>
+
+      <section className="card flex flex-col gap-3">
+        <div>
+          <h2 className="text-lg font-semibold">{t("links.title")}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {quiz.is_published ? t("links.hint") : t("links.draftHint")}
+          </p>
+        </div>
+        {quizCircles.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t("links.none")}</p>
+        ) : (
+          <ul className="flex flex-col gap-3">
+            {quizCircles.map((circle) => {
+              const path = `/${locale}/${academySlug}/circle/${circle.registration_slug}/quiz/${quiz.id}`;
+              return (
+                <li
+                  key={circle.id}
+                  className="flex flex-wrap items-center gap-2 border-t border-border-subtle pt-3 first:border-t-0 first:pt-0"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold">{circle.name}</p>
+                    <p dir="ltr" className="truncate text-start text-xs text-muted-foreground">
+                      {path}
+                    </p>
+                  </div>
+                  <CopyLinkButton path={path} />
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </section>
 
       <section>
