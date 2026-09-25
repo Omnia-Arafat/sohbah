@@ -7,6 +7,7 @@ import { Link } from "@/i18n/navigation";
 import type { MushafAyah } from "@/lib/database.types";
 import { PAGE_COUNT } from "@/lib/quran/structure";
 import { surahByNumber } from "@/lib/quran/surahs";
+import { attachMarks, splitBasmala } from "@/lib/quran/text";
 import { SwipePages } from "./swipe-pages";
 
 /**
@@ -265,20 +266,27 @@ export function MushafPageView({
  */
 function Ayah({ entry }: { entry: MushafAyah }) {
   const surah = surahByNumber(entry.surah);
+  // Both text sources (server and pages.json) pass through here, so this is
+  // the one place the marks are attached and the البسملة is lifted out.
+  const { basmala, rest } = splitBasmala(
+    entry.surah,
+    entry.ayah,
+    attachMarks(entry.text),
+  );
 
   return (
     <>
       {/*
-        The surah's name, and NOTHING ELSE.
+        The surah's name, and nothing added.
 
-        An earlier version of this file also drew a البسملة here, and that was
-        the ۩۩ mistake repeated: in this edition the البسملة is already the
-        opening of every surah's first ayah — every surah but التوبة, which
-        correctly has none. Drawing it as well printed it twice.
+        An earlier version of this file drew a البسملة of its own here, and
+        that printed it twice: in this edition it is already the opening of
+        every surah's first ayah (التوبة correctly has none). What is drawn
+        below is that same البسملة, lifted OUT of the ayah onto its own line
+        as the printed mushaf sets it — moved, not added.
 
         The rule, once more: this app renders what is in the text and never
-        adds to it. If something looks missing, it is missing from the source
-        and the source is what gets checked.
+        adds to it.
       */}
       {entry.starts_surah && (
         <span className="my-3 block">
@@ -291,8 +299,9 @@ function Ayah({ entry }: { entry: MushafAyah }) {
           </span>
         </span>
       )}
+      {basmala && <span className="mb-1 block">{basmala}</span>}
       <span className={entry.sajda ? "text-brand-800 dark:text-brand-200" : undefined}>
-        {entry.text}
+        {rest}
       </span>
       {/*
         The ayah marker, in the mushaf's own glyph.

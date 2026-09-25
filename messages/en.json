@@ -1972,5 +1972,31 @@
       "tieNote": "Ranked by count; at a tie, whoever reached it first."
     },
     "notKnown": "So your supervisor can see your count, <link>open My page</link> once."
+  },
+  "trackDay": {
+    "title": "Today's portion",
+    "subtitle": "{track} · week {week}",
+    "partner": "My partner",
+    "meeting": "Meeting",
+    "optional": "Optional",
+    "loading": "One moment…",
+    "signInFirst": "Sign in with your name first from",
+    "myPage": "my page",
+    "noTrack": "You are not on a track right now",
+    "noTrackNote": "The track is optional; the rest of the students are in circles. Ask your teacher to join.",
+    "failed": "Could not save. Please try again.",
+    "saving": "Saving…",
+    "saveAndSend": "Save and send the card",
+    "saveWhatIsDone": "Save what is done",
+    "savedCard": "Saved, and your card is ready.",
+    "savedPartial": "Saved. The card completes with both recitations.",
+    "excuse": "I had an excuse on a day",
+    "windowNote": "Your week stays open until the next meeting: finish what is missing and correct what you recorded. After the meeting the week is reviewed and closed.",
+    "items": {
+      "recited_new": "Recited the new portion",
+      "recited_review": "Recited the review portion",
+      "heard_recitation": "Heard the portion from a skilled reciter",
+      "prayed_with_memorised": "Prayed with what is memorised"
+    }
   }
 }
