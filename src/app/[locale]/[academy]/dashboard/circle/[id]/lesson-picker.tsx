@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { useTranslations } from "next-intl";
+import { BrandSelect } from "@/components/brand-select";
 import type { Curriculum, CurriculumUnit } from "@/lib/database.types";
 import { setTodayLesson, type LessonState } from "./lesson-actions";
 
@@ -55,23 +56,21 @@ export function LessonPicker({
         <label className="field-label" htmlFor="unitId">
           {t("field")}
         </label>
-        <select
+        <BrandSelect
           id="unitId"
           name="unitId"
-          className="input"
           defaultValue={currentUnitId ?? ""}
-        >
-          <option value="">{t("none")}</option>
-          {curricula.map((curriculum) => (
-            <optgroup key={curriculum.id} label={curriculum.name_ar}>
-              {(unitsByCurriculum[curriculum.id] ?? []).map((unit) => (
-                <option key={unit.id} value={unit.id}>
-                  {unit.position}. {unit.title_ar}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
+          options={[
+            { value: "", label: t("none") },
+            ...curricula.flatMap((curriculum) =>
+              (unitsByCurriculum[curriculum.id] ?? []).map((unit) => ({
+                value: unit.id,
+                label: `${unit.position}. ${unit.title_ar}`,
+                group: curriculum.name_ar,
+              })),
+            ),
+          ]}
+        />
       </div>
 
       <div>

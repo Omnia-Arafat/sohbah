@@ -3,12 +3,14 @@
 import {
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useState,
   useSyncExternalStore,
 } from "react";
 import { BookOpen, EyeOff, RotateCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { BrandSelect } from "@/components/brand-select";
 import { Link } from "@/i18n/navigation";
 import type {
   MushafAyah,
@@ -812,21 +814,22 @@ function JuzSelect({
   onChange: (next: number) => void;
   t: ReturnType<typeof useTranslations<"selfTest">>;
 }) {
+  const id = useId();
   return (
-    <label className="block">
-      <span className="field-label">{label}</span>
-      <select
-        className="input"
-        value={value}
-        onChange={(event) => onChange(Number(event.target.value))}
-      >
-        {Array.from({ length: JUZ_COUNT }, (_, at) => at + 1).map((juz) => (
-          <option key={juz} value={juz}>
-            {t("scope.juzLabel", { number: juz })}
-          </option>
-        ))}
-      </select>
-    </label>
+    <div>
+      <label className="field-label" htmlFor={id}>
+        {label}
+      </label>
+      <BrandSelect
+        id={id}
+        value={String(value)}
+        onValueChange={(next) => onChange(Number(next))}
+        options={Array.from({ length: JUZ_COUNT }, (_, at) => at + 1).map((juz) => ({
+          value: String(juz),
+          label: t("scope.juzLabel", { number: juz }),
+        }))}
+      />
+    </div>
   );
 }
 

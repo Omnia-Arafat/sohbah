@@ -3,6 +3,8 @@
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { useTranslations } from "next-intl";
+import { BrandSelect } from "@/components/brand-select";
+import { Link } from "@/i18n/navigation";
 import type { CurriculumUnit, QuestionKind } from "@/lib/database.types";
 import { addQuestion, type QuestionFormState } from "./actions";
 
@@ -69,32 +71,47 @@ export function QuestionForm({
           <label className="field-label" htmlFor="kind-select">
             {t("fields.kind")}
           </label>
-          <select
+          <BrandSelect
             id="kind-select"
-            className="input"
             value={kind}
-            onChange={(event) => setKind(event.target.value as QuestionKind)}
-          >
-            <option value="mcq">{t("kinds.mcq")}</option>
-            <option value="true_false">{t("kinds.true_false")}</option>
-            <option value="multi">{t("kinds.multi")}</option>
-            <option value="fill_blank">{t("kinds.fill_blank")}</option>
-            <option value="short_text">{t("kinds.short_text")}</option>
-          </select>
+            onValueChange={(value) => setKind(value as QuestionKind)}
+            options={(["mcq", "true_false", "multi", "fill_blank", "short_text"] as const).map(
+              (value) => ({ value, label: t(`kinds.${value}`) }),
+            )}
+          />
         </div>
 
         <div>
           <label className="field-label" htmlFor="unitId">
             {t("fields.unit")}
           </label>
-          <select id="unitId" name="unitId" className="input" defaultValue="">
-            <option value="">{t("noUnit")}</option>
-            {units.map((unit) => (
-              <option key={unit.id} value={unit.id}>
-                {unit.position}. {locale === "ar" ? unit.title_ar : unit.title_en}
-              </option>
-            ))}
-          </select>
+          {units.length === 0 ? (
+            // No curriculum for this circle type means no lessons to tag — say
+            // so and point at where one is added, instead of a list whose only
+            // row is "not linked".
+            <p className="rounded-xl bg-surface-muted p-3 text-sm leading-relaxed text-muted-foreground">
+              {t("noUnits")}{" "}
+              <Link
+                href={`/${academySlug}/admin/curricula`}
+                className="font-semibold text-brand-700 underline dark:text-brand-300"
+              >
+                {t("addCurriculum")}
+              </Link>
+            </p>
+          ) : (
+            <BrandSelect
+              id="unitId"
+              name="unitId"
+              defaultValue=""
+              options={[
+                { value: "", label: t("noUnit") },
+                ...units.map((unit) => ({
+                  value: unit.id,
+                  label: `${unit.position}. ${locale === "ar" ? unit.title_ar : unit.title_en}`,
+                })),
+              ]}
+            />
+          )}
         </div>
       </div>
 

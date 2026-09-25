@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { BrandSelect } from "@/components/brand-select";
 
 /**
  * The roster's filters, applied as you type instead of on a "تصفية" button.
@@ -97,17 +98,17 @@ export function StudentsFilter({
         <label htmlFor="gender" className="field-label">
           {labels.genderLabel}
         </label>
-        <select
+        <BrandSelect
           id="gender"
           name="gender"
-          className="input"
           value={sex}
-          onChange={(event) => setSex(event.target.value)}
-        >
-          <option value="">{labels.all}</option>
-          <option value="male">{labels.male}</option>
-          <option value="female">{labels.female}</option>
-        </select>
+          onValueChange={setSex}
+          options={[
+            { value: "", label: labels.all },
+            { value: "male", label: labels.male },
+            { value: "female", label: labels.female },
+          ]}
+        />
       </div>
     </div>
   );

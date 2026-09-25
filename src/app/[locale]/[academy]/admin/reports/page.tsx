@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Star } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { BrandSelect } from "@/components/brand-select";
 import { BackLink } from "@/components/back-link";
 import { MonthYearPicker } from "@/components/month-year-picker";
 import { MultiSelectDropdown } from "@/components/multi-select";
@@ -172,13 +173,16 @@ export default async function ReportsPage({
           <label className="field-label" htmlFor="mode">
             {t("filters.mode")}
           </label>
-          <select id="mode" name="mode" className="input" defaultValue={range.mode}>
-            {REPORT_MODES.map((mode) => (
-              <option key={mode} value={mode}>
-                {t(`filters.modes.${mode}`)}
-              </option>
-            ))}
-          </select>
+          <BrandSelect
+            id="mode"
+            name="mode"
+            className="report-mode"
+            defaultValue={range.mode}
+            options={REPORT_MODES.map((mode) => ({
+              value: mode,
+              label: t(`filters.modes.${mode}`),
+            }))}
+          />
         </div>
 
         {/* Exactly one of these four shows at a time, driven purely by which
@@ -206,13 +210,15 @@ export default async function ReportsPage({
             <label className="field-label" htmlFor="week">
               {t("filters.week")}
             </label>
-            <select id="week" name="week" className="input" defaultValue={range.week}>
-              {[1, 2, 3, 4].map((week) => (
-                <option key={week} value={week}>
-                  {t(`filters.weekOptions.${week}`)}
-                </option>
-              ))}
-            </select>
+            <BrandSelect
+              id="week"
+              name="week"
+              defaultValue={String(range.week)}
+              options={[1, 2, 3, 4].map((week) => ({
+                value: String(week),
+                label: t(`filters.weekOptions.${week}`),
+              }))}
+            />
           </div>
 
           <div className="mode-month-only sm:col-span-2">
@@ -278,16 +284,16 @@ export default async function ReportsPage({
             <label className="field-label" htmlFor="gender">
               {t("filters.gender")}
             </label>
-            <select
+            <BrandSelect
               id="gender"
               name="gender"
-              className="input"
               defaultValue={gender ?? ""}
-            >
-              <option value="">{t("filters.all")}</option>
-              <option value="male">{tDashboard("gender.male")}</option>
-              <option value="female">{tDashboard("gender.female")}</option>
-            </select>
+              options={[
+                { value: "", label: t("filters.all") },
+                { value: "male", label: tDashboard("gender.male") },
+                { value: "female", label: tDashboard("gender.female") },
+              ]}
+            />
           </div>
 
           <div>

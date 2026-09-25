@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { useTranslations } from "next-intl";
+import { BrandSelect } from "@/components/brand-select";
 import type { CircleTypeOption } from "@/lib/database.types";
 import { createCurriculum, type CurriculumFormState } from "./actions";
 
@@ -51,19 +52,16 @@ export function CurriculumForm({
         <label className="field-label" htmlFor="circleType">
           {t("fields.circleType")}
         </label>
-        <select
+        <BrandSelect
           id="circleType"
           name="circleType"
-          className="input"
           defaultValue={values?.circleType ?? circleTypes[0]?.slug}
-          aria-invalid={Boolean(fieldErrors.circleType)}
-        >
-          {circleTypes.map((type) => (
-            <option key={type.id} value={type.slug}>
-              {locale === "ar" ? type.name_ar : type.name_en}
-            </option>
-          ))}
-        </select>
+          invalid={Boolean(fieldErrors.circleType)}
+          options={circleTypes.map((type) => ({
+            value: type.slug,
+            label: locale === "ar" ? type.name_ar : type.name_en,
+          }))}
+        />
         {fieldErrors.circleType && (
           <p className="mt-1.5 text-sm text-absent">
             {t(`errors.${fieldErrors.circleType}`)}

@@ -1030,6 +1030,8 @@
           "fill_blank": "Fill in the blank"
         },
         "noUnit": "Not tied to a lesson",
+        "noUnits": "This circle type has no curriculum yet, so there are no lessons to link.",
+        "addCurriculum": "Add a curriculum",
         "options": "Options",
         "optionsHint": "Mark the correct answer. Leave any box blank if you do not need it.",
         "acceptedAnswers": "Accepted answers",

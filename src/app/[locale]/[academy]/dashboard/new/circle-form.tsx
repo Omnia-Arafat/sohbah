@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { useTranslations } from "next-intl";
+import { BrandSelect } from "@/components/brand-select";
 import { SearchableSelect } from "@/components/searchable-select";
 import { createCircle } from "./actions";
 import { initialNewCircleState, type NewCircleState } from "./state";
@@ -104,18 +105,12 @@ export function CircleForm({
         <label className="field-label" htmlFor="type">
           {t("fields.type")}
         </label>
-        <select
+        <BrandSelect
           id="type"
           name="type"
-          className="input"
           defaultValue={values?.type ?? circleTypes[0]?.slug ?? ""}
-        >
-          {circleTypes.map((type) => (
-            <option key={type.slug} value={type.slug}>
-              {type.label}
-            </option>
-          ))}
-        </select>
+          options={circleTypes.map((type) => ({ value: type.slug, label: type.label }))}
+        />
         {fieldError("type")}
       </div>
 

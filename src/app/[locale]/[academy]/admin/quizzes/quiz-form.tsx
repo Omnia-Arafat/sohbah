@@ -3,6 +3,7 @@
 import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { useTranslations } from "next-intl";
+import { BrandSelect } from "@/components/brand-select";
 import type { CircleTypeOption, Curriculum } from "@/lib/database.types";
 import { createQuiz, type QuizFormState } from "./actions";
 
@@ -83,67 +84,61 @@ export function QuizForm({
           <label className="field-label" htmlFor="circleType">
             {t("fields.circleType")}
           </label>
-          <select
+          <BrandSelect
             id="circleType"
             name="circleType"
-            className="input"
             value={circleType}
-            onChange={(event) => setCircleType(event.target.value)}
-            aria-invalid={Boolean(fieldErrors.circleType)}
-          >
-            {circleTypes.map((type) => (
-              <option key={type.id} value={type.slug}>
-                {locale === "ar" ? type.name_ar : type.name_en}
-              </option>
-            ))}
-          </select>
+            onValueChange={setCircleType}
+            invalid={Boolean(fieldErrors.circleType)}
+            options={circleTypes.map((type) => ({
+              value: type.slug,
+              label: locale === "ar" ? type.name_ar : type.name_en,
+            }))}
+          />
         </div>
 
         <div>
           <label className="field-label" htmlFor="curriculumId">
             {t("fields.curriculum")}
           </label>
-          <select
+          <BrandSelect
             id="curriculumId"
             name="curriculumId"
-            className="input"
             defaultValue={values?.curriculumId ?? ""}
             key={`cur-${circleType}`}
-          >
-            <option value="">{t("anyCurriculum")}</option>
-            {scopedCurricula.map((curriculum) => (
-              <option key={curriculum.id} value={curriculum.id}>
-                {locale === "ar" ? curriculum.name_ar : curriculum.name_en}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: "", label: t("anyCurriculum") },
+              ...scopedCurricula.map((curriculum) => ({
+                value: curriculum.id,
+                label: locale === "ar" ? curriculum.name_ar : curriculum.name_en,
+              })),
+            ]}
+          />
         </div>
 
         <div>
           <label className="field-label" htmlFor="circleId">
             {t("fields.circle")}
           </label>
-          <select
+          <BrandSelect
             id="circleId"
             name="circleId"
-            className="input"
             defaultValue={values?.circleId ?? ""}
             key={`cir-${circleType}`}
-          >
-            {/*
-              The default. An empty value means "every circle of this type",
-              which is how one quiz covers all the حلقات حديث at once rather
-              than being written out per circle.
-            */}
-            <option value="">
-              {t("allCirclesOfType", { count: String(scopedCircles.length) })}
-            </option>
-            {scopedCircles.map((circle) => (
-              <option key={circle.id} value={circle.id}>
-                {circle.name} — {circle.teacherName}
-              </option>
-            ))}
-          </select>
+            options={[
+              // The default. An empty value means "every circle of this type",
+              // which is how one quiz covers all the حلقات حديث at once rather
+              // than being written out per circle.
+              {
+                value: "",
+                label: t("allCirclesOfType", { count: String(scopedCircles.length) }),
+              },
+              ...scopedCircles.map((circle) => ({
+                value: circle.id,
+                label: `${circle.name} — ${circle.teacherName}`,
+              })),
+            ]}
+          />
         </div>
       </div>
 

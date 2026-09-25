@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { useTranslations } from "next-intl";
+import { BrandSelect } from "@/components/brand-select";
 import { SURAHS, surahByNumber } from "@/lib/quran/surahs";
 import type { DayRow } from "@/lib/track-week-dal";
 import { fillWeekStarts, MEMORISE_DAYS } from "@/lib/track-week-fill";
@@ -328,20 +329,16 @@ function SurahAyah({
           <label className="sr-only" htmlFor={`${idPrefix}Surah`}>
             {surahLabel}
           </label>
-          <select
+          <BrandSelect
             id={`${idPrefix}Surah`}
             name={`${idPrefix}Surah`}
-            className="input"
             value={surah}
-            onChange={(e) => onSurah(e.target.value)}
-          >
-            <option value="">—</option>
-            {SURAHS.map((s) => (
-              <option key={s.number} value={s.number}>
-                {s.name}
-              </option>
-            ))}
-          </select>
+            onValueChange={onSurah}
+            options={[
+              { value: "", label: "—" },
+              ...SURAHS.map((s) => ({ value: String(s.number), label: s.name })),
+            ]}
+          />
         </div>
         <div className="w-24 shrink-0">
           <label className="sr-only" htmlFor={`${idPrefix}Ayah`}>

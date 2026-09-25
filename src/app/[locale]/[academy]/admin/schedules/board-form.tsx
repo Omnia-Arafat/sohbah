@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { useTranslations } from "next-intl";
+import { BrandSelect } from "@/components/brand-select";
 import type { ScheduleBoardState } from "./actions";
 
 /** Shared by the create form on the list page and the edit page. */
@@ -111,19 +112,15 @@ export function ScheduleBoardForm({
           <label className="field-label" htmlFor="circleType">
             {t("fields.circleType")}
           </label>
-          <select
+          <BrandSelect
             id="circleType"
             name="circleType"
-            className="input"
             defaultValue={values.circleType}
-          >
-            <option value="">{t("fields.circleTypePlaceholder")}</option>
-            {circleTypes.map((type) => (
-              <option key={type.slug} value={type.slug}>
-                {type.label}
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: "", label: t("fields.circleTypePlaceholder") },
+              ...circleTypes.map((type) => ({ value: type.slug, label: type.label })),
+            ]}
+          />
           {fieldError("circleType")}
         </div>
 
@@ -131,11 +128,16 @@ export function ScheduleBoardForm({
           <label className="field-label" htmlFor="gender">
             {t("fields.gender")}
           </label>
-          <select id="gender" name="gender" className="input" defaultValue={values.gender}>
-            <option value="">{t("fields.genderBoth")}</option>
-            <option value="female">{tDashboard("gender.female")}</option>
-            <option value="male">{tDashboard("gender.male")}</option>
-          </select>
+          <BrandSelect
+            id="gender"
+            name="gender"
+            defaultValue={values.gender}
+            options={[
+              { value: "", label: t("fields.genderBoth") },
+              { value: "female", label: tDashboard("gender.female") },
+              { value: "male", label: tDashboard("gender.male") },
+            ]}
+          />
         </div>
       </div>
 

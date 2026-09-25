@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
+import { BrandSelect } from "@/components/brand-select";
 import { Link } from "@/i18n/navigation";
 import { SearchableSelect } from "@/components/searchable-select";
 import { getTeacherDisplayLabel } from "@/lib/academy-display";
@@ -92,18 +93,12 @@ export function EditCircleForm({
         <label className="field-label" htmlFor="type">
           {t("type")}
         </label>
-        <select
+        <BrandSelect
           id="type"
           name="type"
-          className="input"
           defaultValue={values.type}
-        >
-          {circleTypes.map((type) => (
-            <option key={type.slug} value={type.slug}>
-              {type.label}
-            </option>
-          ))}
-        </select>
+          options={circleTypes.map((type) => ({ value: type.slug, label: type.label }))}
+        />
         {fieldError("type")}
       </div>
 
@@ -265,15 +260,15 @@ export function EditCircleForm({
         <label className="field-label" htmlFor="status">
           {t("status")}
         </label>
-        <select
+        <BrandSelect
           id="status"
           name="status"
-          className="input"
           defaultValue={selectedStatus}
-        >
-          <option value="active">{t("statusActive")}</option>
-          <option value="inactive">{t("statusInactive")}</option>
-        </select>
+          options={[
+            { value: "active", label: t("statusActive") },
+            { value: "inactive", label: t("statusInactive") },
+          ]}
+        />
         {fieldError("status")}
       </div>
 

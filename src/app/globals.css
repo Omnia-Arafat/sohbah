@@ -301,17 +301,16 @@
      type — a month+week pair, a single month, a single year, or a from/to
      pair — and hides the rest.
 
-     Done with `:has()` rather than a client component because the whole report
-     form is a plain GET form that works without JavaScript, and revealing the
-     fields only after a submit would be worse than always showing them.
+     Done with `:has()` on the mode picker's `data-value` (see BrandSelect),
+     so the report form stays a plain GET form with no client state of its own.
 
      Each rule is written to *hide* rather than to *show*: a browser without
      `:has()` support matches nothing, leaves every picker visible, and the
      form still works — it just shows more fields than it needs to. */
-  .range-form:has(#mode option[value="week"]:not(:checked)) .mode-week-only,
-  .range-form:has(#mode option[value="month"]:not(:checked)) .mode-month-only,
-  .range-form:has(#mode option[value="year"]:not(:checked)) .mode-year-only,
-  .range-form:has(#mode option[value="custom"]:not(:checked)) .mode-custom-only {
+  .range-form:has(.report-mode:not([data-value="week"])) .mode-week-only,
+  .range-form:has(.report-mode:not([data-value="month"])) .mode-month-only,
+  .range-form:has(.report-mode:not([data-value="year"])) .mode-year-only,
+  .range-form:has(.report-mode:not([data-value="custom"])) .mode-custom-only {
     display: none;
   }
 
