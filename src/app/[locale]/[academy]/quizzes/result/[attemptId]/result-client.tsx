@@ -94,6 +94,9 @@ export function ResultClient({ attemptId }: { attemptId: string }) {
   }
 
   const head = rows[0];
+  // The SQL joins name and father_name; the register form writes "-" for the
+  // latter (see student-name.ts), which must not trail every name.
+  const studentName = head.student_name.replace(/\s+-$/, "");
   const questions = fold(rows);
   const score = Number(head.auto_score ?? 0) + Number(head.manual_score ?? 0);
   const max = Number(head.max_score ?? 0);
@@ -104,7 +107,7 @@ export function ResultClient({ attemptId }: { attemptId: string }) {
 
   async function share() {
     const text = t("shareText", {
-      name: head.student_name,
+      name: studentName,
       title: head.quiz_title,
       score: String(score),
       max: String(max),
@@ -130,9 +133,9 @@ export function ResultClient({ attemptId }: { attemptId: string }) {
   return (
     <div className="flex flex-col gap-4">
       <section className="card flex flex-col items-center gap-1 text-center">
-        <p className="text-sm text-muted-foreground">{head.student_name}</p>
+        <p className="text-sm text-muted-foreground">{studentName}</p>
         <h1 className="font-display text-xl font-bold">{head.quiz_title}</h1>
-        <p className="mt-3 text-4xl font-bold">
+        <p dir="ltr" className="mt-3 text-4xl font-bold">
           {score} / {max}
         </p>
         <p
