@@ -60,6 +60,7 @@ export default async function TakeQuizPage({ params }: PageProps) {
       </section>
 
       <QuizClient
+        academySlug={academySlug}
         slug={slug}
         quizId={quiz.id}
         title={quiz.title}

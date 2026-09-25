@@ -1515,6 +1515,30 @@
       "hiddenCount": "{count, plural, one{# word hidden} other{# words hidden}}"
     }
   },
+  "quizResult": {
+    "title": "Quiz result",
+    "back": "Back to quizzes",
+    "passed": "Passed — {pct}%",
+    "notPassed": "Score {pct}%",
+    "rightOf": "{right} of {total} correct",
+    "pending": "{count, plural, one {# question} other {# questions}} waiting for your teacher to mark",
+    "share": "Share result",
+    "copied": "Result copied",
+    "shareText": "{name}\nCompleted “{title}” at Sohbah\nScore: {score} of {max} ({pct}%)",
+    "keyHidden": "You still have an attempt left, so the correct answers appear once your attempts are used. For now your answers are marked right or wrong.",
+    "yourAnswer": "Your answer",
+    "correctAnswer": "Correct answer",
+    "noAnswer": "— no answer —",
+    "right": "Right",
+    "wrong": "Wrong",
+    "unanswered": "No answer",
+    "awaiting": "Awaiting marking",
+    "errors": {
+      "results_hidden": "Your teacher chose not to show the result here — she will tell you.",
+      "results_not_yet": "The result appears here once the quiz closes.",
+      "notFound": "We couldn't find this result."
+    }
+  },
   "quizzes": {
     "title": "Quizzes",
     "tabs": {

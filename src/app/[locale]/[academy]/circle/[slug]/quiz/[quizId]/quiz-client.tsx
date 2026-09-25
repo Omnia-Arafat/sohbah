@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type {
   QuizForStudentRow,
@@ -52,12 +53,14 @@ function foldQuestions(rows: QuizForStudentRow[]): Question[] {
 }
 
 export function QuizClient({
+  academySlug,
   slug,
   quizId,
   title,
   instructions,
   startAction,
 }: {
+  academySlug: string;
   slug: string;
   quizId: string;
   title: string;
@@ -69,6 +72,8 @@ export function QuizClient({
 }) {
   const t = useTranslations("quiz");
   const supabase = useMemo(() => createClient(), []);
+  const router = useRouter();
+  const resultPath = (id: string) => `/${academySlug}/quizzes/result/${id}`;
 
   // --- identity gate --------------------------------------------------------
   const [query, setQuery] = useState("");
@@ -130,6 +135,19 @@ export function QuizClient({
     setStarting(false);
 
     if (outcome.status === "error") {
+      // Her attempts are spent: that is a finished quiz, not a dead end. Her
+      // phone has just been checked, so take her to the result she already has.
+      if (outcome.reason === "no_attempts_left" && student) {
+        const { data: lastId } = await supabase.rpc("latest_quiz_attempt", {
+          p_quiz_id: quizId,
+          p_student_id: student.id,
+          p_phone: phone,
+        });
+        if (lastId) {
+          router.push(resultPath(lastId));
+          return;
+        }
+      }
       setGateError(outcome.reason);
       return;
     }
@@ -190,7 +208,14 @@ export function QuizClient({
     setSubmitting(true);
     const outcome = await submitAttempt(attemptId);
     setSubmitting(false);
-    if (outcome) setResult(outcome);
+    if (!outcome) return;
+    // Results shown on submit go straight to the marked paper, which has the
+    // score, the review and the share button, and stays reachable later.
+    if (outcome.show_results === "after_submit") {
+      router.replace(resultPath(attemptId));
+      return;
+    }
+    setResult(outcome);
   }
 
   // --- result ---------------------------------------------------------------

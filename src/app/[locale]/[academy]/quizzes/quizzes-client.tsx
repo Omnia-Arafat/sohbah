@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { ClipboardCheck, Lock, UserRound } from "lucide-react";
+import { ChevronLeft, ClipboardCheck, Lock, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import type { AcademyQuiz, MyQuizResult } from "@/lib/database.types";
+import type { AcademyQuiz, MyQuizAttempt } from "@/lib/database.types";
 import { getMe, meKey, subscribeMe } from "@/lib/me-store";
 import { createClient } from "@/lib/supabase/client";
 
@@ -41,7 +41,7 @@ export function QuizzesClient({
 
   const [tab, setTab] = useState<"teacher" | "self">("teacher");
   const [quizzes, setQuizzes] = useState<AcademyQuiz[] | null>(null);
-  const [results, setResults] = useState<MyQuizResult[]>([]);
+  const [results, setResults] = useState<MyQuizAttempt[]>([]);
 
   useEffect(() => {
     if (!me) return;
@@ -53,16 +53,16 @@ export function QuizzesClient({
           p_student_id: me.studentId,
           p_phone: me.phone,
         }),
-        supabase.rpc("my_quiz_results", {
+        supabase.rpc("my_quiz_attempts", {
           p_student_id: me.studentId,
           p_phone: me.phone,
         }),
       ]);
       if (cancelled) return;
       if (open.error) console.error("academy_quizzes failed", open.error);
-      if (done.error) console.error("my_quiz_results failed", done.error);
+      if (done.error) console.error("my_quiz_attempts failed", done.error);
       setQuizzes((open.data ?? []) as AcademyQuiz[]);
-      setResults((done.data ?? []) as MyQuizResult[]);
+      setResults((done.data ?? []) as MyQuizAttempt[]);
     })();
 
     return () => {
@@ -162,10 +162,14 @@ export function QuizzesClient({
               </p>
             ) : (
               <ul className="mt-2">
-                {results.map((result, at) => (
-                  <li
-                    key={`${result.quiz_id}-${at}`}
-                    className="flex items-center gap-3 border-t border-border-subtle px-5 py-3"
+                {results.map((result) => (
+                  <li key={result.attempt_id} className="border-t border-border-subtle">
+                  <ResultRow
+                    href={
+                      result.results_visible
+                        ? `/${academySlug}/quizzes/result/${result.attempt_id}`
+                        : null
+                    }
                   >
                     <span className={scoreBadgeClass(result)}>
                       {result.status === "graded" && result.max_score
@@ -179,7 +183,12 @@ export function QuizzesClient({
                     <div className="min-w-0 flex-grow">
                       <p className="truncate text-sm font-semibold">{result.title}</p>
                       <p className="truncate text-xs text-muted-foreground">
-                        {result.circle_name}
+                        {[
+                          locale === "ar" ? result.type_name_ar : result.type_name_en,
+                          result.teacher_name,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
                       </p>
                     </div>
                     {result.status === "submitted" && (
@@ -187,6 +196,13 @@ export function QuizzesClient({
                         {t("awaiting")}
                       </span>
                     )}
+                    {result.results_visible && (
+                      <ChevronLeft
+                        aria-hidden="true"
+                        className="h-4 w-4 shrink-0 text-muted-foreground ltr:rotate-180"
+                      />
+                    )}
+                  </ResultRow>
                   </li>
                 ))}
               </ul>
@@ -304,8 +320,20 @@ function TabButton({
   );
 }
 
+/** A finished attempt: a link to its marked paper once that may be seen. */
+function ResultRow({ href, children }: { href: string | null; children: React.ReactNode }) {
+  const className = "flex items-center gap-3 px-5 py-3";
+  return href ? (
+    <Link href={href} className={`${className} transition-colors hover:bg-surface-muted`}>
+      {children}
+    </Link>
+  ) : (
+    <div className={className}>{children}</div>
+  );
+}
+
 /** Green when it is marked, neutral while it waits — never red. */
-function scoreBadgeClass(result: MyQuizResult) {
+function scoreBadgeClass(result: MyQuizAttempt) {
   const base =
     "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold";
 

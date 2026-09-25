@@ -304,6 +304,49 @@ export type AcademyQuiz = {
   attempts_used: number;
 };
 
+/** One row of a marked paper, from `quiz_attempt_review`: a question × option. */
+export type QuizReviewRow = {
+  quiz_title: string;
+  student_name: string;
+  status: "submitted" | "graded";
+  auto_score: number | null;
+  manual_score: number | null;
+  max_score: number | null;
+  pass_score: number;
+  submitted_at: string | null;
+  /** False while she still has an attempt left: option_correct is then null. */
+  key_revealed: boolean;
+  question_id: string;
+  question_position: number;
+  kind: QuestionKind;
+  prompt: string;
+  points: number;
+  /** Null when unanswered, or a written answer not marked yet. */
+  answer_correct: boolean | null;
+  awarded_points: number | null;
+  text_answer: string | null;
+  option_id: string | null;
+  option_text: string | null;
+  chosen: boolean;
+  option_correct: boolean | null;
+};
+
+/** One finished attempt with its id, from `my_quiz_attempts`. */
+export type MyQuizAttempt = {
+  attempt_id: string;
+  quiz_id: string;
+  title: string;
+  type_name_ar: string | null;
+  type_name_en: string | null;
+  teacher_name: string | null;
+  status: "submitted" | "graded";
+  score: number;
+  max_score: number | null;
+  pass_score: number;
+  submitted_at: string | null;
+  results_visible: boolean;
+};
+
 /** One finished attempt, from `my_quiz_results`. */
 export type MyQuizResult = {
   quiz_id: string;
@@ -982,6 +1025,18 @@ export type Database = {
       academy_quizzes: {
         Args: { p_student_id: string; p_phone: string };
         Returns: AcademyQuiz[];
+      };
+      quiz_attempt_review: {
+        Args: { p_attempt_id: string };
+        Returns: QuizReviewRow[];
+      };
+      my_quiz_attempts: {
+        Args: { p_student_id: string; p_phone: string };
+        Returns: MyQuizAttempt[];
+      };
+      latest_quiz_attempt: {
+        Args: { p_quiz_id: string; p_student_id: string; p_phone: string };
+        Returns: string | null;
       };
       my_quiz_results: {
         Args: { p_student_id: string; p_phone: string };
