@@ -7,7 +7,7 @@
  * client render consistent without a state-setting effect.
  */
 
-export type Joined = { studentId: string; name: string };
+export type Joined = { studentId: string; name: string; genderCategory?: "male" | "female" };
 
 // Memoised per key so getSnapshot returns a stable reference; returning a
 // freshly parsed object each call would loop forever.

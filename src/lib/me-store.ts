@@ -25,6 +25,8 @@ export type Me = {
   fatherName: string;
   /** As she typed it. The API normalises; this is only for sending back. */
   phone: string;
+  /** Stored so client components can show gendered Arabic text without a DB round-trip. */
+  genderCategory: "male" | "female";
 };
 
 const cache = new Map<string, Me | null>();

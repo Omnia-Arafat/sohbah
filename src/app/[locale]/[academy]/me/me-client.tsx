@@ -137,6 +137,7 @@ function SignIn({
       name: found.name,
       fatherName: found.father_name,
       phone,
+      genderCategory: found.gender_category,
     });
   }
 

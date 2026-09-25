@@ -69,7 +69,7 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
     .from("students")
     .select("*", { count: "exact" })
     .eq("academy_id", academy.id)
-    .order("created_at", { ascending: false })
+    .order("name", { ascending: true })
     .range(from, to);
 
   // Apply filters

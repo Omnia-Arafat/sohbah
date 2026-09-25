@@ -39,6 +39,8 @@ type CircleClientProps = {
    * anything. `join_circle()` re-checks it, so this only saves her the trip.
    */
   registrationOpen: boolean;
+  /** Used as the fallback gender for queue status labels when the student's own gender is unknown. */
+  circleGenderCategory: "male" | "female";
 };
 
 type SearchResults = { query: string; items: StudentSearchResult[] };
@@ -111,6 +113,7 @@ export function CircleClient({
   initialQueue,
   maxStudents,
   registrationOpen,
+  circleGenderCategory,
 }: CircleClientProps) {
   const t = useTranslations("circle");
   const supabase = useMemo(() => createClient(), []);
@@ -167,6 +170,17 @@ export function CircleClient({
     () => getJoined(meKey(academySlug)),
     () => null,
   );
+
+  /*
+    The gender of whoever is using this browser right now.
+
+    - After joining: known from the joined record.
+    - Before joining but identity remembered: from the me record.
+    - Before either: unknown — fall back to "female" because the overwhelming
+      majority of users are طالبات and this only affects verb conjugation in
+      hints, not anything structural.
+  */
+  const gender = joined?.genderCategory ?? me?.genderCategory ?? circleGenderCategory;
 
   /**
    * Refetches the queue. Called after *this* student joins, so they see
@@ -301,9 +315,9 @@ export function CircleClient({
     setResults(null);
     await refreshQueue();
     shouldScrollRef.current = true;
-    setJoined(storageKey, { studentId: student.id, name: student.name });
+    setJoined(storageKey, { studentId: student.id, name: student.name, genderCategory: student.gender_category });
     // Remembered for every other circle and every later day, not just here.
-    setJoined(meKey(academySlug), { studentId: student.id, name: student.name });
+    setJoined(meKey(academySlug), { studentId: student.id, name: student.name, genderCategory: student.gender_category });
   }
 
   const myPosition = joined
@@ -360,7 +374,7 @@ export function CircleClient({
     <div className="flex flex-col gap-6">
       <MotionSection show={!joined && registrationOpen && isFull} className="card">
         <p className="font-semibold">{t("full.title")}</p>
-        <p className="mt-1 text-sm text-muted-foreground">{t("full.body")}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{t("full.body", { gender })}</p>
       </MotionSection>
 
       {/* Said plainly, and only until she puts her name back. */}
@@ -368,8 +382,8 @@ export function CircleClient({
         show={wasRemoved && !joined}
         className="card border-accent-400 bg-accent-100/40 dark:bg-accent-700/15"
       >
-        <p className="font-semibold">{t("removed.title")}</p>
-        <p className="mt-1 text-sm text-muted-foreground">{t("removed.body")}</p>
+        <p className="font-semibold">{t("removed.title", { gender })}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{t("removed.body", { gender })}</p>
       </MotionSection>
 
       {/*
@@ -388,19 +402,19 @@ export function CircleClient({
         <button
           type="button"
           onClick={() =>
-            me && join({ id: me.studentId, name: me.name, father_name: "" })
+            me && join({ id: me.studentId, name: me.name, father_name: "", gender_category: me.genderCategory ?? "female" })
           }
           disabled={joining !== null}
           className="btn-primary mt-3 w-full disabled:opacity-60"
         >
-          {joining ? t("search.joining") : t("me.join")}
+          {joining ? t("search.joining") : t("me.join", { gender })}
         </button>
         <button
           type="button"
           onClick={() => clearJoined(meKey(academySlug))}
           className="mt-2 w-full min-h-11 text-sm font-semibold text-muted-foreground underline"
         >
-          {t("me.notMe")}
+          {t("me.notMe", { gender })}
         </button>
       </MotionSection>
 
@@ -416,7 +430,7 @@ export function CircleClient({
           className="input"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder={t("search.placeholder")}
+          placeholder={t("search.placeholder", { gender })}
           autoComplete="off"
           autoFocus={!joined}
           enterKeyHint="search"
@@ -425,7 +439,7 @@ export function CircleClient({
           aria-controls="student-results"
         />
         <p className="mt-1.5 text-sm text-muted-foreground">
-          {t("search.hint")}
+          {t("search.hint", { gender })}
         </p>
 
         {searching && (
@@ -469,7 +483,7 @@ export function CircleClient({
           <div className="motion-queue-item mt-3 rounded-xl border border-border-subtle bg-surface-muted p-4">
             <p className="font-semibold">{t("notFound.title")}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              {t("notFound.body")}
+              {t("notFound.body", { gender })}
             </p>
             <Link
               href={`/${academySlug}/register?circle=${slug}`}
@@ -522,7 +536,7 @@ export function CircleClient({
           </>
         ) : (
           <p className="text-sm text-muted-foreground">
-            {t("openSessionLockedHint")}
+            {t("openSessionLockedHint", { gender })}
           </p>
         )}
         <div className="relative mt-3 inline-block w-full sm:w-auto">
@@ -540,7 +554,7 @@ export function CircleClient({
               type="button"
               className="btn-primary w-full cursor-not-allowed opacity-50 sm:w-auto"
               aria-disabled="true"
-              title={t("openSessionLockedHint")}
+              title={t("openSessionLockedHint", { gender })}
               onClick={showLockedSessionHint}
             >
               {t("openSession")}
@@ -549,7 +563,7 @@ export function CircleClient({
 
           {showLockedHint && (
             <span role="tooltip" className="tooltip-bubble">
-              {t("openSessionLockedHint")}
+              {t("openSessionLockedHint", { gender })}
             </span>
           )}
         </div>
@@ -566,7 +580,7 @@ export function CircleClient({
         </h2>
 
         {queue.length === 0 ? (
-          <p className="card text-muted-foreground">{t("queue.empty")}</p>
+          <p className="card text-muted-foreground">{t("queue.empty", { gender })}</p>
         ) : (
           <ol ref={listRef} className="scroll-list flex flex-col gap-2">
             {sortedQueue.map((entry, index) => {
@@ -600,7 +614,7 @@ export function CircleClient({
                       {entry.name}
                       {isMe && (
                         <span className="ms-2 text-sm font-normal text-brand-600 dark:text-brand-300">
-                          {t("queue.you")}
+                          {t("queue.you", { gender })}
                         </span>
                       )}
                     </span>
@@ -611,7 +625,7 @@ export function CircleClient({
                     )}
                   </span>
                   <span className={badgeClass(entry.recitation_status)}>
-                    {t(`status.${entry.recitation_status}`)}
+                    {t(`status.${entry.recitation_status}`, { gender: isMe ? gender : circleGenderCategory })}
                   </span>
                 </li>
               );

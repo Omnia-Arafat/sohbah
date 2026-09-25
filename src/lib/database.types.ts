@@ -131,6 +131,7 @@ export type StudentSearchResult = {
   id: string;
   name: string;
   father_name: string;
+  gender_category: GenderCategory;
 };
 
 export type JoinCircleResult = {

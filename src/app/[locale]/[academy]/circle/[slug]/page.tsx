@@ -198,6 +198,7 @@ export default async function CirclePage({ params }: CirclePageProps) {
         initialQueue={queue ?? []}
         maxStudents={circle.max_students}
         registrationOpen={circle.registration_state === "open"}
+        circleGenderCategory={circle.gender_category}
       />
     </div>
   );
