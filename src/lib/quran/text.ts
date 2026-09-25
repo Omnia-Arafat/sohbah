@@ -23,7 +23,15 @@ export function attachMarks(text: string): string {
   return text.replace(/ +(\p{M})/gu, "$1");
 }
 
-export const BASMALA = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
+/**
+ * The البسملة's four words, letters only (بسم ٱلله ٱلرحمن ٱلرحيم). Compared
+ * with the marks stripped, because the edition does not spell it identically
+ * everywhere — التين and القدر carry a shadda on the ب — and whatever it
+ * carries is what gets shown.
+ */
+const BASMALA_LETTERS =
+  "بسم ٱلله " +
+  "ٱلرحمن ٱلرحيم";
 
 /**
  * Lift the البسملة off the front of a surah's first ayah.
@@ -33,15 +41,20 @@ export const BASMALA = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱ�
  * line of its own, unnumbered — except in الفاتحة, where it IS ayah 1 and
  * stays exactly where it is. التوبة has none, so nothing matches.
  *
- * This moves text, it never adds it: `basmala + " " + rest` is the ayah.
+ * This moves text, it never adds or respells it: `basmala + " " + rest` is
+ * the ayah, byte for byte.
  */
 export function splitBasmala(
   surah: number,
   ayah: number,
   text: string,
 ): { basmala: string | null; rest: string } {
-  if (surah !== 1 && ayah === 1 && text.startsWith(`${BASMALA} `)) {
-    return { basmala: BASMALA, rest: text.slice(BASMALA.length + 1) };
+  if (surah === 1 || ayah !== 1) return { basmala: null, rest: text };
+
+  const words = text.split(" ");
+  const opening = words.slice(0, 4).join(" ");
+  if (words.length > 4 && opening.replace(/\p{M}/gu, "") === BASMALA_LETTERS) {
+    return { basmala: opening, rest: words.slice(4).join(" ") };
   }
   return { basmala: null, rest: text };
 }

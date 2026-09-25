@@ -23,6 +23,7 @@ import { buildProgress } from "@/lib/quran/progress";
 import { pageOf } from "@/lib/quran/reference";
 import { JUZ_STARTS, JUZ_COUNT } from "@/lib/quran/structure";
 import { surahByNumber } from "@/lib/quran/surahs";
+import { attachMarks } from "@/lib/quran/text";
 import { createClient } from "@/lib/supabase/client";
 
 /**
@@ -274,7 +275,14 @@ export function SelfTestClient({
       }
 
       const built = pages.flatMap((page, at) =>
-        buildHiddenPage(page, (loaded[at].data ?? []) as MushafAyah[], at),
+        buildHiddenPage(
+          page,
+          ((loaded[at].data ?? []) as MushafAyah[]).map((entry) => ({
+            ...entry,
+            text: attachMarks(entry.text),
+          })),
+          at,
+        ),
       );
       if (built.length === 0) {
         setError(true);
@@ -307,7 +315,10 @@ export function SelfTestClient({
       return;
     }
 
-    const ayahs = (data ?? []) as QuranRangeAyah[];
+    const ayahs = ((data ?? []) as QuranRangeAyah[]).map((ayah) => ({
+      ...ayah,
+      text: attachMarks(ayah.text),
+    }));
     const built = buildQuestions(ayahs, mode);
     if (built.length === 0) {
       setError(true);

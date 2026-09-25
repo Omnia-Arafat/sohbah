@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import teasers from "@/lib/quran/teasers.json";
 import { surahByNumber } from "@/lib/quran/surahs";
+import { attachMarks } from "@/lib/quran/text";
 
 /**
  * «كمّلي الآية» on the front door — one cue, and a way in.
@@ -109,7 +110,7 @@ export function AyahTeaser({ academySlug }: { academySlug: string }) {
         lang="ar"
         className="px-4 pb-1 pt-2 text-center font-quran text-[1.35rem] leading-[2.1]"
       >
-        {teaser.cue}
+        {attachMarks(teaser.cue)}
         {/* The ellipsis is the question. It is muted and outside the ayah's
             own styling, so nothing suggests it is part of the text. */}
         <span className="font-sans text-muted-foreground"> …</span>
