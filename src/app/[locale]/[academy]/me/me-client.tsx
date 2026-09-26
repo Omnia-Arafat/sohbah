@@ -7,7 +7,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { ChevronLeft, RotateCcw, UserRoundPlus } from "lucide-react";
+import { BookOpenCheck, ChevronLeft, RotateCcw, UserRoundPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { getMe, clearMe, meKey, setMe, subscribeMe, type Me } from "@/lib/me-store";
@@ -22,6 +22,17 @@ import type {
   RecitationRating,
   StudentSearchResult,
 } from "@/lib/database.types";
+
+/** One day row of my_track_week, only the fields this page reads. */
+type MyTrackDay = {
+  track_name: string;
+  week_number: number;
+  is_today: boolean;
+  recited_new: boolean;
+  recited_review: boolean;
+};
+
+type MyTrack = { trackName: string; week: number; todayDone: boolean };
 
 export function MeClient({
   academySlug,
@@ -331,12 +342,13 @@ function Record({
    */
   const [entries, setEntries] = useState<MyRecitation[] | null>(null);
   const [circles, setCircles] = useState<MyCircle[]>([]);
+  const [track, setTrack] = useState<MyTrack | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
-      const [recitations, myCircles] = await Promise.all([
+      const [recitations, myCircles, trackWeek] = await Promise.all([
         supabase.rpc("my_recitations", {
           p_student_id: me.studentId,
           p_phone: me.phone,
@@ -345,6 +357,12 @@ function Record({
           p_student_id: me.studentId,
           p_phone: me.phone,
         }),
+        // Same `as never` as every other reader of the مسارات RPCs: they are
+        // not in the generated types yet.
+        supabase.rpc("my_track_week" as never, {
+          p_student_id: me.studentId,
+          p_phone: me.phone,
+        } as never),
       ]);
 
       if (cancelled) return;
@@ -374,6 +392,18 @@ function Record({
 
       setEntries((recitations.data ?? []) as MyRecitation[]);
       setCircles((myCircles.data ?? []) as MyCircle[]);
+
+      // No rows is the ordinary state of a student on no track: no card.
+      if (trackWeek.error) console.error("my_track_week failed", trackWeek.error);
+      const days = (trackWeek.data ?? []) as unknown as MyTrackDay[];
+      const today = days.find((d) => d.is_today);
+      if (days.length > 0) {
+        setTrack({
+          trackName: days[0].track_name,
+          week: days[0].week_number,
+          todayDone: Boolean(today?.recited_new && today?.recited_review),
+        });
+      }
     })();
 
     return () => {
@@ -414,6 +444,47 @@ function Record({
           {t("signOut")}
         </button>
       </header>
+
+      {/*
+        ورد اليوم and بطاقة التتميم had no way in: nothing in the app linked to
+        /me/track, so a student could reach them only from a link pasted into
+        her group. Her own page is where she already comes, so the entry sits
+        here, first, for exactly the students who are on a track.
+      */}
+      {track && (
+        <section className="card border-brand-200 bg-brand-50 dark:border-brand-800 dark:bg-brand-950/40">
+          <Link
+            href={`/${academySlug}/me/track`}
+            className="flex items-center gap-3"
+          >
+            <BookOpenCheck
+              aria-hidden="true"
+              className="h-6 w-6 shrink-0 text-brand-700 dark:text-brand-300"
+            />
+            <div className="min-w-0 flex-1">
+              <h2 className="font-display text-lg font-bold">{t("track.title")}</h2>
+              <p className="text-sm text-muted-foreground">
+                {t("track.subtitle", { track: track.trackName, week: track.week })}
+              </p>
+              <p className="mt-1 text-sm font-medium text-brand-800 dark:text-brand-200">
+                {track.todayDone ? t("track.todayDone") : t("track.todayOpen")}
+              </p>
+            </div>
+            <ChevronLeft
+              aria-hidden="true"
+              className="h-5 w-5 shrink-0 text-muted-foreground rtl:rotate-180"
+            />
+          </Link>
+          {track.todayDone && (
+            <Link
+              href={`/${academySlug}/me/track/card`}
+              className="btn-primary mt-3 min-h-11 w-full text-center"
+            >
+              {t("track.card")}
+            </Link>
+          )}
+        </section>
+      )}
 
       {/* The map. See lib/quran/progress.ts for why it is thirty cells that
           can dim rather than a bar that only fills. */}

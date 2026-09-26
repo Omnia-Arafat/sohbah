@@ -1357,6 +1357,13 @@
   "me": {
     "title": "My page",
     "subtitle": "Your memorisation and recitation record in one place.",
+    "track": {
+      "title": "Today's ward",
+      "subtitle": "{track} · week {week}",
+      "todayDone": "Today is complete — your card is ready",
+      "todayOpen": "Record what you've done today",
+      "card": "Completion card"
+    },
     "signIn": {
       "title": "Who are you?",
       "hint": "Your name and the phone number you registered with — no password.",
