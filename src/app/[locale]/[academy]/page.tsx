@@ -18,9 +18,8 @@ import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import type { LiveCircle } from "@/lib/database.types";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { notFound, redirect } from "next/navigation";
-import { cookies } from "next/headers";
-import { STUDENT_COOKIE } from "@/lib/student-cookie";
 import { SignInScreen } from "./login/sign-in-screen";
+import { getViewer, mayViewerSee } from "@/lib/viewer";
 
 type AcademyHomeProps = {
   params: Promise<{ locale: string; academy: string }>;
@@ -79,10 +78,11 @@ export default async function AcademyHome({ params, searchParams }: AcademyHomeP
     Nothing on the site shows before she is known. proxy.ts sends every other
     page here with ?next=, and this page itself shows only the door: a student
     signs in with her name and phone, a معلمة with her account. The cookie is
-    written by me-store when a student signs in.
+    written by me-store when a student signs in; here it must also name a real
+    student, since the proxy only checks that it is there.
   */
-  const cookieStore = await cookies();
-  if (!cookieStore.get(STUDENT_COOKIE)?.value) {
+  const viewer = await getViewer(academy.id);
+  if (viewer.kind === "stranger") {
     const { next } = await searchParams;
     return (
       <SignInScreen
@@ -113,12 +113,15 @@ export default async function AcademyHome({ params, searchParams }: AcademyHomeP
     supabase.rpc("academy_live_circles", { p_academy_id: academy.id }),
     loadCircleTypes(supabase, academy.id, { activeOnly: false }),
   ]);
-  const loadedBoards = await loadBoardsWithCircles(supabase, academy.id, boards);
+  // Men and women each see only their own side's circles. See lib/viewer.ts.
+  const loadedBoards = await loadBoardsWithCircles(supabase, academy.id, boards, viewer);
 
   if (liveResult.error) {
     console.error("academy_live_circles failed", liveResult.error);
   }
-  const live = (liveResult.data ?? []) as LiveCircle[];
+  const live = ((liveResult.data ?? []) as LiveCircle[]).filter((circle) =>
+    mayViewerSee(viewer, circle.gender_category),
+  );
   const liveIds = new Set(live.map((circle) => circle.circle_id));
 
   // A circle can sit on more than one board (a type board and a section board),

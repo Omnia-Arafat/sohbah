@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Circle, Database, ScheduleBoard } from "@/lib/database.types";
+import { mayViewerSee, type Viewer } from "@/lib/viewer";
 
 /** 0 = Sunday … 6 = Saturday, matching PostgreSQL's `dow`. */
 export const WEEK_DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
@@ -65,8 +66,11 @@ export async function loadScheduleBoards(
 export async function loadBoardsWithCircles(
   supabase: SupabaseClient<Database>,
   academyId: string,
-  boards: ScheduleBoard[],
+  allBoards: ScheduleBoard[],
+  viewer: Viewer,
 ): Promise<LoadedBoard[]> {
+  // A men's board is not shown to a woman, nor its circles, and the reverse.
+  const boards = allBoards.filter((board) => mayViewerSee(viewer, board.gender_category));
   if (boards.length === 0) return [];
 
   const { data: circles, error } = await supabase.rpc("academy_schedule", {
@@ -82,6 +86,7 @@ export async function loadBoardsWithCircles(
     const matching = (circles ?? []).filter(
       (circle) =>
         circle.type === board.circle_type &&
+        mayViewerSee(viewer, circle.gender_category) &&
         (board.gender_category === null ||
           circle.gender_category === board.gender_category) &&
         withinWindow(circle.start_time, board.start_from, board.start_to),

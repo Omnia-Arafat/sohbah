@@ -7,6 +7,7 @@ import { ScheduleTabs } from "@/components/schedule-tabs";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import { loadBoardsWithCircles, loadScheduleBoards } from "@/lib/schedule-boards";
+import { getViewer } from "@/lib/viewer";
 import { createClient } from "@/lib/supabase/server";
 
 type PageProps = {
@@ -26,9 +27,9 @@ export default async function SchedulePage({ params }: PageProps) {
   const { locale, academy: academySlug } = await params;
   setRequestLocale(locale);
 
-  // Deliberately unauthenticated: the timetable is the academy's public notice
-  // board. RLS shows only published boards to a visitor, and an academy's own
-  // admin their unpublished drafts as well.
+  // Behind the site's sign-in (proxy.ts), and filtered to the viewer's side.
+  // RLS shows only published boards to a visitor, and an academy's own admin
+  // their unpublished drafts as well.
   const academy = await getAcademyBySlug(academySlug);
   if (!academy) notFound();
 
@@ -39,7 +40,9 @@ export default async function SchedulePage({ params }: PageProps) {
     loadScheduleBoards(supabase, academy.id, { publishedOnly: false }),
     loadCircleTypes(supabase, academy.id, { activeOnly: false }),
   ]);
-  const loadedBoards = await loadBoardsWithCircles(supabase, academy.id, boards);
+  // Men and women each see only their own side's timetable. See lib/viewer.ts.
+  const viewer = await getViewer(academy.id);
+  const loadedBoards = await loadBoardsWithCircles(supabase, academy.id, boards, viewer);
 
   return (
     <div className="flex flex-col gap-6">

@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/navigation";
 import { withSignedUrls } from "@/lib/materials";
 import { LessonCard } from "@/components/lesson-card";
+import { getViewer, mayViewerSee } from "@/lib/viewer";
 import { CircleClient } from "./circle-client";
 
 type CirclePageProps = {
@@ -37,7 +38,10 @@ export async function generateMetadata({
   if (!isSupabaseConfigured()) return { title: t("title") };
 
   const circle = await loadCircle(slug);
-  return { title: circle?.name ?? t("notFoundPage.title") };
+  // The tab title is the معلمة's name, so it is withheld from the other side too.
+  const visible =
+    circle && mayViewerSee(await getViewer(circle.academy_id), circle.gender_category);
+  return { title: visible ? circle.name : t("notFoundPage.title") };
 }
 
 export default async function CirclePage({ params }: CirclePageProps) {
@@ -59,6 +63,15 @@ export default async function CirclePage({ params }: CirclePageProps) {
 
   const circle = await loadCircle(slug);
   if (!circle) notFound();
+
+  /*
+    A men's حلقة does not exist for a woman, and the reverse: not its queue, its
+    names, its lesson or its link. "Not found" rather than "not for you", which
+    would confirm the circle is there. See lib/viewer.ts.
+  */
+  if (!mayViewerSee(await getViewer(circle.academy_id), circle.gender_category)) {
+    notFound();
+  }
 
   const supabase = await createClient();
   const [
