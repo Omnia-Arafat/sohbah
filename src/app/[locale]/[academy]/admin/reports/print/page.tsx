@@ -10,6 +10,7 @@ import { loadCircleTypes } from "@/lib/circle-types";
 import { resolveRange } from "@/lib/report-range";
 import { createClient } from "@/lib/supabase/server";
 import { PrintButton } from "./print-button";
+import { staffSideFilter } from "@/lib/viewer";
 
 type PrintReportPageProps = {
   params: Promise<{ locale: string; academy: string }>;
@@ -98,7 +99,8 @@ export default async function PrintReportPage({
 
   if (reportError) console.error("attendance_report failed", reportError);
 
-  const rows: AttendanceReportRow[] = reportRows ?? [];
+  // Only her own side's students, whatever the gender filter asked for.
+  const rows: AttendanceReportRow[] = (await staffSideFilter(academy.id))(reportRows ?? []);
   const teachers: Teacher[] = teachersResult.data ?? [];
 
   function teacherName(id: string) {

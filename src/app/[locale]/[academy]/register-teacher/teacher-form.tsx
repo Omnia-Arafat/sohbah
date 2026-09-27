@@ -12,6 +12,7 @@ import {
 } from "./state";
 
 const ROLES = ["teacher", "supervisor"] as const;
+const GENDERS = ["female", "male"] as const;
 
 function SubmitButton({
   label,
@@ -97,6 +98,38 @@ export function TeacherApplicationForm({
           </p>
         )}
       </div>
+
+      {/* Asked first and never assumed: it decides which side's circles and
+          students she will see. */}
+      <fieldset>
+        <legend className="field-label">{t("fields.gender")}</legend>
+        <div className="flex gap-3">
+          {GENDERS.map((option) => (
+            <label
+              key={option}
+              className="flex flex-1 cursor-pointer items-center justify-center gap-2
+                         rounded-xl border border-border-subtle bg-surface px-4 py-3
+                         text-base font-medium has-checked:border-brand-600
+                         has-checked:bg-brand-50 has-checked:text-brand-800
+                         dark:has-checked:bg-brand-900 dark:has-checked:text-brand-100"
+            >
+              <input
+                type="radio"
+                name="gender"
+                value={option}
+                defaultChecked={values?.gender === option}
+                className="accent-brand-600"
+              />
+              {t(`genders.${option}`)}
+            </label>
+          ))}
+        </div>
+        {fieldErrors.gender && (
+          <p className="mt-1.5 text-sm text-absent">
+            {t(`errors.${fieldErrors.gender}`)}
+          </p>
+        )}
+      </fieldset>
 
       {/* Same two-card control the student form uses for the section, carrying
           the role instead. */}

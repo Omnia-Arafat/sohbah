@@ -18,6 +18,7 @@ import type {
 import { loadCircleTypes } from "@/lib/circle-types";
 import { REPORT_MODES, resolveRange } from "@/lib/report-range";
 import { createClient } from "@/lib/supabase/server";
+import { staffSideFilter } from "@/lib/viewer";
 
 type ReportsPageProps = {
   params: Promise<{ locale: string; academy: string }>;
@@ -105,7 +106,9 @@ export default async function ReportsPage({
 
   if (reportError) console.error("attendance_report failed", reportError);
 
-  const rows: AttendanceReportRow[] = reportRows ?? [];
+  // Only her own side's students, whatever the gender filter asked for.
+  const ownSide = academy ? await staffSideFilter(academy.id) : <T,>(rows: T[]) => rows;
+  const rows: AttendanceReportRow[] = ownSide(reportRows ?? []);
   const circles: Circle[] = circlesResult.data ?? [];
   const teachers: Teacher[] = teachersResult.data ?? [];
 

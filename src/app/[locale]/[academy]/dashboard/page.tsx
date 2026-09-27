@@ -12,6 +12,7 @@ import { formatTime } from "@/lib/format-time";
 import { createClient } from "@/lib/supabase/server";
 import { ListSearch } from "@/components/list-search";
 import { FridayCard } from "@/components/friday-card";
+import { staffSideFilter } from "@/lib/viewer";
 
 type DashboardPageProps = {
   params: Promise<{ locale: string; academy: string }>;
@@ -58,7 +59,9 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   if (todayResult.error) console.error("teacher_today_circles failed", todayResult.error);
   if (allResult.error) console.error("circles select failed", allResult.error);
 
-  const todayCircles = todayResult.data ?? [];
+  // A مشرفة sees only her own side's circles; an admin sees both.
+  const ownSide = academy ? await staffSideFilter(academy.id) : <T,>(rows: T[]) => rows;
+  const todayCircles = ownSide(todayResult.data ?? []);
   const todayIds = new Set(todayCircles.map((c) => c.id));
   const otherCircles: Circle[] = (allResult.data ?? []).filter((c) => !todayIds.has(c.id));
 

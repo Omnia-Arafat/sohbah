@@ -15,6 +15,7 @@ import { listTracks } from "@/lib/tracks-list-dal";
 import { WeekTicks } from "@/components/week-ticks";
 import { formatTime } from "@/lib/format-time";
 import { notFound } from "next/navigation";
+import { staffSideFilter } from "@/lib/viewer";
 
 type AdminPageProps = {
   params: Promise<{ locale: string; academy: string }>;
@@ -153,8 +154,10 @@ export default async function AdminPage({ params }: AdminPageProps) {
   const teachersCount = teachersResult.count ?? 0;
   const pendingTeachersCount = pendingResult.count ?? 0;
 
-  const todayCircles = todayResult.data ?? [];
-  const liveCircles = liveResult.data ?? [];
+  // A مشرفة sees only her own side's circles; an admin sees both.
+  const ownSide = await staffSideFilter(academy.id);
+  const todayCircles = ownSide(todayResult.data ?? []);
+  const liveCircles = ownSide(liveResult.data ?? []);
   const liveIds = new Set(liveCircles.map((c) => c.circle_id));
   const queuedNow = liveCircles.reduce(
     (sum, c) => sum + Number(c.waiting_count ?? 0),

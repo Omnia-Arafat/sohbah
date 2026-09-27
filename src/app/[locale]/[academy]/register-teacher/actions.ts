@@ -23,6 +23,7 @@ function readValues(formData: FormData): TeacherApplicationValues {
     name: read("name"),
     phone: read("phone"),
     role: read("role"),
+    gender: read("gender"),
     // Not trimmed: leading and trailing spaces are legitimate password
     // characters, and silently removing them would break the next sign-in.
     password: String(formData.get("password") ?? ""),
@@ -61,6 +62,12 @@ export async function applyAsTeacher(
     fieldErrors.phone = "phoneInvalid";
   }
 
+  // Which side she works on: a teacher sees only her own gender's circles
+  // and students, so this is asked, never assumed.
+  if (values.gender !== "male" && values.gender !== "female") {
+    fieldErrors.gender = "genderRequired";
+  }
+
   if (values.role !== "teacher" && values.role !== "supervisor") {
     fieldErrors.role = "roleRequired";
   }
@@ -94,6 +101,7 @@ export async function applyAsTeacher(
     p_name: values.name,
     p_phone: values.phone,
     p_role: values.role as ApplicantRole,
+    p_gender: values.gender as "male" | "female",
   });
 
   if (error) {

@@ -1227,6 +1227,7 @@
       "name": "Full name",
       "phone": "WhatsApp number",
       "phoneHint": "How the administrator will reach you about your application.",
+      "gender": "Gender",
       "role": "Register as",
       "password": "Password",
       "passwordHint": "At least 8 characters. You will sign in with your number and this password."
@@ -1253,7 +1254,12 @@
       "generic": "Registration could not be completed. Please try again.",
       "notConfigured": "The database is not connected yet.",
       "passwordRequired": "A password is required.",
-      "passwordTooShort": "Use at least 8 characters."
+      "passwordTooShort": "Use at least 8 characters.",
+      "genderRequired": "Please choose a gender."
+    },
+    "genders": {
+      "female": "Woman",
+      "male": "Man"
     }
   },
   "schedule": {

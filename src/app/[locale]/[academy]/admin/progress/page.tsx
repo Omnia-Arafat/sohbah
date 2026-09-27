@@ -9,6 +9,7 @@ import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import { curriculumLabel, loadCurricula } from "@/lib/curricula";
 import { createClient } from "@/lib/supabase/server";
 import { fullStudentName } from "@/lib/student-name";
+import { staffSideFilter } from "@/lib/viewer";
 
 type PageProps = {
   params: Promise<{ locale: string; academy: string }>;
@@ -48,7 +49,8 @@ export default async function ProgressReportPage({ params, searchParams }: PageP
 
   if (error) console.error("curriculum_progress_report failed", error);
 
-  const report = rows ?? [];
+  // Only her own side's students; an admin sees both.
+  const report = (await staffSideFilter(academy.id))(rows ?? []);
 
   return (
     <div className="flex flex-col gap-6">
