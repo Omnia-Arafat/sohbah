@@ -220,7 +220,7 @@
     "queue": {
       "title": "قائمة الدور ({count})",
       "titleWithMax": "قائمة الدور ({count}/{max})",
-      "empty": "{gender, select, male {لم ينضم أحد بعد. كن أول من ينضم.} female {لم تنضم أحد بعد. كوني أول من ينضم.} other {لم ينضم أحد بعد. كن أول من ينضم.}}",
+      "empty": "{gender, select, male {لم ينضم أحد بعد. كن أول من ينضم.} female {لم تنضم أي طالبة بعد. كوني أول من تنضم.} other {لم ينضم أحد بعد. كن أول من ينضم.}}",
       "you": "{gender, select, male {(أنت)} female {(أنتِ)} other {(أنت)}}"
     },
     "status": {

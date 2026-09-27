@@ -106,6 +106,7 @@ export default async function CirclePage({ params }: CirclePageProps) {
           <p className="mt-3 text-sm text-accent-700 dark:text-accent-300">
             {circle.registration_state === "before" && circle.opens_at
               ? t("registration.opensAt", {
+                  gender: circle.gender_category,
                   time: formatTime(circle.start_time, locale),
                 })
               : circle.registration_state === "after"

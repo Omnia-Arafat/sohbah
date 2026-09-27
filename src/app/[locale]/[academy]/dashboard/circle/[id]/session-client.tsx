@@ -23,6 +23,8 @@ type SessionClientProps = {
   /** Null means unlimited — see `circles.max_students`. */
   maxStudents: number | null;
   circleName: string;
+  /** Which form the status words take: the circle is all-male or all-female. */
+  circleGenderCategory: "male" | "female";
   /**
    * Whether this kind of circle keeps a سجل تسميع. False for حلقة حديث, where
    * a mushaf range is not what happened — see `circle_types.records_recitation`.
@@ -41,6 +43,7 @@ export function SessionClient({
   initialQueue,
   maxStudents,
   circleName,
+  circleGenderCategory,
   recordsRecitation,
   initialLogs,
 }: SessionClientProps) {
@@ -320,15 +323,15 @@ export function SessionClient({
           suffix={maxStudents !== null ? `/${maxStudents}` : undefined}
           label={t("summary.joined")}
         />
-        <SummaryCell value={counts.waiting} label={tCircle("status.waiting", { gender: "other" })} />
+        <SummaryCell value={counts.waiting} label={tCircle("status.waiting", { gender: circleGenderCategory })} />
         <SummaryCell
           value={counts.reciting}
-          label={tCircle("status.reciting", { gender: "other" })}
+          label={tCircle("status.reciting", { gender: circleGenderCategory })}
           tone="text-reciting"
         />
         <SummaryCell
           value={counts.done}
-          label={tCircle("status.done", { gender: "other" })}
+          label={tCircle("status.done", { gender: circleGenderCategory })}
           tone="text-present"
         />
       </section>
@@ -449,7 +452,7 @@ export function SessionClient({
                       status,
                     )}
                   >
-                    {tCircle(`status.${status}`, { gender: "other" })}
+                    {tCircle(`status.${status}`, { gender: circleGenderCategory })}
                   </button>
                 ))}
               </div>

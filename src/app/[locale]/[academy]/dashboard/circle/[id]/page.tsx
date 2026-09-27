@@ -251,6 +251,7 @@ export default async function TeacherSessionPage({ params }: SessionPageProps) {
             initialQueue={queueResult.data ?? []}
             maxStudents={circle.max_students}
             circleName={circle.name}
+            circleGenderCategory={circle.gender_category}
             recordsRecitation={recordsRecitation}
             initialLogs={logRows ?? []}
           />
