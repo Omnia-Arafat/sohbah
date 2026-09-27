@@ -1,3 +1,5 @@
+import { STUDENT_COOKIE } from "./student-cookie";
+
 /**
  * "Which student am I?", remembered across visits.
  *
@@ -51,6 +53,30 @@ export function getMe(key: string): Me | null {
   return value;
 }
 
+/**
+ * The cookie that lets her past the site's front door.
+ *
+ * The whole site sits behind sign-in, and the check happens in proxy.ts before
+ * a page renders — where localStorage cannot be read. So the one fact the
+ * server needs, "someone signed in as a student in this browser", is mirrored
+ * here. It is a presence check, like the staff cookie check beside it: the
+ * data she reads is still gated by her phone in every RPC.
+ */
+
+export function writeStudentCookie(value: Me | null) {
+  try {
+    document.cookie = value
+      ? `${STUDENT_COOKIE}=${value.studentId}; path=/; max-age=31536000; samesite=lax`
+      : `${STUDENT_COOKIE}=; path=/; max-age=0; samesite=lax`;
+  } catch {
+    // No cookies: the gate will ask her to sign in again, which still works.
+  }
+}
+
+export function hasStudentCookie() {
+  return document.cookie.split("; ").some((c) => c.startsWith(`${STUDENT_COOKIE}=`) && c.length > STUDENT_COOKIE.length + 1);
+}
+
 export function setMe(key: string, value: Me) {
   cache.set(key, value);
   try {
@@ -58,6 +84,7 @@ export function setMe(key: string, value: Me) {
   } catch {
     // Non-fatal: the page works, it just will not remember her next time.
   }
+  writeStudentCookie(value);
   listeners.forEach((listener) => listener());
 }
 
@@ -68,6 +95,7 @@ export function clearMe(key: string) {
   } catch {
     // Nothing to do — the in-memory cache above is already cleared.
   }
+  writeStudentCookie(null);
   listeners.forEach((listener) => listener());
 }
 

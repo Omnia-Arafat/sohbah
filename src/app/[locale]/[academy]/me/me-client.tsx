@@ -76,12 +76,15 @@ export function MeClient({
 // Signing in without an account
 // =============================================================================
 
-function SignIn({
+export function SignIn({
   academySlug,
   onFound,
+  bare = false,
 }: {
   academySlug: string;
   onFound: (me: Me) => void;
+  /** Inside the front door's tab: no page heading and no card of its own. */
+  bare?: boolean;
 }) {
   const t = useTranslations("me");
   const supabase = useMemo(() => createClient(), []);
@@ -156,7 +159,7 @@ function SignIn({
     return (
       <div className="flex flex-col gap-6">
         <header>
-          <h1 className="font-display text-2xl font-bold">
+          <h1 className={bare ? "text-lg font-semibold" : "font-display text-2xl font-bold"}>
             {t("signIn.chooseTitle")}
           </h1>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
@@ -164,7 +167,7 @@ function SignIn({
           </p>
         </header>
 
-        <div className="card flex flex-col gap-2 p-3">
+        <div className={bare ? "flex flex-col gap-2" : "card flex flex-col gap-2 p-3"}>
           {choices.map((choice) => (
             <button
               key={choice.id}
@@ -207,12 +210,14 @@ function SignIn({
 
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="font-display text-2xl font-bold">{t("title")}</h1>
-        <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
-      </header>
+      {!bare && (
+        <header>
+          <h1 className="font-display text-2xl font-bold">{t("title")}</h1>
+          <p className="mt-1 text-muted-foreground">{t("subtitle")}</p>
+        </header>
+      )}
 
-      <form onSubmit={submit} className="card flex flex-col gap-4">
+      <form onSubmit={submit} className={bare ? "flex flex-col gap-4" : "card flex flex-col gap-4"}>
         <div>
           <h2 className="text-lg font-semibold">{t("signIn.title")}</h2>
           <p className="mt-1 text-sm text-muted-foreground">{t("signIn.hint")}</p>
@@ -258,7 +263,7 @@ function SignIn({
         )}
 
         <button type="submit" disabled={busy} className="btn-primary">
-          {busy ? t("signIn.submitting") : t("signIn.submit")}
+          {busy ? t("signIn.submitting") : bare ? t("signIn.submitDoor") : t("signIn.submit")}
         </button>
 
         <p className="text-xs leading-relaxed text-muted-foreground">
@@ -274,31 +279,34 @@ function SignIn({
         on both screens — so whichever one she lands on, the other is one tap
         away.
       */}
-      <Link
-        href={`/${academySlug}/register`}
-        className="flex items-center justify-between gap-3 rounded-2xl border
-                   border-border-subtle bg-surface p-4 transition-colors
-                   hover:border-brand-600"
-      >
-        <span className="flex items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 dark:bg-brand-900">
-            <UserRoundPlus
-              aria-hidden="true"
-              className="h-[18px] w-[18px] text-brand-600 dark:text-brand-300"
-            />
-          </span>
-          <span className="flex min-w-0 flex-col leading-tight">
-            <span className="text-sm font-bold">{t("signIn.noAccount")}</span>
-            <span className="text-xs text-muted-foreground">
-              {t("signIn.noAccountBody")}
+      {/* At the front door the register button sits under the form already. */}
+      {!bare && (
+        <Link
+          href={`/${academySlug}/register`}
+          className="flex items-center justify-between gap-3 rounded-2xl border
+                     border-border-subtle bg-surface p-4 transition-colors
+                     hover:border-brand-600"
+        >
+          <span className="flex items-center gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 dark:bg-brand-900">
+              <UserRoundPlus
+                aria-hidden="true"
+                className="h-[18px] w-[18px] text-brand-600 dark:text-brand-300"
+              />
+            </span>
+            <span className="flex min-w-0 flex-col leading-tight">
+              <span className="text-sm font-bold">{t("signIn.noAccount")}</span>
+              <span className="text-xs text-muted-foreground">
+                {t("signIn.noAccountBody")}
+              </span>
             </span>
           </span>
-        </span>
-        <ChevronLeft
-          aria-hidden="true"
-          className="h-5 w-5 shrink-0 text-muted-foreground rtl:rotate-180"
-        />
-      </Link>
+          <ChevronLeft
+            aria-hidden="true"
+            className="h-5 w-5 shrink-0 text-muted-foreground rtl:rotate-180"
+          />
+        </Link>
+      )}
     </div>
   );
 }

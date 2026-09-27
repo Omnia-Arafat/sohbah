@@ -284,6 +284,7 @@
     "noAccountYet": "No account yet?",
     "registerAccount": "Teacher / supervisor registration",
     "pageTitle": "Sign in",
+    "gateNote": "Sign in first to reach the circles, the timetable and your page.",
     "tabs": {
       "staff": "Teacher or supervisor",
       "student": "Student"
@@ -292,7 +293,8 @@
       "register": "Register a new student",
       "returningTitle": "Already registered?",
       "returningBody": "Open the circle link your teacher sent you — or pick your circle from today's list.",
-      "signIn": "Sign in"
+      "signIn": "Sign in",
+      "newHere": "First time here?"
     },
     "adminSignIn": "Sign in as admin"
   },
@@ -1372,6 +1374,7 @@
       "phone": "Phone number",
       "phonePlaceholder": "01000000000",
       "submit": "Open my page",
+      "submitDoor": "Sign in",
       "submitting": "Searching…",
       "notFound": "No student matches that name and phone number. Check both, or ask your teacher.",
       "error": "Could not connect. Please try again.",

@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { StudentDoor } from "./student-door";
 
 /**
  * Two tabs, not three.
@@ -33,10 +34,13 @@ import { Link } from "@/i18n/navigation";
 export function SignInTabs({
   academySlug,
   staffForm,
+  next = null,
 }: {
   academySlug: string;
   /** The existing `<TeacherLoginForm>`, unchanged and rendered as-is. */
   staffForm: ReactNode;
+  /** Where the site's front door turned her away from; she goes back there. */
+  next?: string | null;
 }) {
   const t = useTranslations("auth");
   const [tab, setTab] = useState<"staff" | "student">("student");
@@ -94,38 +98,20 @@ export function SignInTabs({
         ) : (
           <div className="flex flex-col gap-5">
             {/*
-              Two doors, named the way she would name them: she is either new
-              here or she is coming back. The panel used to open with a notice
-              explaining that students have no account and no password — true,
-              but it answered a question nobody had asked yet and pushed both
-              buttons down the screen. صفحتي is that door, so it is labelled
-              تسجيل الدخول rather than by its destination.
-
-              حلقات اليوم used to be a third button and is not one any more:
-              الجدول is a permanent tab in the bar at the bottom of every
-              screen, so putting it here was offering a door that is already
-              open.
+              She signs in right here, with the name and phone she registered
+              with. This used to be a button to صفحتي; now that nothing on the
+              site opens before she is known, the form is the door itself.
             */}
-            <div className="flex flex-col gap-2">
-              <Link href={`/${academySlug}/register`} className="btn-primary w-full">
+            <StudentDoor academySlug={academySlug} next={next} />
+
+            <div className="border-t border-border-subtle pt-5">
+              <p className="mb-2.5 text-center text-sm text-muted-foreground">
+                {t("student.newHere")}
+              </p>
+              <Link href={`/${academySlug}/register`} className="btn-secondary w-full">
                 <UserRoundPlus aria-hidden="true" className="h-5 w-5" />
                 {t("student.register")}
               </Link>
-
-              <Link href={`/${academySlug}/me`} className="btn-secondary w-full">
-                <UserRound aria-hidden="true" className="h-5 w-5" />
-                {t("student.signIn")}
-              </Link>
-            </div>
-
-            {/* Set into the page rather than ruled off it: a hairline above a
-                grey paragraph read as another section, when it is a footnote
-                to the two buttons above it. */}
-            <div className="rounded-xl bg-surface-muted p-4">
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                <b className="text-foreground">{t("student.returningTitle")}</b>{" "}
-                {t("student.returningBody")}
-              </p>
             </div>
           </div>
         )}

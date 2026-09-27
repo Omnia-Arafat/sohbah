@@ -2,6 +2,7 @@ import createMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { routing, type Locale } from "@/i18n/routing";
+import { STUDENT_COOKIE } from "@/lib/student-cookie";
 
 /**
  * Protected path segments — any route whose path contains one of these
@@ -58,6 +59,31 @@ function hasAuthCookie(request: NextRequest) {
 }
 
 /**
+ * The pages a stranger may open. Nothing else on the site renders for someone
+ * who is neither a signed-in معلمة nor a signed-in student: the academy's home
+ * page is itself the sign-in screen, and these are the ways to become known.
+ *
+ *   /sohbah                   → the door (sign in)
+ *   /sohbah/login             → the same door, by its old address
+ *   /sohbah/register          → a new student
+ *   /sohbah/register-teacher  → a new معلمة
+ *   /sohbah/install           → adding the app to the phone
+ *   /sohbah/admin             → the admin door (see isAdminLanding)
+ */
+const OPEN_PAGES = ["", "login", "register", "register-teacher", "install"];
+
+function isOpenToStrangers(pathname: string) {
+  if (pathname === "/") return true;
+  if (isAdminLanding(pathname)) return true;
+  const [, ...after] = pathname.split("/").filter(Boolean);
+  return after.length <= 1 && OPEN_PAGES.includes(after[0] ?? "");
+}
+
+function hasStudentCookie(request: NextRequest) {
+  return Boolean(request.cookies.get(STUDENT_COOKIE)?.value);
+}
+
+/**
  * Refreshes the Supabase session so Server Components see a valid cookie.
  * Students never sign in — this is a no-op for them.
  */
@@ -91,6 +117,23 @@ export default async function proxy(request: NextRequest) {
     url.pathname = `${localePrefix}/sohbah/login`;
     url.search = "";
     url.searchParams.set("next", rest);
+    return NextResponse.redirect(url);
+  }
+
+  // Everyone else who is not known yet goes to the door, and back after.
+  // A path with no locale is left to next-intl, which redirects it to one;
+  // the gate runs on that second request.
+  if (
+    locale &&
+    !isOpenToStrangers(rest) &&
+    !hasAuthCookie(request) &&
+    !hasStudentCookie(request)
+  ) {
+    const academy = rest.split("/").filter(Boolean)[0] ?? "sohbah";
+    const url = request.nextUrl.clone();
+    url.pathname = `/${locale}/${academy}`;
+    url.search = "";
+    url.searchParams.set("next", rest + request.nextUrl.search);
     return NextResponse.redirect(url);
   }
 

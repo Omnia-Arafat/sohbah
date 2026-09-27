@@ -18,9 +18,13 @@ import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import type { LiveCircle } from "@/lib/database.types";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { notFound, redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { STUDENT_COOKIE } from "@/lib/student-cookie";
+import { SignInScreen } from "./login/sign-in-screen";
 
 type AcademyHomeProps = {
   params: Promise<{ locale: string; academy: string }>;
+  searchParams: Promise<{ next?: string }>;
 };
 
 /** Circles move, and this page leads with what is running — never cache it. */
@@ -46,7 +50,7 @@ export const dynamic = "force-dynamic";
  * that way. This is the one screen where several things could claim it, and
  * only the running circles get it.
  */
-export default async function AcademyHome({ params }: AcademyHomeProps) {
+export default async function AcademyHome({ params, searchParams }: AcademyHomeProps) {
   const { locale, academy: academySlug } = await params;
   setRequestLocale(locale);
 
@@ -69,6 +73,26 @@ export default async function AcademyHome({ params }: AcademyHomeProps) {
   const session = await getTeacherSession();
   if (isActiveTeacher(session)) {
     redirect(`/${locale}/${academySlug}/dashboard`);
+  }
+
+  /*
+    Nothing on the site shows before she is known. proxy.ts sends every other
+    page here with ?next=, and this page itself shows only the door: a student
+    signs in with her name and phone, a معلمة with her account. The cookie is
+    written by me-store when a student signs in.
+  */
+  const cookieStore = await cookies();
+  if (!cookieStore.get(STUDENT_COOKIE)?.value) {
+    const { next } = await searchParams;
+    return (
+      <SignInScreen
+        academy={academy}
+        academySlug={academySlug}
+        locale={locale}
+        next={next ?? null}
+        gate
+      />
+    );
   }
 
   const t = await getTranslations("home");
