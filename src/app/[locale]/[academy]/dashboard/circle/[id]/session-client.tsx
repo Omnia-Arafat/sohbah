@@ -320,15 +320,15 @@ export function SessionClient({
           suffix={maxStudents !== null ? `/${maxStudents}` : undefined}
           label={t("summary.joined")}
         />
-        <SummaryCell value={counts.waiting} label={tCircle("status.waiting")} />
+        <SummaryCell value={counts.waiting} label={tCircle("status.waiting", { gender: "other" })} />
         <SummaryCell
           value={counts.reciting}
-          label={tCircle("status.reciting")}
+          label={tCircle("status.reciting", { gender: "other" })}
           tone="text-reciting"
         />
         <SummaryCell
           value={counts.done}
-          label={tCircle("status.done")}
+          label={tCircle("status.done", { gender: "other" })}
           tone="text-present"
         />
       </section>
@@ -449,7 +449,7 @@ export function SessionClient({
                       status,
                     )}
                   >
-                    {tCircle(`status.${status}`)}
+                    {tCircle(`status.${status}`, { gender: "other" })}
                   </button>
                 ))}
               </div>
