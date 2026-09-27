@@ -258,7 +258,7 @@
     },
     "submit": "Sign in",
     "submitting": "Signing in…",
-    "studentsNote": "Students join their circle from the link their teacher shares – no account needed.",
+    "studentsNote": "Students sign in from the «Students» tab with their name and phone number — no password.",
     "signedInAs": "Signed in as",
     "signOutAndSwitch": "Sign out and use another account",
     "notLinked": {
@@ -286,8 +286,8 @@
     "pageTitle": "Sign in",
     "gateNote": "Sign in first to reach the circles, the timetable and your page.",
     "tabs": {
-      "staff": "Teacher or supervisor",
-      "student": "Student"
+      "staff": "Teachers",
+      "student": "Students"
     },
     "student": {
       "register": "Register a new student",
