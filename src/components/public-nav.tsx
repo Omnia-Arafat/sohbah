@@ -10,6 +10,7 @@ import {
   House,
   Smartphone,
   Sunrise,
+  Trophy,
   UserPlus,
   X,
 } from "lucide-react";
@@ -86,6 +87,8 @@ export function PublicNav({ academySlug }: { academySlug: string }) {
   const sheetLinks = [
     { href: mushaf, label: t("mushaf"), Icon: BookOpen },
     { href: `/${academySlug}/adhkar`, label: t("adhkar"), Icon: Sunrise },
+    // The challenges her معلمات started — also a card on the home screen.
+    { href: `/${academySlug}/challenges`, label: t("challenges"), Icon: Trophy },
     { href: `/${academySlug}/me`, label: t("myPage"), Icon: CircleCheckBig },
     { href: `/${academySlug}/register`, label: t("register"), Icon: UserPlus },
     // /install is here as well as being a link to send. The page already knows

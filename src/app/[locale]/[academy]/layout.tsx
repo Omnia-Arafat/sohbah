@@ -81,7 +81,6 @@ export default async function AcademyLayout({
           academyColor={academy.primary_color}
           logoPath={academy.logo_path}
           isAdmin={isAdminRole(teacher)}
-          canSupervise={canSupervise(teacher)}
           teacherName={getTeacherDisplayLabel(teacher, academySlug, locale)}
           roleLabel={tDashboard(`role.${primaryRoleKey(teacher)}`)}
           signOutAction={signOut.bind(null, academySlug)}

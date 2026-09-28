@@ -73,8 +73,8 @@ export type Primitive =
       dash?: string;
       transform?: string;
     }
-  | { kind: "circle"; cx: number; cy: number; r: number; fill: string; stroke?: string; strokeWidth?: number; strokeOpacity?: number; dash?: string }
-  | { kind: "rect"; x: number; y: number; w: number; h: number; rx: number; fill: string; stroke?: string; strokeWidth?: number; dash?: string }
+  | { kind: "circle"; cx: number; cy: number; r: number; fill: string; stroke?: string; strokeWidth?: number; strokeOpacity?: number; dash?: string; opacity?: number }
+  | { kind: "rect"; x: number; y: number; w: number; h: number; rx: number; fill: string; stroke?: string; strokeWidth?: number; dash?: string; opacity?: number }
   | { kind: "text"; x: number; y: number; size: number; fill: string; text: string };
 
 export type BadgeDrawing = {
@@ -233,7 +233,11 @@ export function drawBadge(
 
 /** The same drawing as a standalone SVG document — for the share image. */
 export function badgeSvgMarkup(milestone: number, fontFamily: string, locked = false): string {
-  const { viewBox, parts } = drawBadge(milestone, { locked });
+  return drawingSvgMarkup(drawBadge(milestone, { locked }), fontFamily);
+}
+
+/** Any badge drawing as a standalone SVG document. */
+export function drawingSvgMarkup({ viewBox, parts }: BadgeDrawing, fontFamily: string): string {
   const attr = (name: string, value: string | number | undefined) =>
     value === undefined ? "" : ` ${name}="${value}"`;
   const body = parts
@@ -242,9 +246,9 @@ export function badgeSvgMarkup(milestone: number, fontFamily: string, locked = f
         case "path":
           return `<path d="${p.d}" fill="${p.fill}"${attr("fill-opacity", p.opacity)}${attr("stroke", p.stroke)}${attr("stroke-width", p.strokeWidth)}${attr("stroke-dasharray", p.dash)}${attr("transform", p.transform)}${p.stroke && p.fill === "none" ? attr("stroke-opacity", p.opacity) : ""}/>`;
         case "circle":
-          return `<circle cx="${p.cx}" cy="${p.cy}" r="${p.r}" fill="${p.fill}"${attr("stroke", p.stroke)}${attr("stroke-width", p.strokeWidth)}${attr("stroke-opacity", p.strokeOpacity)}${attr("stroke-dasharray", p.dash)}/>`;
+          return `<circle cx="${p.cx}" cy="${p.cy}" r="${p.r}" fill="${p.fill}"${attr("stroke", p.stroke)}${attr("stroke-width", p.strokeWidth)}${attr("stroke-opacity", p.strokeOpacity)}${attr("stroke-dasharray", p.dash)}${attr("opacity", p.opacity)}/>`;
         case "rect":
-          return `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}" fill="${p.fill}"${attr("stroke", p.stroke)}${attr("stroke-width", p.strokeWidth)}${attr("stroke-dasharray", p.dash)}/>`;
+          return `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}" fill="${p.fill}"${attr("stroke", p.stroke)}${attr("stroke-width", p.strokeWidth)}${attr("stroke-dasharray", p.dash)}${attr("opacity", p.opacity)}/>`;
         case "text":
           return `<text x="${p.x}" y="${p.y}" text-anchor="middle" font-size="${p.size}" font-weight="700" fill="${p.fill}" font-family="${fontFamily}">${p.text}</text>`;
       }

@@ -11,6 +11,7 @@ import { AyahTeaser } from "@/components/ayah-teaser";
 import { ProgressStrip } from "@/components/progress-strip";
 import { DailyTiles } from "@/components/daily-tiles";
 import { FridayCard } from "@/components/friday-card";
+import { ChallengesCard } from "@/components/challenges-card";
 import { Link } from "@/i18n/navigation";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { getLocalizedAcademyName } from "@/lib/academy-display";
@@ -213,6 +214,10 @@ export default async function AcademyHome({ params, searchParams }: AcademyHomeP
       {/* تحدي الجمعة — only from مغرب الخميس to مغرب الجمعة, and under any
           live circle: gold stays first. */}
       <FridayCard academySlug={academySlug} locale={locale} />
+
+      {/* The rest of the challenges — under تحدي الجمعة, which comes first
+          on its day. Renders nothing when none are running. */}
+      <ChallengesCard academySlug={academySlug} locale={locale} />
 
       {next && (
         <section className="flex flex-col gap-3">

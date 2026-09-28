@@ -1,4 +1,4 @@
-import { drawBadge } from "@/lib/friday-badges";
+import { drawBadge, type BadgeDrawing } from "@/lib/friday-badges";
 
 /**
  * One تحدي الجمعة badge, drawn from its number.
@@ -22,7 +22,24 @@ export function FridayBadge({
   /** Spoken name; the badge is decorative when omitted. */
   label?: string;
 }) {
-  const { viewBox, aspect, parts } = drawBadge(milestone, { locked });
+  return <BadgeSvg drawing={drawBadge(milestone, { locked })} size={size} label={label} />;
+}
+
+/**
+ * Any badge drawing — the Friday badges and the ذكر challenges' alike — as
+ * SVG. The drawings are plain data (`BadgeDrawing`), so this is the one place
+ * that turns them into markup.
+ */
+export function BadgeSvg({
+  drawing,
+  size = 48,
+  label,
+}: {
+  drawing: BadgeDrawing;
+  size?: number;
+  label?: string;
+}) {
+  const { viewBox, aspect, parts } = drawing;
 
   return (
     <svg
@@ -48,6 +65,7 @@ export function FridayBadge({
                 strokeWidth={p.strokeWidth}
                 strokeDasharray={p.dash}
                 strokeLinecap="round"
+                strokeLinejoin="round"
                 transform={p.transform}
               />
             );
@@ -63,6 +81,7 @@ export function FridayBadge({
                 strokeWidth={p.strokeWidth}
                 strokeOpacity={p.strokeOpacity}
                 strokeDasharray={p.dash}
+                opacity={p.opacity}
               />
             );
           case "rect":
@@ -78,6 +97,7 @@ export function FridayBadge({
                 stroke={p.stroke}
                 strokeWidth={p.strokeWidth}
                 strokeDasharray={p.dash}
+                opacity={p.opacity}
               />
             );
           case "text":

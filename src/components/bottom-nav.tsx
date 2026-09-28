@@ -110,9 +110,10 @@ export function BottomNav({
     // things every role does daily, and a tab for something only a مشرفة
     // touches would push one of them off. Same rule that keeps this sheet
     // from growing back into /admin's old wall of cards.
-    // تحدي الجمعة's board. Supervisors only, and in the first row of the
-    // sheet because it is read every Friday.
-    { href: `/${academySlug}/admin/challenges`, label: t("challenges"), Icon: Trophy, adminOnly: false, hidden: !canSupervise },
+    // التحديات: every معلمة starts and follows challenges here; a مشرفة also
+    // reaches تحدي الجمعة's ranking from inside it. In the first row of the
+    // sheet because it is opened daily.
+    { href: `/${academySlug}/challenges`, label: t("challenges"), Icon: Trophy, adminOnly: false, hidden: false },
     { href: `/${academySlug}/admin/tracks`, label: t("tracks"), Icon: Route, adminOnly: true, hidden: false },
     // Open to every معلمة rather than admin-only: she is the one who prepares
     // the lesson she is about to teach.

@@ -30,8 +30,6 @@ type NavItem = {
   /** Matched as a prefix so a detail page keeps its section highlighted. */
   prefix?: boolean;
   adminOnly?: boolean;
-  /** Only for a مشرفة or an admin. */
-  supervisorOnly?: boolean;
 };
 
 /**
@@ -48,7 +46,6 @@ export function SideNav({
   academyColor,
   logoPath,
   isAdmin,
-  canSupervise,
   teacherName,
   roleLabel,
   signOutAction,
@@ -58,7 +55,6 @@ export function SideNav({
   academyColor: string;
   logoPath: string | null;
   isAdmin: boolean;
-  canSupervise: boolean;
   teacherName: string;
   roleLabel: string;
   signOutAction: () => void;
@@ -85,9 +81,9 @@ export function SideNav({
     { href: `/${academySlug}/admin/quizzes`, label: t("quizzes"), Icon: ClipboardList, prefix: true },
     { href: `/${academySlug}/admin/teachers`, label: t("teachers"), Icon: UserCheck, prefix: true },
     { href: `/${academySlug}/admin/reports`, label: t("reports"), Icon: BarChart, prefix: true },
-    // تحدي الجمعة's board: who took part, in order. Supervisors only — see
-    // admin/challenges/page.tsx for why a student never sees a ranking.
-    { href: `/${academySlug}/admin/challenges`, label: t("challenges"), Icon: Trophy, prefix: true, supervisorOnly: true },
+    // التحديات: every معلمة starts and follows challenges here; a مشرفة
+    // also reaches تحدي الجمعة's ranking from inside it.
+    { href: `/${academySlug}/challenges`, label: t("challenges"), Icon: Trophy, prefix: true },
     { href: `/${academySlug}/admin/progress`, label: t("progress"), Icon: TrendingUp, prefix: true },
     // A queue with a student waiting at the other end, open to every معلمة:
     // she is the one who would know whether the excuse is true.
@@ -97,7 +93,7 @@ export function SideNav({
     // she is the one who notices circles missing from the schedule.
     { href: `/${academySlug}/admin/schedules`, label: t("schedules"), Icon: CalendarDays, prefix: true, adminOnly: false },
     { href: `/${academySlug}/admin`, label: t("adminHome"), Icon: LayoutGrid },
-  ].filter((item) => (!item.adminOnly || isAdmin) && (!item.supervisorOnly || canSupervise));
+  ].filter((item) => !item.adminOnly || isAdmin);
 
   function isActive(item: NavItem) {
     return item.prefix ? pathname.startsWith(item.href) : pathname === item.href;

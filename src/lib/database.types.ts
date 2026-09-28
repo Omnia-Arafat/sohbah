@@ -234,6 +234,38 @@ export type CircleRecitationLog = Pick<
   | "note"
 >;
 
+/** A ذكر challenge as the list shows it (`dhikr_challenges_list`). */
+export type DhikrChallenge = {
+  id: string;
+  slug: string;
+  preset: string | null;
+  title: string;
+  dhikr: string;
+  virtue: string;
+  source: string;
+  family: string;
+  goal: number;
+  period: "day" | "week" | "once";
+  circle_name: string | null;
+  created_at: string;
+};
+
+/** One challenge opened by its link, stopped ones included. */
+export type DhikrChallengeBySlug = Omit<DhikrChallenge, "created_at"> & {
+  is_active: boolean;
+  created_by: string | null;
+  /** The side it belongs to — the side of the one who made it. */
+  gender_category: GenderCategory;
+};
+
+/** One line of a challenge's results, for its maker and مشرفات. */
+export type DhikrStatsRow = {
+  person_name: string;
+  person_kind: "student" | "teacher" | "supervisor";
+  person_total: number;
+  person_reached: string;
+};
+
 /** One person's تحدي الجمعة week, as a save returns it (merged). */
 export type FridayChallengeRow = { salawat: number; kahf_pages: number };
 
@@ -1149,6 +1181,48 @@ export type Database = {
       friday_challenge_board: {
         Args: { p_academy_id: string; p_friday: string };
         Returns: FridayBoardRow[];
+      };
+      dhikr_challenges_list: {
+        Args: { p_academy_slug: string; p_student_id?: string | null; p_phone?: string | null };
+        Returns: DhikrChallenge[];
+      };
+      dhikr_challenge_by_slug: {
+        Args: { p_academy_slug: string; p_slug: string };
+        Returns: DhikrChallengeBySlug[];
+      };
+      dhikr_challenge_save_student: {
+        Args: { p_challenge_id: string; p_student_id: string; p_phone: string; p_period_key: string; p_total: number };
+        Returns: { total: number }[];
+      };
+      dhikr_challenge_save_staff: {
+        Args: { p_challenge_id: string; p_period_key: string; p_total: number };
+        Returns: { total: number }[];
+      };
+      dhikr_challenge_create: {
+        Args: {
+          p_preset: string | null;
+          p_title: string;
+          p_dhikr: string;
+          p_virtue: string;
+          p_source: string;
+          p_family: string;
+          p_goal: number;
+          p_period: string;
+          p_circle_id?: string | null;
+        };
+        Returns: string;
+      };
+      dhikr_challenge_can_manage: {
+        Args: { p_challenge_id: string };
+        Returns: boolean;
+      };
+      dhikr_challenge_set_active: {
+        Args: { p_challenge_id: string; p_active: boolean };
+        Returns: undefined;
+      };
+      dhikr_challenge_stats: {
+        Args: { p_challenge_id: string; p_period_key: string };
+        Returns: DhikrStatsRow[];
       };
     };
     Enums: Empty;
