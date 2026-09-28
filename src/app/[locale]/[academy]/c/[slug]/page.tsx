@@ -31,9 +31,11 @@ export async function generateMetadata({ params }: DhikrPageProps): Promise<Meta
  * One challenge, by the link its معلمة shared: the ذكر, the counter, and the
  * hadith with its source.
  *
- * Only for its own side: a challenge belongs to the side of the one who made
- * it, and the other side gets the same "not found" as a wrong link — the
- * saves in the database refuse the other side regardless.
+ * Open to anyone with the link, signed in or not: a stranger counts on her
+ * phone and signs in to keep it. A signed-in reader of the OTHER side gets
+ * the same "not found" as a wrong link — a challenge belongs to the side of
+ * the one who made it, and the saves in the database refuse the other side
+ * regardless.
  */
 export default async function DhikrPage({ params }: DhikrPageProps) {
   const { locale, academy: academySlug, slug } = await params;
@@ -44,7 +46,8 @@ export default async function DhikrPage({ params }: DhikrPageProps) {
 
   const { supabase, challenge } = await loadChallenge(academySlug, slug);
   if (!challenge) notFound();
-  if (!mayViewerSee(await getViewer(academy.id), challenge.gender_category)) notFound();
+  const viewer = await getViewer(academy.id);
+  if (viewer.kind !== "stranger" && !mayViewerSee(viewer, challenge.gender_category)) notFound();
 
   // The one who made it, or a مشرفة, gets the way to its results.
   const session = await getTeacherSession();

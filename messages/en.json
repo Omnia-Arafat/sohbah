@@ -1988,7 +1988,7 @@
       "empty": "Nobody recorded this Friday.",
       "tieNote": "Ranked by count; at a tie, whoever reached it first."
     },
-    "notKnown": "So your supervisor can see your count, <link>open My page</link> once."
+    "notKnown": "Your count is kept on this phone. To save it for your supervisor, <link>sign in</link>."
   },
   "trackDay": {
     "title": "Today's portion",

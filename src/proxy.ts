@@ -72,10 +72,25 @@ function hasAuthCookie(request: NextRequest) {
  */
 const OPEN_PAGES = ["", "login", "register", "register-teacher", "install"];
 
+/**
+ * Sections a stranger may open at any depth: the challenges. Anyone handed a
+ * challenge's link can open it and count — the count is kept on her phone —
+ * and signing in is only what sends it to the server for her مشرفة to see.
+ *
+ *   /sohbah/challenges   → the list (its challenges for everyone)
+ *   /sohbah/c/<link>     → one challenge
+ *   /sohbah/friday/...   → تحدي الجمعة, its الكهف and its share image
+ *
+ * /sohbah/challenges/new and …/manage guard themselves with
+ * requireTeacherSession, so opening the section does not open them.
+ */
+const OPEN_SECTIONS = ["challenges", "c", "friday"];
+
 function isOpenToStrangers(pathname: string) {
   if (pathname === "/") return true;
   if (isAdminLanding(pathname)) return true;
   const [, ...after] = pathname.split("/").filter(Boolean);
+  if (OPEN_SECTIONS.includes(after[0] ?? "")) return true;
   return after.length <= 1 && OPEN_PAGES.includes(after[0] ?? "");
 }
 
