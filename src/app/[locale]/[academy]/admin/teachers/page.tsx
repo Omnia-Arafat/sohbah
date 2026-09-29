@@ -13,15 +13,19 @@ import { createClient } from "@/lib/supabase/server";
 import { staffSideFilter } from "@/lib/viewer";
 import { deleteTeacher, setTeacherActive, setTeacherRole } from "./actions";
 import { ResetPasswordButton } from "./reset-button";
-import { ASSIGNABLE_ROLES, canManageStaff, hasRole } from "@/lib/auth/roles";
+import { ASSIGNABLE_ROLES, canManageStaff, hasRole, primaryRoleKey } from "@/lib/auth/roles";
 
 type PageProps = {
   params: Promise<{ locale: string; academy: string }>;
   searchParams: Promise<{ role?: string }>;
 };
 
-/** Tab order: معلمات first, since that is the bulk of the list. */
-const ROLE_TABS = ["teacher", "admin"] as const;
+/**
+ * Tab order: معلمات first, since that is the bulk of the list. Each person sits
+ * under her highest role: a مشرفة is stored with role = 'teacher', so the
+ * legacy column would file her with the معلمات.
+ */
+const ROLE_TABS = ["teacher", "supervisor", "admin"] as const;
 
 /** Authorized route: never prerender it. */
 export const dynamic = "force-dynamic";
@@ -44,7 +48,7 @@ export default async function AdminTeachersPage({
   // Comes from the URL, so validate rather than trusting it.
   const { role: requestedRole } = await searchParams;
   const activeRole: (typeof ROLE_TABS)[number] =
-    requestedRole === "admin" ? "admin" : "teacher";
+    ROLE_TABS.find((tab) => tab === requestedRole) ?? "teacher";
 
   const session = await requireStaffSession(`/${academySlug}/admin/teachers`);
   // Approving, editing and removing stay مشرفة-only; every action re-checks.
@@ -83,12 +87,14 @@ export default async function AdminTeachersPage({
 
   // Counts come from the whole list so each tab can show its own pending
   // badge — otherwise a request in the other tab is invisible until you look.
-  const pendingByRole = {
-    teacher: teachers.filter((t) => t.role === "teacher" && !t.is_active).length,
-    admin: teachers.filter((t) => t.role === "admin" && !t.is_active).length,
-  };
+  const pendingByRole = Object.fromEntries(
+    ROLE_TABS.map((tab) => [
+      tab,
+      teachers.filter((t) => primaryRoleKey(t) === tab && !t.is_active).length,
+    ]),
+  ) as Record<(typeof ROLE_TABS)[number], number>;
 
-  const inTab = teachers.filter((teacher) => teacher.role === activeRole);
+  const inTab = teachers.filter((teacher) => primaryRoleKey(teacher) === activeRole);
   const pending = inTab.filter((teacher) => !teacher.is_active);
   const active = inTab.filter((teacher) => teacher.is_active);
 

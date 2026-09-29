@@ -728,6 +728,7 @@
       "tabsLabel": "تصفية حسب الصفة",
       "tabs": {
         "teacher": "معلمات",
+        "supervisor": "مشرفات",
         "admin": "أدمن"
       },
       "shareLink": {

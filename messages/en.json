@@ -722,6 +722,7 @@
       "tabsLabel": "Filter by role",
       "tabs": {
         "teacher": "Teachers",
+        "supervisor": "Supervisors",
         "admin": "Admins"
       },
       "shareLink": {
