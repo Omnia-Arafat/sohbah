@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   BarChart,
   BookOpen,
+  BookOpenText,
   CalendarDays,
   ClipboardList,
   GraduationCap,
@@ -12,6 +13,7 @@ import {
   MailQuestion,
   Plus,
   Route,
+  Sunrise,
   Tags,
   Trophy,
   TrendingUp,
@@ -114,6 +116,8 @@ export function BottomNav({
     // reaches تحدي الجمعة's ranking from inside it. In the first row of the
     // sheet because it is opened daily.
     { href: `/${academySlug}/challenges`, label: t("challenges"), Icon: Trophy, adminOnly: false, hidden: false },
+    { href: `/${academySlug}/mushaf`, label: t("mushaf"), Icon: BookOpenText, adminOnly: false, hidden: false },
+    { href: `/${academySlug}/adhkar`, label: t("adhkar"), Icon: Sunrise, adminOnly: false, hidden: false },
     { href: `/${academySlug}/admin/tracks`, label: t("tracks"), Icon: Route, adminOnly: true, hidden: false },
     // Open to every معلمة rather than admin-only: she is the one who prepares
     // the lesson she is about to teach.

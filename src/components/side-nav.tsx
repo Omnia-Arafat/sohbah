@@ -3,6 +3,7 @@
 import {
   BarChart,
   BookOpen,
+  BookOpenText,
   CalendarDays,
   ClipboardList,
   GraduationCap,
@@ -12,6 +13,7 @@ import {
   LogOut,
   Plus,
   Route,
+  Sunrise,
   Tags,
   Trophy,
   TrendingUp,
@@ -65,6 +67,8 @@ export function SideNav({
   const teaching: NavItem[] = [
     { href: `/${academySlug}/dashboard`, label: t("home"), Icon: House },
     { href: `/${academySlug}/schedule`, label: t("schedule"), Icon: CalendarDays, prefix: true },
+    { href: `/${academySlug}/mushaf`, label: t("mushaf"), Icon: BookOpenText, prefix: true },
+    { href: `/${academySlug}/adhkar`, label: t("adhkar"), Icon: Sunrise, prefix: true },
   ];
 
   const supervision: NavItem[] = [
