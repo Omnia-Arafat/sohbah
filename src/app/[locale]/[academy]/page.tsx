@@ -21,6 +21,7 @@ import type { LiveCircle } from "@/lib/database.types";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { notFound, redirect } from "next/navigation";
 import { SignInScreen } from "./login/sign-in-screen";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getViewer, mayViewerSee } from "@/lib/viewer";
 
 type AcademyHomeProps = {
@@ -113,11 +114,11 @@ export default async function AcademyHome({ params, searchParams }: AcademyHomeP
   */
   const [boards, liveResult, circleTypes] = await Promise.all([
     loadScheduleBoards(supabase, academy.id),
-    supabase.rpc("academy_live_circles", { p_academy_id: academy.id }),
+    createAdminClient().rpc("academy_live_circles", { p_academy_id: academy.id }),
     loadCircleTypes(supabase, academy.id, { activeOnly: false }),
   ]);
   // Men and women each see only their own side's circles. See lib/viewer.ts.
-  const loadedBoards = await loadBoardsWithCircles(supabase, academy.id, boards, viewer);
+  const loadedBoards = await loadBoardsWithCircles(academy.id, boards, viewer);
 
   if (liveResult.error) {
     console.error("academy_live_circles failed", liveResult.error);

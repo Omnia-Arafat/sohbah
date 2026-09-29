@@ -105,7 +105,7 @@ export default async function CirclePage({ params }: CirclePageProps) {
       // `activeOnly: false` — the circle's own type must still show a real
       // label here even if a supervisor has since deactivated it.
       loadCircleTypes(supabase, circle.academy_id, { activeOnly: false }),
-      loadCircleSlots(supabase, circle.academy_id),
+      loadCircleSlots(circle.academy_id),
     ]);
 
   const materials = await withSignedUrls(materialRows ?? []);

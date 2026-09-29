@@ -42,7 +42,7 @@ export default async function SchedulePage({ params }: PageProps) {
   ]);
   // Men and women each see only their own side's timetable. See lib/viewer.ts.
   const viewer = await getViewer(academy.id);
-  const loadedBoards = await loadBoardsWithCircles(supabase, academy.id, boards, viewer);
+  const loadedBoards = await loadBoardsWithCircles(academy.id, boards, viewer);
 
   return (
     <div className="flex flex-col gap-6">

@@ -50,7 +50,7 @@ export default async function MePage({ params }: MePageProps) {
   const [circleTypes, slots] = academy
     ? await Promise.all([
         loadCircleTypes(supabase, academy.id, { activeOnly: false }),
-        loadCircleSlots(supabase, academy.id),
+        loadCircleSlots(academy.id),
       ])
     : [[], new Map<string, { daysOfWeek: number[]; startTime: string }>()];
 

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Circle, Database, ScheduleBoard } from "@/lib/database.types";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { mayViewerSee, type Viewer } from "@/lib/viewer";
 
 /** 0 = Sunday … 6 = Saturday, matching PostgreSQL's `dow`. */
@@ -60,12 +61,12 @@ export async function loadScheduleBoards(
  * this was the page's whole cost.
  *
  * Read through `academy_schedule` rather than the `circles` table directly.
- * The timetable is public, and `circles` is staff-only for a reason — the row
- * holds the session link — so the function hands back the public columns plus
- * the teacher's name and nothing else.
+ * `circles` is staff-only for a reason — the row holds the session link — so
+ * the function hands back the public columns plus the teacher's name and
+ * nothing else. It returns both sides, so only the server may call it (with
+ * the service role) and the rows are filtered to the viewer's side below.
  */
 export async function loadBoardsWithCircles(
-  supabase: SupabaseClient<Database>,
   academyId: string,
   allBoards: ScheduleBoard[],
   viewer: Viewer,
@@ -74,7 +75,7 @@ export async function loadBoardsWithCircles(
   const boards = allBoards.filter((board) => mayViewerSee(viewer, board.gender_category));
   if (boards.length === 0) return [];
 
-  const { data: circles, error } = await supabase.rpc("academy_schedule", {
+  const { data: circles, error } = await createAdminClient().rpc("academy_schedule", {
     p_academy_id: academyId,
   });
 
@@ -180,10 +181,9 @@ function weekdayIn(timezone: string | undefined): number {
 }
 
 export async function loadCircleSlots(
-  supabase: SupabaseClient<Database>,
   academyId: string,
 ): Promise<Map<string, { daysOfWeek: number[]; startTime: string }>> {
-  const { data, error } = await supabase.rpc("academy_schedule", {
+  const { data, error } = await createAdminClient().rpc("academy_schedule", {
     p_academy_id: academyId,
   });
   if (error) console.error("schedule circles load failed", error);
