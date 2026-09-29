@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { notFound } from "next/navigation";
 import { StudentsFilter } from "./students-filter";
+import { getViewer } from "@/lib/viewer";
 
 type StudentsAdminPageProps = {
   params: Promise<{ locale: string; academy: string }>;
@@ -58,6 +59,9 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
   // something are hidden below and re-checked in every server action.
   const canManage = canManageStudents(session.teacher);
 
+  const viewer = await getViewer(academy.id);
+  const ownSide = viewer.kind === "staff" && !viewer.isAdmin ? viewer.gender : null;
+
   const supabase = await createClient();
   const pageSize = 50;
   const currentPage = parseInt(page || "1");
@@ -73,7 +77,9 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
     .range(from, to);
 
   // Apply filters
-  if (gender && (gender === "male" || gender === "female")) {
+  if (ownSide) {
+    query = query.eq("gender_category", ownSide);
+  } else if (gender && (gender === "male" || gender === "female")) {
     query = query.eq("gender_category", gender);
   }
 
@@ -104,7 +110,8 @@ export default async function StudentsAdminPage({ params, searchParams }: Studen
       <div className="card">
         <StudentsFilter
           search={search || ""}
-          gender={gender || ""}
+          gender={ownSide ? "" : gender || ""}
+          showGender={!ownSide}
           labels={{
             searchLabel: tStudents("searchLabel"),
             searchPlaceholder: tStudents("searchPlaceholder"),

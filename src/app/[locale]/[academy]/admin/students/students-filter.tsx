@@ -22,10 +22,12 @@ import { BrandSelect } from "@/components/brand-select";
 export function StudentsFilter({
   search,
   gender,
+  showGender,
   labels,
 }: {
   search: string;
   gender: string;
+  showGender: boolean;
   labels: {
     searchLabel: string;
     searchPlaceholder: string;
@@ -94,6 +96,7 @@ export function StudentsFilter({
         />
       </div>
 
+      {showGender && (
       <div className="sm:w-48">
         <label htmlFor="gender" className="field-label">
           {labels.genderLabel}
@@ -110,6 +113,7 @@ export function StudentsFilter({
           ]}
         />
       </div>
+      )}
     </div>
   );
 }
