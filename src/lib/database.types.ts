@@ -968,6 +968,10 @@ export type Database = {
         Args: { p_slug: string; p_student_id: string };
         Returns: JoinCircleResult[];
       };
+      staff_student_record: {
+        Args: Record<string, never>;
+        Returns: StudentSearchResult[];
+      };
       circle_queue: {
         Args: { p_slug: string };
         Returns: QueueEntry[];

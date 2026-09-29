@@ -41,6 +41,7 @@ type CircleClientProps = {
   registrationOpen: boolean;
   /** Used as the fallback gender for queue status labels when the student's own gender is unknown. */
   circleGenderCategory: "male" | "female";
+  staffName: string | null;
 };
 
 type SearchResults = { query: string; items: StudentSearchResult[] };
@@ -114,6 +115,7 @@ export function CircleClient({
   maxStudents,
   registrationOpen,
   circleGenderCategory,
+  staffName,
 }: CircleClientProps) {
   const t = useTranslations("circle");
   const supabase = useMemo(() => createClient(), []);
@@ -320,6 +322,18 @@ export function CircleClient({
     setJoined(meKey(academySlug), { studentId: student.id, name: student.name, genderCategory: student.gender_category });
   }
 
+  async function joinAsStaff() {
+    setJoining("staff");
+    setError(null);
+    const { data, error: recordError } = await supabase.rpc("staff_student_record");
+    if (recordError || !data?.[0]) {
+      setJoining(null);
+      setError(recordError?.message.includes("staff_phone_missing") ? "staffPhoneMissing" : "generic");
+      return;
+    }
+    await join(data[0]);
+  }
+
   const myPosition = joined
     ? queue.find((entry) => entry.student_id === joined.studentId)?.queue_order
     : undefined;
@@ -394,6 +408,25 @@ export function CircleClient({
         girl.
       */}
       <MotionSection
+        show={!joined && !me && Boolean(staffName) && registrationOpen && !isFull}
+        className="card"
+      >
+        <p className="text-sm text-muted-foreground">{t("me.question")}</p>
+        <p className="mt-0.5 font-display text-xl font-bold">{staffName}</p>
+        <button
+          type="button"
+          onClick={joinAsStaff}
+          disabled={joining !== null}
+          className="btn-primary mt-3 w-full disabled:opacity-60"
+        >
+          {joining ? t("search.joining") : t("me.join", { gender })}
+        </button>
+        {error && (
+          <p className="mt-3 text-sm text-absent">{t(`errors.${error}`)}</p>
+        )}
+      </MotionSection>
+
+      <MotionSection
         show={!joined && Boolean(me) && registrationOpen && !isFull}
         className="card"
       >
@@ -419,7 +452,7 @@ export function CircleClient({
       </MotionSection>
 
       <MotionSection
-        show={!joined && !me && registrationOpen && !isFull}
+        show={!joined && !me && !staffName && registrationOpen && !isFull}
         className="card"
       >
         <label className="field-label" htmlFor="student-search">

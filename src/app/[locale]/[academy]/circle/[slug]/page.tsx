@@ -10,6 +10,7 @@ import { Link } from "@/i18n/navigation";
 import { withSignedUrls } from "@/lib/materials";
 import { LessonCard } from "@/components/lesson-card";
 import { getViewer, mayViewerSee } from "@/lib/viewer";
+import { getTeacherSession } from "@/lib/auth/dal";
 import { CircleWhen } from "@/components/circle-when";
 import { loadCircleSlots } from "@/lib/schedule-boards";
 import { CircleClient } from "./circle-client";
@@ -242,6 +243,9 @@ export default async function CirclePage({ params }: CirclePageProps) {
         maxStudents={circle.max_students}
         registrationOpen={circle.registration_state === "open"}
         circleGenderCategory={circle.gender_category}
+        staffName={
+          viewer.kind === "staff" ? ((await getTeacherSession())?.teacher?.name ?? null) : null
+        }
       />
     </div>
   );
