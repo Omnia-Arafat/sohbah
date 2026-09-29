@@ -10,6 +10,8 @@ import { Link } from "@/i18n/navigation";
 import { withSignedUrls } from "@/lib/materials";
 import { LessonCard } from "@/components/lesson-card";
 import { getViewer, mayViewerSee } from "@/lib/viewer";
+import { CircleWhen } from "@/components/circle-when";
+import { loadCircleSlots } from "@/lib/schedule-boards";
 import { CircleClient } from "./circle-client";
 
 type CirclePageProps = {
@@ -39,9 +41,17 @@ export async function generateMetadata({
 
   const circle = await loadCircle(slug);
   // The tab title is the معلمة's name, so it is withheld from the other side too.
-  const visible =
-    circle && mayViewerSee(await getViewer(circle.academy_id), circle.gender_category);
-  return { title: visible ? circle.name : t("notFoundPage.title") };
+  if (!circle) return { title: t("notFoundPage.title") };
+  const viewer = await getViewer(circle.academy_id);
+  if (!mayViewerSee(viewer, circle.gender_category)) {
+    return { title: t("notFoundPage.title") };
+  }
+  if (viewer.kind === "staff") return { title: circle.name };
+  const supabase = await createClient();
+  const circleTypes = await loadCircleTypes(supabase, circle.academy_id, {
+    activeOnly: false,
+  });
+  return { title: circleTypeLabel(circleTypes, circle.type, locale) };
 }
 
 export default async function CirclePage({ params }: CirclePageProps) {
@@ -51,6 +61,7 @@ export default async function CirclePage({ params }: CirclePageProps) {
   const t = await getTranslations("circle");
   const tQuiz = await getTranslations("quiz");
   const tLesson = await getTranslations("lesson");
+  const tSchedule = await getTranslations("schedule");
 
   if (!isSupabaseConfigured()) {
     return (
@@ -69,7 +80,8 @@ export default async function CirclePage({ params }: CirclePageProps) {
     names, its lesson or its link. "Not found" rather than "not for you", which
     would confirm the circle is there. See lib/viewer.ts.
   */
-  if (!mayViewerSee(await getViewer(circle.academy_id), circle.gender_category)) {
+  const viewer = await getViewer(circle.academy_id);
+  if (!mayViewerSee(viewer, circle.gender_category)) {
     notFound();
   }
 
@@ -80,6 +92,7 @@ export default async function CirclePage({ params }: CirclePageProps) {
     { data: quizRows },
     { data: materialRows },
     circleTypes,
+    slots,
   ] = await Promise.all([
       supabase.rpc("circle_queue", { p_slug: slug }),
       // The day's lesson, through the same SECURITY DEFINER function the
@@ -91,6 +104,7 @@ export default async function CirclePage({ params }: CirclePageProps) {
       // `activeOnly: false` — the circle's own type must still show a real
       // label here even if a supervisor has since deactivated it.
       loadCircleTypes(supabase, circle.academy_id, { activeOnly: false }),
+      loadCircleSlots(supabase, circle.academy_id),
     ]);
 
   const materials = await withSignedUrls(materialRows ?? []);
@@ -98,15 +112,30 @@ export default async function CirclePage({ params }: CirclePageProps) {
   return (
     <div className="flex flex-col gap-6">
       <section className="card border-brand-200 bg-brand-50 dark:border-brand-800 dark:bg-surface">
-        <p className="text-sm text-muted-foreground">
-          {circleTypeLabel(circleTypes, circle.type, locale)}
-        </p>
-        <h1 className="font-display mt-1 text-2xl font-bold sm:text-3xl">
-          {circle.name}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t("startsAt", { time: formatTime(circle.start_time, locale) })}
-        </p>
+        {viewer.kind === "staff" ? (
+          <>
+            <p className="text-sm text-muted-foreground">
+              {circleTypeLabel(circleTypes, circle.type, locale)}
+            </p>
+            <h1 className="font-display mt-1 text-2xl font-bold sm:text-3xl">
+              {circle.name}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {t("startsAt", { time: formatTime(circle.start_time, locale) })}
+            </p>
+          </>
+        ) : (
+          <CircleWhen
+            typeLabel={circleTypeLabel(circleTypes, circle.type, locale)}
+            days={(slots.get(circle.id)?.daysOfWeek ?? []).map((day) =>
+              tSchedule(`days.${day}`),
+            )}
+            time={formatTime(circle.start_time, locale)}
+            locale={locale}
+            size="lg"
+            titleAs="h1"
+          />
+        )}
 
         {/*
           Why she cannot sign up, when she cannot. Students were writing their

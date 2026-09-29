@@ -11,6 +11,7 @@ export type ScheduleEntry = {
   teacherName: string;
   /** HH:MM, as stored — `circles.start_time` is a wall-clock time. */
   startTime: string;
+  daysOfWeek: number[];
   timezone: string;
   genderCategory: Circle["gender_category"];
   /** Lets a visitor go straight from the timetable to the circle's page. */
@@ -120,6 +121,7 @@ export async function loadBoardsWithCircles(
             circleName: circle.name,
             teacherName: circle.teacher_name,
             startTime: String(circle.start_time).slice(0, 5),
+            daysOfWeek: circle.days_of_week,
             timezone: circle.timezone,
             genderCategory: circle.gender_category,
             registrationSlug: circle.registration_slug,
@@ -175,4 +177,23 @@ function weekdayIn(timezone: string | undefined): number {
     // take the whole page down with it.
     return new Date().getDay();
   }
+}
+
+export async function loadCircleSlots(
+  supabase: SupabaseClient<Database>,
+  academyId: string,
+): Promise<Map<string, { daysOfWeek: number[]; startTime: string }>> {
+  const { data, error } = await supabase.rpc("academy_schedule", {
+    p_academy_id: academyId,
+  });
+  if (error) console.error("schedule circles load failed", error);
+  return new Map(
+    (data ?? []).map((circle) => [
+      circle.id,
+      {
+        daysOfWeek: circle.days_of_week,
+        startTime: String(circle.start_time).slice(0, 5),
+      },
+    ]),
+  );
 }

@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SetupNotice } from "@/components/setup-notice";
+import { getAcademyBySlug } from "@/lib/academy-dal";
+import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
+import { loadCircleSlots } from "@/lib/schedule-boards";
+import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { MeClient } from "./me-client";
 
@@ -41,5 +45,23 @@ export default async function MePage({ params }: MePageProps) {
     );
   }
 
-  return <MeClient academySlug={academySlug} locale={locale} />;
+  const academy = await getAcademyBySlug(academySlug);
+  const supabase = await createClient();
+  const [circleTypes, slots] = academy
+    ? await Promise.all([
+        loadCircleTypes(supabase, academy.id, { activeOnly: false }),
+        loadCircleSlots(supabase, academy.id),
+      ])
+    : [[], new Map<string, { daysOfWeek: number[]; startTime: string }>()];
+
+  return (
+    <MeClient
+      academySlug={academySlug}
+      locale={locale}
+      typeLabels={Object.fromEntries(
+        circleTypes.map((type) => [type.slug, circleTypeLabel(circleTypes, type.slug, locale)]),
+      )}
+      slots={Object.fromEntries(slots)}
+    />
+  );
 }

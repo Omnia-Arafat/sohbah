@@ -16,6 +16,8 @@ import { formatRange } from "@/lib/quran/reference";
 import { createClient } from "@/lib/supabase/client";
 import { realFatherName } from "@/lib/student-name";
 import { DailyTiles } from "@/components/daily-tiles";
+import { CircleWhen } from "@/components/circle-when";
+import { formatTime } from "@/lib/format-time";
 import type {
   MyCircle,
   MyRecitation,
@@ -34,12 +36,18 @@ type MyTrackDay = {
 
 type MyTrack = { trackName: string; week: number; todayDone: boolean };
 
+type CircleSlots = Record<string, { daysOfWeek: number[]; startTime: string }>;
+
 export function MeClient({
   academySlug,
   locale,
+  typeLabels,
+  slots,
 }: {
   academySlug: string;
   locale: string;
+  typeLabels: Record<string, string>;
+  slots: CircleSlots;
 }) {
   const key = useMemo(() => meKey(academySlug), [academySlug]);
 
@@ -63,6 +71,8 @@ export function MeClient({
       me={me}
       academySlug={academySlug}
       locale={locale}
+      typeLabels={typeLabels}
+      slots={slots}
       onSignOut={() => clearMe(key)}
       // Same effect as signing out, but not her doing: the identity this
       // browser held no longer resolves, so it is dropped and she is asked
@@ -319,18 +329,23 @@ function Record({
   me,
   academySlug,
   locale,
+  typeLabels,
+  slots,
   onSignOut,
   onStale,
 }: {
   me: Me;
   academySlug: string;
   locale: string;
+  typeLabels: Record<string, string>;
+  slots: CircleSlots;
   onSignOut: () => void;
   /** The stored student no longer exists, or the phone no longer matches. */
   onStale: () => void;
 }) {
   const t = useTranslations("me");
   const tLog = useTranslations("session.log");
+  const tSchedule = useTranslations("schedule");
   const supabase = useMemo(() => createClient(), []);
 
   /**
@@ -626,7 +641,7 @@ function Record({
                     )}
                   </p>
                   <p className="truncate text-xs text-muted-foreground">
-                    {tLog(`kind.${entry.kind}`)} · {lineFor(entry, t)}
+                    {[tLog(`kind.${entry.kind}`), lineFor(entry, t)].filter(Boolean).join(" · ")}
                   </p>
                 </div>
                 <span className="shrink-0 text-xs text-muted-foreground">
@@ -651,14 +666,18 @@ function Record({
                   href={`/${circle.registration_slug}`}
                   className="flex items-center justify-between gap-3"
                 >
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-semibold">
-                      {circle.circle_name}
-                    </span>
-                    <span className="block truncate text-xs text-muted-foreground">
-                      {circle.teacher_name}
-                    </span>
-                  </span>
+                  <CircleWhen
+                    typeLabel={typeLabels[circle.circle_type] ?? circle.circle_type}
+                    days={(slots[circle.circle_id]?.daysOfWeek ?? []).map((day) =>
+                      tSchedule(`days.${day}`),
+                    )}
+                    time={
+                      slots[circle.circle_id]
+                        ? formatTime(slots[circle.circle_id].startTime, locale)
+                        : ""
+                    }
+                    locale={locale}
+                  />
                   <span className="shrink-0 text-xs font-semibold text-brand-700 dark:text-brand-300">
                     {t("circles.open")}
                   </span>
@@ -696,9 +715,7 @@ function lineFor(entry: MyRecitation, t: Translate) {
   if (entry.minor_errors) {
     errors.push(t("recent.errorsMinor", { count: entry.minor_errors }));
   }
-  return errors.length > 0
-    ? `${entry.circle_name} · ${errors.join(" · ")}`
-    : entry.circle_name;
+  return errors.join(" · ");
 }
 
 function whenLabel(sessionDate: string, t: Translate) {

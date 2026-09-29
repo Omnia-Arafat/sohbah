@@ -12,6 +12,7 @@ import { ProgressStrip } from "@/components/progress-strip";
 import { DailyTiles } from "@/components/daily-tiles";
 import { FridayCard } from "@/components/friday-card";
 import { ChallengesCard } from "@/components/challenges-card";
+import { CircleWhen } from "@/components/circle-when";
 import { Link } from "@/i18n/navigation";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { getLocalizedAcademyName } from "@/lib/academy-display";
@@ -97,6 +98,7 @@ export default async function AcademyHome({ params, searchParams }: AcademyHomeP
   }
 
   const t = await getTranslations("home");
+  const tSchedule = await getTranslations("schedule");
   const academyName = await getLocalizedAcademyName(academySlug, locale, academy);
 
   const supabase = await createClient();
@@ -134,7 +136,11 @@ export default async function AcademyHome({ params, searchParams }: AcademyHomeP
   // second line is what kind of circle it is.
   const todayById = new Map<string, ScheduleEntry>();
   const typeByCircle = new Map<string, string>();
+  const daysByCircle = new Map<string, number[]>();
   for (const loaded of loadedBoards) {
+    for (const day of loaded.days) {
+      for (const entry of day.entries) daysByCircle.set(entry.circleId, entry.daysOfWeek);
+    }
     const todayRow = loaded.days.find((day) => day.day === loaded.todayIndex);
     for (const entry of todayRow?.entries ?? []) {
       todayById.set(entry.circleId, entry);
@@ -162,6 +168,9 @@ export default async function AcademyHome({ params, searchParams }: AcademyHomeP
     live.length === 0
       ? remaining.find((entry) => toMinutes(entry.startTime) >= nowMinutes) ?? null
       : null;
+
+  const dayNames = (circleId: string) =>
+    (daysByCircle.get(circleId) ?? []).map((day) => tSchedule(`days.${day}`));
 
   // The rest of today: everything not already on screen above.
   const rest = remaining.filter((entry) => entry.circleId !== next?.circleId);
@@ -205,6 +214,7 @@ export default async function AcademyHome({ params, searchParams }: AcademyHomeP
               academySlug={academySlug}
               locale={locale}
               typeLabel={circleTypeLabel(circleTypes, circle.circle_type, locale)}
+              days={dayNames(circle.circle_id)}
               t={t}
             />
           ))}
@@ -228,21 +238,16 @@ export default async function AcademyHome({ params, searchParams }: AcademyHomeP
 
           <article className="overflow-hidden rounded-2xl border-2 border-brand-300 bg-surface shadow-sm dark:border-brand-700">
             <header className="flex items-center justify-between gap-3 bg-brand-50 px-4 py-3 dark:bg-brand-950/50">
-              <div className="min-w-0">
-                <p className="truncate font-display text-lg font-bold">
-                  {next.teacherName}
-                </p>
-                <p className="truncate text-xs text-brand-700 dark:text-brand-300">
-                  {circleTypeLabel(
-                    circleTypes,
-                    typeByCircle.get(next.circleId) ?? "",
-                    locale,
-                  )}
-                </p>
-              </div>
-              <span className="shrink-0 text-sm font-bold text-brand-700 dark:text-brand-300">
-                {formatTime(next.startTime, locale)}
-              </span>
+              <CircleWhen
+                typeLabel={circleTypeLabel(
+                  circleTypes,
+                  typeByCircle.get(next.circleId) ?? "",
+                  locale,
+                )}
+                days={dayNames(next.circleId)}
+                time={formatTime(next.startTime, locale)}
+                locale={locale}
+              />
             </header>
 
             {/*
@@ -277,7 +282,7 @@ export default async function AcademyHome({ params, searchParams }: AcademyHomeP
               The rest of the day, in one line.
 
               It used to be a card of its own: every remaining circle as a row
-              with a time, a teacher and a type. That is the timetable, rebuilt
+              with a time and a type. That is the timetable, rebuilt
               on the home screen, for a student who is in one or two circles
               and already knows when they are — a tall block she scrolls past
               to reach the things that are actually hers. The count is the only
@@ -329,20 +334,17 @@ export default async function AcademyHome({ params, searchParams }: AcademyHomeP
                   href={`/${academySlug}/circle/${entry.registrationSlug}`}
                   className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-surface-muted"
                 >
-                  <span className="w-16 shrink-0 text-sm font-bold text-muted-foreground">
-                    {formatTime(entry.startTime, locale)}
-                  </span>
                   <span className="min-w-0 flex-grow">
-                    <span className="block truncate font-medium">
-                      {entry.teacherName}
-                    </span>
-                    <span className="block truncate text-xs text-muted-foreground">
-                      {circleTypeLabel(
+                    <CircleWhen
+                      typeLabel={circleTypeLabel(
                         circleTypes,
                         typeByCircle.get(entry.circleId) ?? "",
                         locale,
                       )}
-                    </span>
+                      days={dayNames(entry.circleId)}
+                      time={formatTime(entry.startTime, locale)}
+                      locale={locale}
+                    />
                   </span>
                   <ChevronLeft
                     aria-hidden="true"
@@ -444,12 +446,14 @@ function LiveCircleCard({
   academySlug,
   locale,
   typeLabel,
+  days,
   t,
 }: {
   circle: LiveCircle;
   academySlug: string;
   locale: string;
   typeLabel: string;
+  days: string[];
   t: Awaited<ReturnType<typeof getTranslations<"home">>>;
 }) {
   return (
@@ -459,17 +463,13 @@ function LiveCircleCard({
                  bg-surface shadow-[0_2px_10px_rgba(196,145,58,0.14)]"
     >
       <header className="flex items-center justify-between gap-3 bg-accent-100 px-4 py-3 dark:bg-accent-700/20">
-        <div className="min-w-0">
-          <p className="truncate font-display text-lg font-bold">
-            {circle.teacher_name}
-          </p>
-          <p className="truncate text-xs text-accent-700 dark:text-accent-300">
-            {typeLabel}
-          </p>
-        </div>
-        <span className="shrink-0 text-sm font-bold text-accent-700 dark:text-accent-300">
-          {formatTime(circle.start_time, locale)}
-        </span>
+        <CircleWhen
+          typeLabel={typeLabel}
+          days={days}
+          time={formatTime(circle.start_time, locale)}
+          locale={locale}
+          tone="accent"
+        />
       </header>
 
       {/*
