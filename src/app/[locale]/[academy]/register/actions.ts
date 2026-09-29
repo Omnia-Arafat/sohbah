@@ -102,6 +102,9 @@ export async function registerStudent(
   });
 
   if (error) {
+    if (error.message.includes("student_exists")) {
+      return { status: "invalid", values, fieldErrors: { name: "alreadyRegistered" } };
+    }
     // Safety net only. Students have no unique phone rule (see migration
     // 20260830140000), so this should not fire — but if the rule is ever
     // tightened, the form already reports the right thing.

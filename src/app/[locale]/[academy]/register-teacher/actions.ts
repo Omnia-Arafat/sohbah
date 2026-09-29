@@ -108,6 +108,9 @@ export async function applyAsTeacher(
     if (error.message.includes("phone_taken")) {
       return { status: "invalid", values, fieldErrors: { phone: "phoneTaken" } };
     }
+    if (error.message.includes("name_taken")) {
+      return { status: "invalid", values, fieldErrors: { name: "nameTaken" } };
+    }
     console.error("register_teacher failed", error);
     return { status: "failed", values, reason: "generic" };
   }
