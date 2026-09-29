@@ -1264,7 +1264,7 @@
   },
   "schedule": {
     "title": "Weekly schedule",
-    "subtitle": "Every active circle, by day. Tap a name to open that circle.",
+    "subtitle": "Every active circle, by day. Tap a time to open that circle.",
     "noBoards": "No schedule has been published yet.",
     "boardEmpty": "No active circles in this table yet.",
     "today": "Today",
