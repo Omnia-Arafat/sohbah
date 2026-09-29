@@ -11,6 +11,7 @@ import { isActiveTeacher, requireTeacherSession } from "@/lib/auth/dal";
 import { loadCircleTypes } from "@/lib/circle-types";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
+import { staffSideFilter } from "@/lib/viewer";
 import { DEFAULT_TIMEZONE } from "@/lib/timezones";
 import { CircleForm } from "./circle-form";
 
@@ -109,7 +110,7 @@ async function loadAssignableTeachers(academySlug: string | null, locale: string
     return [];
   }
 
-  return (data ?? []).map((teacher) => ({
+  return (await staffSideFilter(academy.id))(data ?? []).map((teacher) => ({
     id: teacher.id,
     label: getTeacherDisplayLabel(teacher, academySlug, locale),
   }));

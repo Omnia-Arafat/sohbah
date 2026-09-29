@@ -670,6 +670,8 @@
     },
     "teachers": {
       "title": "Teachers and supervisors",
+      "searchPlaceholder": "Search by name or phone…",
+      "searchEmpty": "No one matches that name.",
       "subtitle": "Review registrations and manage who can sign in.",
       "back": "Back to admin",
       "pending": "Awaiting approval ({count})",

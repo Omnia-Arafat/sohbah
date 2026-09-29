@@ -42,10 +42,6 @@ function validate(values: CircleValues): CircleFieldErrors {
   // the valid set is now academy-managed rather than fixed in code.
   if (!values.type) errors.type = "typeRequired";
 
-  if (values.gender !== "male" && values.gender !== "female") {
-    errors.gender = "genderRequired";
-  }
-
   if (!values.sessionLink) {
     errors.sessionLink = "linkRequired";
   } else {
@@ -123,6 +119,7 @@ export async function createCircle(
   // `CircleValues.teacherId`.
   let ownerId = session.teacher.id;
   let ownerName = session.teacher.name;
+  let ownerGender: GenderCategory = session.teacher.gender_category;
   if (values.teacherId && values.teacherId !== session.teacher.id) {
     if (!canSupervise(session.teacher)) {
       return { status: "failed", values, reason: "forbidden" };
@@ -130,7 +127,7 @@ export async function createCircle(
 
     const { data: owner } = await supabase
       .from("teachers")
-      .select("id, name")
+      .select("id, name, gender_category")
       .eq("id", values.teacherId)
       .eq("academy_id", academy.id)
       .eq("is_active", true)
@@ -145,6 +142,7 @@ export async function createCircle(
     }
     ownerId = owner.id;
     ownerName = owner.name;
+    ownerGender = owner.gender_category;
   }
 
   const { data: createdCircle, error } = await supabase
@@ -154,7 +152,7 @@ export async function createCircle(
       academy_id: academy.id,
       name: ownerName,
       type: values.type as CircleType,
-      gender_category: values.gender as GenderCategory,
+      gender_category: ownerGender,
       session_link: sessionLink,
       timezone: values.timezone,
       start_time: values.startTime,

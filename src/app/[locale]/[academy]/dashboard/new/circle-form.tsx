@@ -114,35 +114,6 @@ export function CircleForm({
         {fieldError("type")}
       </div>
 
-      <fieldset>
-        <legend className="field-label">{t("fields.gender")}</legend>
-        <div className="flex gap-3">
-          {(["male", "female"] as const).map((option) => (
-            <label
-              key={option}
-              className="flex flex-1 cursor-pointer items-center justify-center gap-2
-                         rounded-xl border border-border-subtle bg-surface px-4 py-3
-                         text-base font-medium has-checked:border-brand-600
-                         has-checked:bg-brand-50 has-checked:text-brand-800
-                         dark:has-checked:bg-brand-900 dark:has-checked:text-brand-100"
-            >
-              <input
-                type="radio"
-                name="gender"
-                value={option}
-                defaultChecked={(values?.gender ?? "female") === option}
-                className="accent-brand-600"
-              />
-              {tDashboard(`gender.${option}`)}
-            </label>
-          ))}
-        </div>
-        <p className="mt-1.5 text-sm text-muted-foreground">
-          {t("fields.genderHint")}
-        </p>
-        {fieldError("gender")}
-      </fieldset>
-
       <div>
         <label className="field-label" htmlFor="sessionLink">
           {t("fields.sessionLink")}

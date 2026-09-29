@@ -3,12 +3,14 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BackLink } from "@/components/back-link";
 import { ConfirmButton } from "@/components/confirm-button";
+import { ListSearch } from "@/components/list-search";
 import { CopyLinkButton } from "@/components/copy-link-button";
 import { Link } from "@/i18n/navigation";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { requireStaffSession } from "@/lib/auth/dal";
 import type { Teacher } from "@/lib/database.types";
 import { createClient } from "@/lib/supabase/server";
+import { staffSideFilter } from "@/lib/viewer";
 import { deleteTeacher, setTeacherActive, setTeacherRole } from "./actions";
 import { ResetPasswordButton } from "./reset-button";
 import { ASSIGNABLE_ROLES, canManageStaff, hasRole } from "@/lib/auth/roles";
@@ -62,14 +64,16 @@ export default async function AdminTeachersPage({
       .select("*")
       .eq("academy_id", academy.id)
       .order("name"),
-    supabase.from("circles").select("teacher_id"),
+    supabase.from("circles").select("teacher_id").eq("academy_id", academy.id),
   ]);
 
   if (teachersResult.error) {
     console.error("teachers load failed", teachersResult.error);
   }
 
-  const teachers: Teacher[] = teachersResult.data ?? [];
+  const teachers: Teacher[] = (await staffSideFilter(academy.id))(
+    teachersResult.data ?? [],
+  );
 
   // Deleting a teacher cascades to their circles and all attendance history,
   // so the page needs to know who owns circles before offering the button.
@@ -102,7 +106,10 @@ export default async function AdminTeachersPage({
     const ownsCircles = circleOwners.has(teacher.id);
 
     return (
-      <li className="card flex flex-col gap-3">
+      <li
+        className="card flex flex-col gap-3"
+        data-search={`${teacher.name} ${teacher.phone ?? ""}`}
+      >
         <div className="flex flex-wrap items-start gap-3">
           <div className="min-w-0 flex-1">
             {/* No role badge: the tab above already says which role this is. */}
@@ -302,12 +309,21 @@ export default async function AdminTeachersPage({
         })}
       </div>
 
+      {inTab.length > 0 && (
+        <ListSearch
+          scopeId="teachers-list"
+          placeholder={t("searchPlaceholder")}
+          emptyText={t("searchEmpty")}
+        />
+      )}
+
+      <div id="teachers-list" className="flex flex-col gap-6">
       {/* Requests waiting for approval are the exception on this page, not the
           rule, so on most days this was a heading reading "طلبات معلقة (٠)"
           above a card repeating that there were none. The section appears when
           there is something in it. */}
       {pending.length > 0 && (
-        <section>
+        <section data-search-section>
           <h2 className="mb-3 text-lg font-semibold">
             {t("pending", { count: String(pending.length) })}
           </h2>
@@ -333,6 +349,7 @@ export default async function AdminTeachersPage({
           </ul>
         )}
       </section>
+      </div>
     </div>
   );
 }
