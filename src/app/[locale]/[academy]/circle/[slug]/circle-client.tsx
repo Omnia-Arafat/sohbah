@@ -22,6 +22,7 @@ import {
   subscribeJoined,
 } from "@/lib/joined-store";
 import { createClient } from "@/lib/supabase/client";
+import { useLiveQueue } from "@/lib/use-live-queue";
 import { useReorderAnimation } from "@/lib/use-reorder-animation";
 
 type CircleClientProps = {
@@ -204,27 +205,7 @@ export function CircleClient({
    * father's name, which `circle_queue()` already joins in and the bare
    * `attendance_records` payload does not carry.
    */
-  useEffect(() => {
-    const channel = supabase
-      .channel(`attendance-records:${circleId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "attendance_records",
-          filter: `circle_id=eq.${circleId}`,
-        },
-        () => {
-          refreshQueue();
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [supabase, circleId, refreshQueue]);
+  useLiveQueue(supabase, circleId, refreshQueue);
 
   const trimmed = query.trim();
   useEffect(() => {

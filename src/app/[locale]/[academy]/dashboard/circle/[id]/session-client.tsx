@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronUp, ChevronDown, NotebookPen, Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -11,6 +11,7 @@ import type {
 } from "@/lib/database.types";
 import { ayahCount, formatRange, nextAyah, type AyahRef } from "@/lib/quran/reference";
 import { createClient } from "@/lib/supabase/client";
+import { useLiveQueue } from "@/lib/use-live-queue";
 import { useReorderAnimation } from "@/lib/use-reorder-animation";
 import { RecitationLogSheet } from "./recitation-log-sheet";
 import { realFatherName } from "@/lib/student-name";
@@ -145,27 +146,7 @@ export function SessionClient({
    * father's name, which `circle_queue()` joins in and the bare
    * `attendance_records` payload does not carry.
    */
-  useEffect(() => {
-    const channel = supabase
-      .channel(`attendance-records:${circleId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "attendance_records",
-          filter: `circle_id=eq.${circleId}`,
-        },
-        () => {
-          refreshQueue();
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [supabase, circleId, refreshQueue]);
+  useLiveQueue(supabase, circleId, refreshQueue);
 
   /** Applies a local edit. The user's own action is reflected immediately. */
   const setQueue = (
