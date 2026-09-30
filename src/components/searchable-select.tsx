@@ -94,16 +94,25 @@ export function SearchableSelect({
   // Registers a listener on mount/while open; the setState it triggers lives
   // in the callback, not the effect body, so this is the ordinary "subscribe
   // to an outside event" case, not the one the state-in-effect rule flags.
+  //
+  // Leaving with a typed name that matches exactly one option picks it. A
+  // مشرفة on her phone types the teacher's name and taps "إنشاء" straight
+  // away; discarding the text there put the circle back under her own name.
   useEffect(() => {
     if (!open) return;
 
     function handlePointerDown(event: PointerEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+      if (rootRef.current?.contains(event.target as Node)) return;
+      if (draft.trim() && filtered.length === 1) {
+        commit(filtered[0]);
+      } else {
+        setOpen(false);
+      }
     }
 
     document.addEventListener("pointerdown", handlePointerDown);
     return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [open]);
+  });
 
   function commit(option: Option) {
     setValue(option.value);
@@ -173,13 +182,12 @@ export function SearchableSelect({
                 key={option.value}
                 role="option"
                 aria-selected={option.value === value}
-                onPointerDown={(event) => {
-                  // Fires before the input's blur, so the click always lands
-                  // before the outside-click handler would otherwise close
-                  // the panel and discard the selection.
-                  event.preventDefault();
-                  commit(option);
-                }}
+                // Keeps the input focused so the panel stays open until the
+                // click lands. The pick itself waits for the click: on a phone
+                // a pointerdown is also the start of a scroll, and picking on
+                // it chose whoever was under the finger.
+                onPointerDown={(event) => event.preventDefault()}
+                onClick={() => commit(option)}
                 onMouseEnter={() => setActiveIndex(index)}
                 className={`cursor-pointer px-4 py-3 text-base transition-colors ${
                   index === activeIndex
