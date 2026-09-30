@@ -83,6 +83,18 @@ export default async function LocaleLayout({
         <meta name="theme-color" content="#4A5568" />
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
+        {/*
+          If the stylesheet did not apply — a page saved under an older deploy,
+          or a download that dropped on a weak signal — the student gets bare
+          HTML. `body` is `flex` only when the CSS is there, so reload once;
+          the session flag stops it from looping when the network is simply
+          gone, and is cleared as soon as a page loads styled.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `addEventListener("load",function(){try{var k="sohbah-css-retry";if(getComputedStyle(document.body).display==="flex"){sessionStorage.removeItem(k);return}if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1");location.reload()}catch(e){}})`,
+          }}
+        />
       </head>
       <body className="flex min-h-full flex-col font-sans">
         <NextIntlClientProvider>

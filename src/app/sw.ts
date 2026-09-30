@@ -52,6 +52,14 @@ const MUSHAF_PAGES = "sohbah-mushaf-pages-v3";
 const STALE_MUSHAF_PAGES = ["sohbah-mushaf-pages", "sohbah-mushaf-pages-v2"];
 
 /**
+ * Saved copies of every other page. Emptied whenever a new worker activates,
+ * which is every deploy: a page saved under the previous build points at CSS
+ * and JS files that build's deploy took with it, so serving it offline shows
+ * an unstyled page rather than the app.
+ */
+const PAGES = "sohbah-pages";
+
+/**
  * The last thing between a student and the browser's own error page.
  *
  * Every navigation strategy here can run out of options: the network fails
@@ -189,14 +197,19 @@ const serwist = new Serwist({
     /*
       Every other page. Network-first so a circle, a queue or a schedule is
       always the live one when there is a signal, and the last copy seen is
-      what she gets when there is not. Three seconds is the point past which a
-      stale-but-instant page beats a spinner on a bad connection.
+      what she gets when there is not.
+
+      No network timeout. There used to be one of three seconds, on the idea
+      that a stale-but-instant page beats a spinner — and on a slow signal
+      (a student on a video call during her حلقة) it handed back a copy from
+      an earlier deploy, whose stylesheet no longer exists. She got the page
+      as bare HTML with an old queue in it. The cache is only for when there
+      is no network at all.
     */
     {
       matcher: ({ request }) => request.destination === "document",
       handler: new NetworkFirst({
-        cacheName: "sohbah-pages",
-        networkTimeoutSeconds: 3,
+        cacheName: PAGES,
         plugins: [
           new ExpirationPlugin({ maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 7 }),
           {
@@ -219,6 +232,8 @@ serwist.addEventListeners();
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    Promise.all(STALE_MUSHAF_PAGES.map((name) => caches.delete(name))),
+    Promise.all(
+      [...STALE_MUSHAF_PAGES, PAGES].map((name) => caches.delete(name)),
+    ),
   );
 });
