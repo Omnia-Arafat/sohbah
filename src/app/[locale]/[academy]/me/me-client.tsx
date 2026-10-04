@@ -35,7 +35,7 @@ export function SignIn({
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<"notFound" | "error" | "tooMany" | null>(null);
+  const [error, setError] = useState<"notFound" | "error" | "tooMany" | "slow" | null>(null);
 
   /**
    * More than one student on this phone matched the name typed.
@@ -47,18 +47,43 @@ export function SignIn({
    */
   const [choices, setChoices] = useState<StudentSearchResult[] | null>(null);
 
+  function findMe(signal: AbortSignal) {
+    return supabase
+      .rpc("find_me", { p_academy_slug: academySlug, p_name: name, p_phone: phone })
+      .abortSignal(signal);
+  }
+
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
     setError(null);
 
-    const { data, error: rpcError } = await supabase.rpc("find_me", {
-      p_academy_slug: academySlug,
-      p_name: name,
-      p_phone: phone,
-    });
+    /*
+      Never leave her on «جارٍ البحث…».
 
-    setBusy(false);
+      The request had no limit and nothing caught a failure, so a network that
+      drops the request (a weak signal, a carrier that blocks the database's
+      domain) or a browser that throws left the button busy forever, with no
+      word of what to do. Now it gives up after fifteen seconds and says so.
+    */
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15_000);
+    let result: Awaited<ReturnType<typeof findMe>> | null = null;
+    try {
+      result = await findMe(controller.signal);
+    } catch (failure) {
+      console.error("find_me threw", failure);
+    } finally {
+      clearTimeout(timer);
+      setBusy(false);
+    }
+
+    if (!result || controller.signal.aborted) {
+      setError("slow");
+      return;
+    }
+
+    const { data, error: rpcError } = result;
 
     if (rpcError) {
       console.error("find_me failed", rpcError);
