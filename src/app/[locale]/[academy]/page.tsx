@@ -3,12 +3,18 @@ import { ChevronLeft, Clock, Users } from "lucide-react";
 import { formatTime } from "@/lib/format-time";
 import {
   loadBoardsWithCircles,
+  loadCircleSlots,
   loadScheduleBoards,
   type ScheduleEntry,
 } from "@/lib/schedule-boards";
 import { createClient } from "@/lib/supabase/server";
 import { AyahTeaser } from "@/components/ayah-teaser";
-import { ProgressStrip } from "@/components/progress-strip";
+import {
+  HifzCard,
+  MyCircles,
+  MyTrackCard,
+  RecentRecitations,
+} from "@/components/student-record";
 import { DailyTiles } from "@/components/daily-tiles";
 import { FridayCard } from "@/components/friday-card";
 import { ChallengesCard } from "@/components/challenges-card";
@@ -112,10 +118,14 @@ export default async function AcademyHome({ params, searchParams }: AcademyHomeP
     thing that knows the clock in each circle's own timezone and the state of
     its queue. The two are joined by circle id below.
   */
-  const [boards, liveResult, circleTypes] = await Promise.all([
+  const [boards, liveResult, circleTypes, slots] = await Promise.all([
     loadScheduleBoards(supabase, academy.id),
     createAdminClient().rpc("academy_live_circles", { p_academy_id: academy.id }),
     loadCircleTypes(supabase, academy.id, { activeOnly: false }),
+    // Only حلقاتك reads these, and only a student has حلقاتك.
+    viewer.kind === "student"
+      ? loadCircleSlots(academy.id)
+      : Promise.resolve(new Map<string, { daysOfWeek: number[]; startTime: string }>()),
   ]);
   // Men and women each see only their own side's circles. See lib/viewer.ts.
   const loadedBoards = await loadBoardsWithCircles(academy.id, boards, viewer);
@@ -194,10 +204,6 @@ export default async function AcademyHome({ params, searchParams }: AcademyHomeP
       */}
       <h1 className="sr-only">{academyName}</h1>
 
-      {/* First on the page, in the space the welcome block used to take: the
-          two numbers that are hers, which were both two taps away before. */}
-      <ProgressStrip academySlug={academySlug} />
-
       {live.length > 0 && (
         <section className="flex flex-col gap-3">
           <h2 className="flex items-center gap-2 text-sm font-bold text-accent-700 dark:text-accent-300">
@@ -221,6 +227,10 @@ export default async function AcademyHome({ params, searchParams }: AcademyHomeP
           ))}
         </section>
       )}
+
+      {/* Her track's ورد اليوم, right under anything live. Renders nothing for
+          a student on no track. */}
+      {viewer.kind === "student" && <MyTrackCard academySlug={academySlug} />}
 
       {/* تحدي الجمعة — only from مغرب الخميس to مغرب الجمعة, and under any
           live circle: gold stays first. */}
@@ -368,21 +378,29 @@ export default async function AcademyHome({ params, searchParams }: AcademyHomeP
           full-width cards, which were 260px of screen for two links. */}
       <DailyTiles academySlug={academySlug} locale={locale} />
 
+      {/*
+        Her own record, on the page itself. This used to be صفحتي, a second
+        page reached from a «صفحتك» card here — while she was already signed
+        in. حفظك is a small card that opens the full map on /hifz.
+      */}
+      {viewer.kind === "student" && (
+        <>
+          <HifzCard academySlug={academySlug} />
+          <MyCircles
+            academySlug={academySlug}
+            locale={locale}
+            typeLabels={Object.fromEntries(
+              circleTypes.map((type) => [type.slug, circleTypeLabel(circleTypes, type.slug, locale)]),
+            )}
+            slots={Object.fromEntries(slots)}
+          />
+          <RecentRecitations academySlug={academySlug} locale={locale} />
+        </>
+      )}
+
       {/* The third thing she can do on her own, and the one she would never
           go looking for. */}
       <AyahTeaser academySlug={academySlug} />
-
-      {/* Her own record. New, and the reason a student comes back on a day
-          with no circle. */}
-      <section className="card border-brand-200 bg-brand-50 dark:border-brand-800 dark:bg-surface">
-        <h2 className="font-display text-lg font-bold">{t("me.title")}</h2>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-          {t("me.body")}
-        </p>
-        <Link href={`/${academySlug}/me`} className="btn-primary mt-3 w-full">
-          {t("me.cta")}
-        </Link>
-      </section>
 
       <section className="card">
         <div className="flex items-start gap-3">
@@ -405,31 +423,9 @@ export default async function AcademyHome({ params, searchParams }: AcademyHomeP
         </div>
       </section>
 
-      {/*
-        Staff, in one line rather than a card of equal weight.
 
-        Not a demotion of the معلمات — the opposite. They open this app every
-        day and know exactly where the door is; a student opens it once a week
-        and does not. Weight belongs where the uncertainty is.
-      */}
-      <section className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pb-2 text-sm">
-        <span className="text-muted-foreground">{t("staff.line")}</span>
-        <Link
-          href={`/${academySlug}/login`}
-          className="font-semibold text-brand-700 dark:text-brand-300"
-        >
-          {t("staff.login")}
-        </Link>
-        <span aria-hidden="true" className="text-border-subtle">
-          ·
-        </span>
-        <Link
-          href={`/${academySlug}/register-teacher`}
-          className="font-semibold text-brand-700 dark:text-brand-300"
-        >
-          {t("staff.register")}
-        </Link>
-      </section>
+      {/* No staff sign-in line: only someone already signed in reaches this
+          page, and a sign-in link on it read as "you are not in yet". */}
     </div>
   );
 }

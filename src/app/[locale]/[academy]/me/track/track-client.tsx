@@ -128,7 +128,7 @@ export function TrackClient({
     return (
       <p className="card text-sm text-muted-foreground">
         {t("signInFirst")}{" "}
-        <Link href={`/${academySlug}/me`} className="font-semibold underline">
+        <Link href={`/${academySlug}`} className="font-semibold underline">
           {t("myPage")}
         </Link>
       </p>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { ChevronLeft, ClipboardCheck, Lock, UserRound } from "lucide-react";
+import { ChevronLeft, ClipboardCheck, Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { AcademyQuiz, MyQuizAttempt } from "@/lib/database.types";
@@ -74,15 +74,6 @@ export function QuizzesClient({
     <div className="flex flex-col gap-4">
       <header className="flex items-center justify-between gap-3">
         <h1 className="font-display text-2xl font-bold">{t("title")}</h1>
-        {me && (
-          <Link
-            href={`/${academySlug}/me`}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 dark:text-brand-300"
-          >
-            <UserRound aria-hidden="true" className="h-4 w-4" />
-            {t("myPage")}
-          </Link>
-        )}
       </header>
 
       <div
@@ -119,7 +110,7 @@ export function QuizzesClient({
           <p className="text-sm leading-relaxed text-muted-foreground">
             {t("signInPrompt")}
           </p>
-          <Link href={`/${academySlug}/me`} className="btn-primary mt-3 w-full">
+          <Link href={`/${academySlug}`} className="btn-primary mt-3 w-full">
             {t("signInCta")}
           </Link>
         </section>

@@ -31,6 +31,64 @@
     "signIn": "Sign in",
     "signOut": "Sign out"
   },
+  "studentHome": {
+    "account": {
+      "label": "My account: {name}",
+      "labelPending": "My account"
+    },
+    "track": {
+      "title": "My track",
+      "all": "All my tracks",
+      "week": "Week {week}",
+      "today": "Today's wird: {done} of 4",
+      "todayDone": "Done today — your card is ready",
+      "continue": "Continue",
+      "card": "Card"
+    },
+    "hifz": {
+      "title": "Your memorization",
+      "solid": "{count, plural, =0{No juz solid yet} one{# juz solid of 30} other{# juz solid of 30}}",
+      "due": "Juz {juz} is due for review",
+      "learning": "Memorizing: juz {juz}",
+      "allReviewed": "Everything is reviewed",
+      "none": "No recitations recorded yet"
+    },
+    "hifzPage": {
+      "title": "Your memorization",
+      "back": "Home",
+      "summary": "{solid, plural, =0{No juz solid yet} other{# solid}} of 30",
+      "dueCount": "{count, plural, one{# juz needs review} other{# juz need review}}",
+      "mapLabel": "Map of the thirty juz",
+      "juz": "Juz",
+      "juzTitle": "Juz {juz} · {name}",
+      "pickJuz": "Juz {juz}: {state}",
+      "prev": "Previous juz",
+      "next": "Next juz",
+      "state": {
+        "solid": "Solid",
+        "fading": "Fading",
+        "learning": "Memorizing",
+        "untouched": "Not yet"
+      },
+      "line": {
+        "solid": "Last reviewed {days, plural, =0{today} one{# day ago} other{# days ago}}. Holding well.",
+        "fading": "Last reviewed {days, plural, one{# day ago} other{# days ago}} — review it before it fades further.",
+        "learning": "You are memorizing it now.",
+        "untouched": "Not recited in a circle yet."
+      },
+      "test": "Test yourself",
+      "read": "Read it in the mushaf",
+      "queue": "Up next",
+      "queueItem": "Juz {juz} · {days, plural, one{# day} other{# days}}",
+      "queueNote": "Longest since review first.",
+      "queueEmpty": "Everything is reviewed. No juz has gone a month without review."
+    },
+    "tracksPage": {
+      "title": "My tracks",
+      "subtitle": "Today's wird and card for each track you are on.",
+      "note": "Tracks are optional. To join one, ask your teacher."
+    }
+  },
   "home": {
     "title": "Sohbah Academy",
     "subtitle": "Quran circles management platform",
@@ -1307,6 +1365,8 @@
     "quizzes": "Quizzes",
     "progress": "Progress",
     "myPage": "My page",
+    "myTracks": "My tracks",
+    "hifz": "Memorization",
     "mushaf": "Mushaf",
     "selfTest": "Test yourself",
     "adhkar": "Adhkar",
@@ -1576,8 +1636,8 @@
       "fromTeacher": "From teachers",
       "selfTest": "Test yourself"
     },
-    "signInPrompt": "Open your page first, so we know whose quizzes to show.",
-    "signInCta": "Open my page",
+    "signInPrompt": "Sign in with your name and phone first, so we know whose quizzes to show.",
+    "signInCta": "Sign in",
     "openNow": "Open now",
     "closesAt": "Closes {date}",
     "noClose": "Open",
@@ -2004,7 +2064,7 @@
     "optional": "Optional",
     "loading": "One moment…",
     "signInFirst": "Sign in with your name first from",
-    "myPage": "my page",
+    "myPage": "home",
     "noTrack": "You are not on a track right now",
     "noTrackNote": "The track is optional; the rest of the students are in circles. Ask your teacher to join.",
     "failed": "Could not save. Please try again.",
@@ -2108,7 +2168,7 @@
     "notYetNote": "It completes with both the new and the review portions. The rest is mentioned if it happened.",
     "backToDay": "Back to my portion",
     "signInFirst": "Sign in with your name first from",
-    "myPage": "my page",
+    "myPage": "home",
     "note": "The card lists only what was done. A day without both required recitations has no card — which is what makes one arriving mean something.",
     "items": {
       "recited_new": "Recited the new portion",

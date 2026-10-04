@@ -6,12 +6,14 @@ import {
   CircleCheckBig,
   ClipboardCheck,
   House,
+  Route,
   Sunrise,
   TabletSmartphone,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { Link } from "@/i18n/navigation";
+import { useMyRecord } from "@/lib/use-my-record";
 
 /**
  * The student's navigation on a screen wide enough not to have the bottom bar.
@@ -31,6 +33,8 @@ import { Link } from "@/i18n/navigation";
 export function PublicNavDesktop({ academySlug }: { academySlug: string }) {
   const t = useTranslations("bottomNav");
   const pathname = usePathname();
+  const { data } = useMyRecord(academySlug);
+  const onTrack = (data?.trackDays.length ?? 0) > 0;
 
   const links = [
     { href: `/${academySlug}`, label: t("home"), Icon: House, exact: true },
@@ -39,7 +43,8 @@ export function PublicNavDesktop({ academySlug }: { academySlug: string }) {
     { href: `/${academySlug}/mushaf`, label: t("mushaf"), Icon: BookOpen },
     { href: `/${academySlug}/adhkar`, label: t("adhkar"), Icon: Sunrise },
     { href: `/${academySlug}/quizzes`, label: t("quizzes"), Icon: ClipboardCheck },
-    { href: `/${academySlug}/me`, label: t("myPage"), Icon: CircleCheckBig },
+    ...(onTrack ? [{ href: `/${academySlug}/tracks`, label: t("myTracks"), Icon: Route }] : []),
+    { href: `/${academySlug}/hifz`, label: t("hifz"), Icon: CircleCheckBig },
     { href: `/${academySlug}/install`, label: t("install"), Icon: TabletSmartphone },
   ];
 

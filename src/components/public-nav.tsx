@@ -8,6 +8,7 @@ import {
   ClipboardCheck,
   Ellipsis,
   House,
+  Route,
   Smartphone,
   Sunrise,
   Trophy,
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
+import { useMyRecord } from "@/lib/use-my-record";
 
 /**
  * The bottom bar for everyone who is not signed in — which, in this academy,
@@ -82,6 +84,13 @@ export function PublicNav({ academySlug }: { academySlug: string }) {
   const selfTest = `/${academySlug}/self-test`;
   const mushaf = `/${academySlug}/mushaf`;
   const quizzes = `/${academySlug}/quizzes`;
+  const tracks = `/${academySlug}/tracks`;
+
+  // A student on a track gets مساراتي in the fourth slot. Everyone else keeps
+  // the bar as it was. Her record is shared with the home screen, so this
+  // costs no extra request.
+  const { data } = useMyRecord(academySlug);
+  const onTrack = (data?.trackDays.length ?? 0) > 0;
 
   /** What the fifth tab holds, in the order a student reaches for them. */
   const sheetLinks = [
@@ -89,7 +98,9 @@ export function PublicNav({ academySlug }: { academySlug: string }) {
     { href: `/${academySlug}/adhkar`, label: t("adhkar"), Icon: Sunrise },
     // The challenges her معلمات started — also a card on the home screen.
     { href: `/${academySlug}/challenges`, label: t("challenges"), Icon: Trophy },
-    { href: `/${academySlug}/me`, label: t("myPage"), Icon: CircleCheckBig },
+    { href: `/${academySlug}/hifz`, label: t("hifz"), Icon: CircleCheckBig },
+    // On a track, الاختبارات gives its tab to مساراتي and waits here instead.
+    ...(onTrack ? [{ href: quizzes, label: t("quizzes"), Icon: ClipboardCheck }] : []),
     { href: `/${academySlug}/register`, label: t("register"), Icon: UserPlus },
     // /install is here as well as being a link to send. The page already knows
     // when it is being read from an installed app and says so instead of
@@ -203,12 +214,21 @@ export function PublicNav({ academySlug }: { academySlug: string }) {
           page, and a quiz has a closing time. The one with a deadline gets the
           permanent slot; the one she can always find gets the sheet.
         */}
-        <PublicTab
-          href={quizzes}
-          label={t("quizzes")}
-          active={pathname.startsWith(quizzes)}
-          Icon={ClipboardCheck}
-        />
+        {onTrack ? (
+          <PublicTab
+            href={tracks}
+            label={t("myTracks")}
+            active={pathname.startsWith(tracks) || pathname.startsWith(`/${academySlug}/me/track`)}
+            Icon={Route}
+          />
+        ) : (
+          <PublicTab
+            href={quizzes}
+            label={t("quizzes")}
+            active={pathname.startsWith(quizzes)}
+            Icon={ClipboardCheck}
+          />
+        )}
         {/* Same 68px slot as a tab, so the row keeps its rhythm — it just
             opens a sheet instead of going somewhere. */}
         <button

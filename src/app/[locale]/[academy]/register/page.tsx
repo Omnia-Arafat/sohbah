@@ -57,7 +57,7 @@ export default async function RegisterPage({
         this is the only screen where she is likely to be looking for it.
       */}
       <Link
-        href={`/${academySlug}/me`}
+        href={`/${academySlug}`}
         className="flex items-center justify-between gap-3 rounded-2xl border
                    border-border-subtle bg-surface p-4 transition-colors
                    hover:border-brand-600"
