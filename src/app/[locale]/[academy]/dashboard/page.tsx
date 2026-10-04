@@ -66,6 +66,20 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   const todayIds = new Set(todayCircles.map((c) => c.id));
   const otherCircles: Circle[] = (allResult.data ?? []).filter((c) => !todayIds.has(c.id));
 
+  /*
+    «خدي دور» on every circle that is not her own.
+
+    A معلمة, مشرفة or admin who wants to recite in someone else's حلقة had no
+    way to the circle's own page from here — every card led to managing the
+    session — so she signed out and made a student account. The circle page
+    already joins staff under their own name (staff_student_record); it only
+    needed a door. It also says when registration is not open yet, so the
+    button can sit on any day's card.
+  */
+  const myId = session.teacher.id;
+  const ownIds = new Set((allResult.data ?? []).filter((c) => c.teacher_id === myId).map((c) => c.id));
+  const gender = session.teacher.gender_category;
+
   return (
     <div className="flex flex-col gap-6">
       <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -146,6 +160,15 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                   >
                     {t("manageSession")}
                   </Link>
+                  {!ownIds.has(circle.id) && (
+                    <Link
+                      href={`/${academySlug}/circle/${circle.registration_slug}`}
+                      prefetch={false}
+                      className="btn-secondary px-4 py-2 text-sm"
+                    >
+                      {t("takeTurn", { gender })}
+                    </Link>
+                  )}
                   <CopyLinkButton path={`/${locale}/${academySlug}/circle/${circle.registration_slug}`} />
                 </div>
               </li>
@@ -183,12 +206,23 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                       .join(" ")}
                   </p>
                 </div>
-                <Link
-                  href={`/${academySlug}/dashboard/circle/${circle.id}`}
-                  className="btn-secondary px-4 py-2 text-sm"
-                >
-                  {t("openCircle")}
-                </Link>
+                <div className="flex flex-wrap items-center gap-2">
+                  {circle.teacher_id !== myId && (
+                    <Link
+                      href={`/${academySlug}/circle/${circle.registration_slug}`}
+                      prefetch={false}
+                      className="btn-secondary px-4 py-2 text-sm"
+                    >
+                      {t("takeTurn", { gender })}
+                    </Link>
+                  )}
+                  <Link
+                    href={`/${academySlug}/dashboard/circle/${circle.id}`}
+                    className="btn-secondary px-4 py-2 text-sm"
+                  >
+                    {t("openCircle")}
+                  </Link>
+                </div>
               </li>
             ))}
           </ul>

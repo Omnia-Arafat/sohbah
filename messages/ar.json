@@ -367,6 +367,7 @@
     "backToDashboard": "رجوع إلى اللوحة",
     "adminArea": "لوحة المشرف",
     "manageSession": "إدارة الجلسة",
+    "takeTurn": "{gender, select, male {خد دور} other {خدي دور}}",
     "openCircle": "فتح",
     "joinedCount": "المنضمون: {count}",
     "role": {

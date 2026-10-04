@@ -367,6 +367,7 @@
     "backToDashboard": "Back to the dashboard",
     "adminArea": "Admin area",
     "manageSession": "Manage the session",
+    "takeTurn": "Take a turn",
     "openCircle": "Open",
     "joinedCount": "{count} joined",
     "role": {
