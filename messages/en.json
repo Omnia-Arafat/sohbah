@@ -2126,6 +2126,15 @@
     "note": "Changing your partner leaves earlier cards alone: each one keeps the name of whoever heard you that day."
   },
   "cohortDay": {
+    "teacher": "Teacher {name}",
+    "noTeacher": "No teacher yet",
+    "week": "Week {week}",
+    "meeting": "Meeting day",
+    "prevDay": "Previous day",
+    "nextDay": "Next day",
+    "summary": "{reported} of {total} reported · {done} completed",
+    "notReported": "Not reported",
+    "noneReported": "No one in this cohort reported this day in the app. A card sent to the group without being saved from “Today’s wird” does not appear here.",
     "title": "The day's reports",
     "subtitle": "Who finished and who did not, for one day.",
     "back": "Back to the cohort",

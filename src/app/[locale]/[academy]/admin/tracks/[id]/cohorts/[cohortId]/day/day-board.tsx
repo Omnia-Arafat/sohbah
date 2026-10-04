@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
-import { Check } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { DateField } from "@/components/date-field";
 
@@ -32,14 +32,32 @@ const COLUMNS = [
  * server component — a معلمة checking who is behind moves between days more
  * than she opens the page.
  */
+export type DayBoardCohort = {
+  trackName: string;
+  cohortName: string;
+  teacherName: string | null;
+  startDate: string;
+  durationWeeks: number;
+};
+
+/** Moves a YYYY-MM-DD date by whole days, in UTC so no timezone shifts it. */
+function shiftDay(date: string, days: number) {
+  const moved = new Date(`${date}T00:00:00Z`);
+  moved.setUTCDate(moved.getUTCDate() + days);
+  return moved.toISOString().slice(0, 10);
+}
+
 export function DayBoard({
   cohortId,
   initialDate,
+  cohort,
 }: {
   cohortId: string;
   initialDate: string;
+  cohort: DayBoardCohort | null;
 }) {
   const t = useTranslations("cohortDay");
+  const locale = useLocale();
   const supabase = useMemo(() => createClient(), []);
 
   const [date, setDate] = useState(initialDate);
@@ -62,19 +80,98 @@ export function DayBoard({
   const behind = (rows ?? []).filter(
     (r) => !(r.recited_new && r.recited_review),
   ).length;
+  const reported = (rows ?? []).filter((r) => r.reported).length;
+  const done = (rows ?? []).length - behind;
+
+  /*
+    Which day this is, said in full: the weekday, the date, the week of the
+    track it falls in, and whether it is the لقاء — the cohort's week starts on
+    its start date's weekday, which is the meeting (see tracks_runtime).
+  */
+  const picked = /^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(`${date}T00:00:00Z`) : null;
+  const dayLabel = picked
+    ? new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-GB", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        timeZone: "UTC",
+      }).format(picked)
+    : "";
+  const sinceStart =
+    picked && cohort
+      ? Math.floor((picked.getTime() - Date.parse(`${cohort.startDate}T00:00:00Z`)) / 86_400_000)
+      : null;
+  const week =
+    sinceStart !== null && sinceStart >= 0 && cohort
+      ? Math.min(Math.floor(sinceStart / 7) + 1, cohort.durationWeeks)
+      : null;
+  const isMeeting = sinceStart !== null && sinceStart >= 0 && sinceStart % 7 === 0;
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="min-w-0 flex-grow">
-          <label className="field-label" htmlFor="day">
-            {t("day")}
-          </label>
-          <DateField id="day" value={date} onChange={setDate} />
+      {cohort && (
+        <section className="rounded-2xl bg-brand-900 px-4 py-3.5 text-white">
+          <p className="font-display text-xl font-bold">
+            {cohort.trackName} · {cohort.cohortName}
+          </p>
+          <p className="mt-0.5 text-sm text-brand-100">
+            {cohort.teacherName ? t("teacher", { name: cohort.teacherName }) : t("noTeacher")}
+          </p>
+        </section>
+      )}
+
+      <div>
+        <label className="field-label" htmlFor="day">
+          {t("day")}
+        </label>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setDate(shiftDay(date, -1))}
+            aria-label={t("prevDay")}
+            className="flex h-12 w-11 shrink-0 items-center justify-center rounded-xl border border-border-subtle text-brand-700 dark:text-brand-300"
+          >
+            <ChevronRight aria-hidden="true" className="h-5 w-5 ltr:rotate-180" />
+          </button>
+          <div className="min-w-0 flex-grow">
+            <DateField id="day" value={date} onChange={setDate} />
+          </div>
+          <button
+            type="button"
+            onClick={() => setDate(shiftDay(date, 1))}
+            aria-label={t("nextDay")}
+            className="flex h-12 w-11 shrink-0 items-center justify-center rounded-xl border border-border-subtle text-brand-700 dark:text-brand-300"
+          >
+            <ChevronLeft aria-hidden="true" className="h-5 w-5 ltr:rotate-180" />
+          </button>
         </div>
+        {dayLabel && (
+          <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold">
+            <span>{dayLabel}</span>
+            {week !== null && <span className="text-muted-foreground">· {t("week", { week })}</span>}
+            {isMeeting && (
+              <span className="rounded-full bg-brand-100 px-2.5 py-0.5 text-xs font-bold text-brand-800 dark:bg-brand-900 dark:text-brand-100">
+                {t("meeting")}
+              </span>
+            )}
+          </p>
+        )}
       </div>
 
-      {rows !== null && behind > 0 && (
+      {rows !== null && rows.length > 0 && (
+        <p className="rounded-2xl border border-border-subtle bg-surface px-4 py-3 text-sm font-bold">
+          {t("summary", { reported, total: rows.length, done })}
+        </p>
+      )}
+
+      {rows !== null && rows.length > 0 && reported === 0 && (
+        <p className="rounded-2xl border border-border-subtle bg-surface-muted px-4 py-3 text-xs leading-relaxed text-muted-foreground">
+          {t("noneReported")}
+        </p>
+      )}
+
+      {rows !== null && reported > 0 && behind > 0 && (
         <p className="rounded-2xl border border-accent-300 bg-accent-100 px-4 py-3 text-xs font-bold text-accent-700 dark:border-accent-700 dark:bg-accent-700/20 dark:text-accent-200">
           {t("behind", { count: behind })}
         </p>
@@ -104,14 +201,18 @@ export function DayBoard({
             {rows.map((row) => (
               <li
                 key={row.enrollment_id}
-                className="flex items-center gap-2 border-t border-border-subtle px-3 py-2 first:border-t-0"
+                className={`flex items-center gap-2 border-t border-border-subtle px-3 py-2 first:border-t-0 ${
+                  row.reported ? "" : "opacity-60"
+                }`}
               >
                 <span className="min-w-0 flex-grow">
                   <span className="block truncate text-[13px] font-semibold">
                     {row.student_name}
                   </span>
                   <span className="block truncate text-[10px] text-muted-foreground">
-                    {row.partner_name ?? t("noPartner")}
+                    {row.reported
+                      ? row.partner_name ?? t("noPartner")
+                      : t("notReported")}
                   </span>
                 </span>
 

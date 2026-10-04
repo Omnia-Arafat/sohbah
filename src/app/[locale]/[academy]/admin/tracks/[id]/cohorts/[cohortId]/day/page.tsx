@@ -5,6 +5,7 @@ import { BackLink } from "@/components/back-link";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
 import { getAcademyBySlug } from "@/lib/academy-dal";
+import { getCohort } from "@/lib/cohort-dal";
 import { DEFAULT_TIMEZONE } from "@/lib/timezones";
 import { DayBoard } from "./day-board";
 
@@ -59,6 +60,11 @@ export default async function CohortDayPage({ params }: PageProps) {
     );
   }
 
+  // Which track, which دفعة and whose: the board reads as a list of names
+  // without it.
+  const found = await getCohort(academy.id, cohortId);
+  const cohort = found && found !== "missing-schema" ? found : null;
+
   return (
     <div className="flex flex-col gap-5">
       <BackLink href={`/${academySlug}/admin/tracks/${id}/cohorts/${cohortId}`}>
@@ -70,7 +76,21 @@ export default async function CohortDayPage({ params }: PageProps) {
         <p className="mt-1.5 text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
-      <DayBoard cohortId={cohortId} initialDate={today()} />
+      <DayBoard
+        cohortId={cohortId}
+        initialDate={today()}
+        cohort={
+          cohort
+            ? {
+                trackName: cohort.trackName,
+                cohortName: cohort.name,
+                teacherName: cohort.teacherName,
+                startDate: cohort.startDate,
+                durationWeeks: cohort.durationWeeks,
+              }
+            : null
+        }
+      />
     </div>
   );
 }
