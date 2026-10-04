@@ -5,6 +5,7 @@ import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { canSupervise } from "@/lib/auth/roles";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { createClient } from "@/lib/supabase/server";
+import { STAFF_CANDIDATE } from "@/lib/cohort-dal";
 
 export type RosterState = { error: string | null; added: number };
 
@@ -20,9 +21,9 @@ export type RosterState = { error: string | null; added: number };
  * approve twenty applications would be ceremony, not safety.
  *
  * So these go in as `active` directly. The two rules that actually matter are
- * still enforced by the database and cannot be bypassed here: the unique
- * index allows a student only one track, and the capacity check below refuses
- * to overfill. A row that breaks either simply fails to insert.
+ * still enforced by the database and cannot be bypassed here: a student may
+ * hold only one place on a track, and the capacity check below refuses to
+ * overfill. A row that breaks either simply fails to insert.
  */
 export async function addStudents(
   _prev: RosterState,
@@ -73,9 +74,33 @@ export async function addStudents(
     return { error: "wouldOverfill", added: 0 };
   }
 
+  /*
+    A معلمة, مشرفة or admin with no student row yet comes in as
+    `staff:<teacher id>`. staff_as_student() gives her the row — the same one
+    she would get by taking a turn in a حلقة — and that is what is enrolled.
+  */
+  const resolved: string[] = [];
+  for (const id of studentIds) {
+    if (!id.startsWith(STAFF_CANDIDATE)) {
+      resolved.push(id);
+      continue;
+    }
+    const { data: studentId, error: staffError } = await supabase.rpc("staff_as_student" as never, {
+      p_teacher_id: id.slice(STAFF_CANDIDATE.length),
+    } as never);
+    if (staffError || !studentId) {
+      console.error("staff_as_student failed", staffError);
+      return {
+        error: staffError?.message.includes("staff_phone_missing") ? "staffPhoneMissing" : "saveFailed",
+        added: 0,
+      };
+    }
+    resolved.push(studentId as unknown as string);
+  }
+
   const now = new Date().toISOString();
   const { error } = await supabase.from("track_enrollments" as never).insert(
-    studentIds.map((studentId) => ({
+    resolved.map((studentId) => ({
       cohort_id: cohortId,
       student_id: studentId,
       status: "active",

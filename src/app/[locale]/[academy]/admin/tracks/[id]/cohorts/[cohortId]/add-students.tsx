@@ -208,6 +208,12 @@ export function AddStudents({
                       </span>
                     )}
                   </span>
+                  {/* A معلمة or مشرفة added as a student: told apart, not hidden. */}
+                  {candidate.staff && (
+                    <span className="shrink-0 rounded-full bg-surface-muted px-2 py-0.5 text-[11px] font-bold text-muted-foreground">
+                      {t("staffTag")}
+                    </span>
+                  )}
                 </label>
               </li>
             ))}

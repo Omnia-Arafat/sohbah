@@ -1926,6 +1926,7 @@
     "search": "Search by student or father name",
     "noMatch": "No name matches",
     "noCandidates": "Every student is already on this track, or none are registered yet.",
+    "staffTag": "Staff",
     "addCount": "{count, plural, =0{Choose a student} one{Add one} other{Add #}}",
     "adding": "Adding…",
     "addedCount": "{count, plural, one{One student added} other{# students added}}",
@@ -1943,6 +1944,7 @@
       "notFound": "Cohort not found.",
       "noneChosen": "Pick at least one student.",
       "wouldOverfill": "That is more students than there are free seats.",
+      "staffPhoneMissing": "She needs a phone number on her staff account first, to sign in with as a student.",
       "alreadyOnATrack": "One of the selected students is already on this track in another cohort.",
       "saveFailed": "Not saved. Try again, and tell the developer if it keeps failing."
     },

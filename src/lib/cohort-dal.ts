@@ -135,7 +135,17 @@ function realFatherName(value: string | null | undefined): string {
   return trimmed === "-" || trimmed === "—" ? "" : trimmed;
 }
 
-export type Candidate = { id: string; name: string; fatherName: string };
+export type Candidate = {
+  /** A student id, or `staff:<teacher id>` for staff with no student row yet. */
+  id: string;
+  name: string;
+  fatherName: string;
+  /** A معلمة, مشرفة or admin, added as a student. */
+  staff: boolean;
+};
+
+/** The prefix that marks a staff member who has no student row yet. */
+export const STAFF_CANDIDATE = "staff:";
 
 /**
  * Students of this academy who are not already on THIS track.
@@ -152,10 +162,10 @@ export async function listAddableStudents(
 ): Promise<Candidate[]> {
   const supabase = await createClient();
 
-  const [studentsResult, takenResult] = await Promise.all([
+  const [studentsResult, takenResult, staffResult] = await Promise.all([
     supabase
       .from("students")
-      .select("id, name, father_name")
+      .select("id, name, father_name, teacher_id")
       .eq("academy_id", academyId)
       .order("name"),
     supabase
@@ -163,6 +173,15 @@ export async function listAddableStudents(
       .select("student_id, status, track_cohorts!inner(track_id)")
       .in("status" as never, [...HOLDS_A_SEAT, ...AWAITING] as never)
       .eq("track_cohorts.track_id" as never, trackId as never),
+    // Staff can be students too — a مشرفة on a track. The ones who already
+    // have a student row come in with the students above; the rest are offered
+    // here and get their row when added (staff_as_student).
+    supabase
+      .from("teachers")
+      .select("id, name")
+      .eq("academy_id", academyId)
+      .eq("is_active", true)
+      .order("name"),
   ]);
 
   if (studentsResult.error) {
@@ -180,11 +199,33 @@ export async function listAddableStudents(
         ),
   );
 
-  return (studentsResult.data ?? [])
+  // teacher_id is newer than the generated types.
+  const students = (studentsResult.data ?? []) as unknown as {
+    id: string;
+    name: string;
+    father_name: string | null;
+    teacher_id: string | null;
+  }[];
+  const staffWithRow = new Set(students.map((s) => s.teacher_id).filter(Boolean));
+
+  const fromStudents: Candidate[] = students
     .filter((s) => !taken.has(s.id))
     .map((s) => ({
       id: s.id,
       name: s.name,
       fatherName: realFatherName(s.father_name),
+      staff: Boolean(s.teacher_id),
     }));
+
+  if (staffResult.error) console.error("listAddableStudents (staff) failed", staffResult.error);
+  const fromStaff: Candidate[] = ((staffResult.data ?? []) as { id: string; name: string }[])
+    .filter((teacher) => !staffWithRow.has(teacher.id))
+    .map((teacher) => ({
+      id: `${STAFF_CANDIDATE}${teacher.id}`,
+      name: teacher.name,
+      fatherName: "",
+      staff: true,
+    }));
+
+  return [...fromStudents, ...fromStaff].sort((a, b) => a.name.localeCompare(b.name, "ar"));
 }
