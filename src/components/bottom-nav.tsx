@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import {
   BarChart,
   BookOpen,
+  BookMarked,
   BookOpenText,
   CalendarDays,
+  CircleCheckBig,
   ClipboardList,
   GraduationCap,
   House,
@@ -143,6 +145,14 @@ export function BottomNav({
     { href: `/${academySlug}/admin/circle-types`, label: t("circleTypes"), Icon: Tags, adminOnly: true, hidden: false },
   ].filter((link) => (!link.adminOnly || isAdmin) && !link.hidden);
 
+  // Her own side, if she is a student too. The pages ask for her name and
+  // phone the first time, the same as the dashboard's «أنا كطالبة».
+  const studentLinks = [
+    { href: `/${academySlug}/tracks`, label: t("myTracks"), Icon: Route },
+    { href: `/${academySlug}/hifz`, label: t("hifz"), Icon: BookMarked },
+    { href: `/${academySlug}/self-test`, label: t("selfTest"), Icon: CircleCheckBig },
+  ];
+
   return (
     <>
       {sheetOpen && (
@@ -186,6 +196,28 @@ export function BottomNav({
               overscroll-contain keeps the drag in here: without it, reaching
               the end of this list hands the gesture to the page underneath.
             */}
+            {/*
+              أنا كطالبة: a معلمة, مشرفة or admin who is also a student reaches
+              her own track and حفظ from here. One row, tinted, above the
+              staff grid — not a heading for it — so the grid keeps the height
+              its comment below fights for. المصحف and الأذكار stay in the grid.
+            */}
+            <div className="mb-3 grid grid-cols-3 gap-1.5">
+              {studentLinks.map(({ href, label, Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  prefetch={false}
+                  onClick={() => setSheetOpen(false)}
+                  className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-brand-200
+                             bg-brand-50 px-1.5 text-[12px] font-semibold dark:border-brand-800 dark:bg-brand-950/40"
+                >
+                  <Icon className="h-4 w-4 shrink-0 text-brand-600 dark:text-brand-300" aria-hidden="true" />
+                  <span className="truncate">{label}</span>
+                </Link>
+              ))}
+            </div>
+
             <div className="relative">
               <div className="max-h-[166px] overflow-y-auto overscroll-contain">
                 <div className="grid grid-cols-4 gap-1.5">

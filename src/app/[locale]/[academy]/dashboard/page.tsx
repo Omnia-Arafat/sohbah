@@ -14,6 +14,7 @@ import { ListSearch } from "@/components/list-search";
 import { FridayCard } from "@/components/friday-card";
 import { ChallengesCard } from "@/components/challenges-card";
 import { staffSideFilter } from "@/lib/viewer";
+import { StaffStudentSide } from "@/components/staff-student-side";
 
 type DashboardPageProps = {
   params: Promise<{ locale: string; academy: string }>;
@@ -119,6 +120,9 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           students get, counted as her own. Renders nothing outside Friday. */}
       <FridayCard academySlug={academySlug} locale={locale} />
       <ChallengesCard academySlug={academySlug} locale={locale} />
+
+      {/* Her own ورد and حفظ, for staff who are students too. */}
+      <StaffStudentSide academySlug={academySlug} show="linked" />
 
       {(todayCircles.length > 0 || otherCircles.length > 0) && (
         <ListSearch
@@ -229,6 +233,8 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         )}
       </section>
       </div>
+
+      <StaffStudentSide academySlug={academySlug} show="unlinked" />
     </div>
   );
 }

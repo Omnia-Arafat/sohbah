@@ -32,6 +32,15 @@
     "signOut": "Sign out"
   },
   "studentHome": {
+    "staffSide": {
+      "studentChip": "Student",
+      "title": "Me as a student",
+      "prompt": "If you are also a student in a circle or track, sign in once with your name and phone and it stays remembered.",
+      "link": "Sign in",
+      "notMe": "Not {name}?",
+      "bannerOn": "You are also a student on «{track}»",
+      "openWird": "Open your wird"
+    },
     "account": {
       "label": "My account: {name}",
       "labelPending": "My account"
@@ -1368,6 +1377,7 @@
     "progress": "Progress",
     "myPage": "My page",
     "myTracks": "My tracks",
+    "asStudent": "Me as a student",
     "hifz": "Memorization",
     "mushaf": "Mushaf",
     "selfTest": "Test yourself",

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
-import { LogOut } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 import { BottomNav } from "@/components/bottom-nav";
@@ -10,6 +9,7 @@ import { PublicNavDesktop } from "@/components/public-nav-desktop";
 import { BrandMark } from "@/components/brand-mark";
 import { LanguageToggle } from "@/components/language-toggle";
 import { SideNav } from "@/components/side-nav";
+import { StaffAccountMenu } from "@/components/staff-account-menu";
 import { StudentHeaderAccount } from "@/components/student-header-account";
 import { STUDENT_COOKIE } from "@/lib/student-cookie";
 import { Link } from "@/i18n/navigation";
@@ -17,7 +17,7 @@ import { signOut } from "@/app/[locale]/[academy]/login/actions";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { getLocalizedAcademyName, getTeacherDisplayLabel } from "@/lib/academy-display";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
-import { canSupervise, isAdminRole, primaryRoleKey } from "@/lib/auth/roles";
+import { canSupervise, hasRole, isAdminRole, primaryRoleKey } from "@/lib/auth/roles";
 
 type AcademyLayoutProps = {
   children: React.ReactNode;
@@ -60,7 +60,6 @@ export default async function AcademyLayout({
   }
 
   const academyName = await getLocalizedAcademyName(academySlug, locale, academy);
-  const tNav = await getTranslations("nav");
   const tDashboard = await getTranslations("dashboard");
 
   // The bottom bar is for people who actually have somewhere to go: an
@@ -157,18 +156,19 @@ export default async function AcademyLayout({
                   all about being signed in. `sm:hidden` because the side rail
                   carries the same button from `sm` up.
                 */
-                <form action={signOut.bind(null, academySlug)} className="sm:hidden">
-                  <button
-                    type="submit"
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-border-subtle
-                               px-3 py-1.5 text-sm font-semibold text-muted-foreground
-                               transition-colors hover:border-absent hover:text-absent
-                               whitespace-nowrap"
-                  >
-                    <LogOut className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" />
-                    {tNav("signOut")}
-                  </button>
-                </form>
+                <div className="sm:hidden">
+                  {/* Her name, every role she holds, and «خروج». */}
+                  <StaffAccountMenu
+                    academySlug={academySlug}
+                    name={teacher.name}
+                    roles={[
+                      ...(isAdminRole(teacher) ? [tDashboard("role.admin")] : []),
+                      ...(hasRole(teacher, "supervisor") ? [tDashboard("role.supervisor")] : []),
+                      tDashboard("role.teacher"),
+                    ]}
+                    signOutAction={signOut.bind(null, academySlug)}
+                  />
+                </div>
               ) : (
                 /*
                   One door, labelled, and it is the right one. This used to be

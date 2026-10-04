@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Route, TriangleAlert, Users } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { BackLink } from "@/components/back-link";
+import { TrackSelfBanner } from "@/components/staff-student-side";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
 import { canSupervise } from "@/lib/auth/roles";
@@ -62,6 +63,10 @@ export default async function TracksPage({ params }: PageProps) {
   return (
     <div className="flex flex-col gap-5">
       <BackLink href={`/${academySlug}/admin`}>{t("back")}</BackLink>
+
+      {/* For a مشرفة or admin who is on a track herself: her own ورد is a
+          different job from managing every مسار, and this is the way to it. */}
+      <TrackSelfBanner academySlug={academySlug} />
 
       <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">

@@ -9,7 +9,9 @@ import { JUZ_NAMES } from "@/lib/quran/juz-names";
 import type { JuzCell, JuzState } from "@/lib/quran/progress";
 import { pageOf } from "@/lib/quran/reference";
 import { JUZ_STARTS } from "@/lib/quran/structure";
-import { useMyRecord } from "@/lib/use-my-record";
+import { SignIn } from "../me/me-client";
+import { setMe } from "@/lib/me-store";
+import { useMe, useMyRecord } from "@/lib/use-my-record";
 
 /*
   The ring's tints. Brand green at four weights and no gold: gold means
@@ -57,16 +59,16 @@ function firstFocus(cells: JuzCell[], queue: JuzCell[]) {
 
 export function HifzClient({ academySlug }: { academySlug: string }) {
   const t = useTranslations("studentHome.hifzPage");
+  const { key } = useMe(academySlug);
   const { me, progress } = useMyRecord(academySlug);
   const [picked, setPicked] = useState<number | null>(null);
 
+  // Signed in as staff but not yet as herself: ask once, here.
   if (!me) {
     return (
-      <p className="card text-sm text-muted-foreground">
-        <Link href={`/${academySlug}`} className="font-bold text-brand-700 dark:text-brand-300">
-          {t("back")}
-        </Link>
-      </p>
+      <div className="card">
+        <SignIn bare academySlug={academySlug} onFound={(found) => setMe(key, found)} />
+      </div>
     );
   }
 

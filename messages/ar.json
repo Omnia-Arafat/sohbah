@@ -32,6 +32,15 @@
     "signOut": "خروج"
   },
   "studentHome": {
+    "staffSide": {
+      "studentChip": "طالبة",
+      "title": "أنا كطالبة",
+      "prompt": "لو انتي كمان طالبة في حلقة أو مسار، ادخلي باسمك ورقمك مرة واحدة وهيفضل محفوظ.",
+      "link": "ادخلي باسمك",
+      "notMe": "مش {name}؟",
+      "bannerOn": "انتي كمان طالبة في «{track}»",
+      "openWird": "افتحي وردك"
+    },
     "account": {
       "label": "حسابي: {name}",
       "labelPending": "حسابي"
@@ -1368,6 +1377,7 @@
     "progress": "الحفظ",
     "myPage": "صفحتي",
     "myTracks": "مساراتي",
+    "asStudent": "أنا كطالبة",
     "hifz": "حفظك",
     "mushaf": "المصحف",
     "selfTest": "اختبري حفظك",

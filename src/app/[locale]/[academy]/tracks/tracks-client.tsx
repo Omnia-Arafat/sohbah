@@ -4,13 +4,20 @@ import { ChevronLeft, Info } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { doneCount, todayOf } from "@/components/student-record";
-import { useMyRecord, type MyTrackDay } from "@/lib/use-my-record";
+import { SignIn } from "../me/me-client";
+import { setMe } from "@/lib/me-store";
+import { useMe, useMyRecord, type MyTrackDay } from "@/lib/use-my-record";
+
+function useMyRecordWithKey(academySlug: string) {
+  const { key } = useMe(academySlug);
+  return { key, ...useMyRecord(academySlug) };
+}
 
 export function TracksClient({ academySlug }: { academySlug: string }) {
   const t = useTranslations("studentHome.tracksPage");
   const tTrack = useTranslations("studentHome.track");
   const tDay = useTranslations("trackDay");
-  const { data } = useMyRecord(academySlug);
+  const { key, me, data } = useMyRecordWithKey(academySlug);
 
   // my_track_week returns one row per day; a track is its enrollment.
   const byEnrollment = new Map<string, MyTrackDay[]>();
@@ -26,7 +33,11 @@ export function TracksClient({ academySlug }: { academySlug: string }) {
         <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
-      {!data ? (
+      {!me ? (
+        <div className="card">
+          <SignIn bare academySlug={academySlug} onFound={(found) => setMe(key, found)} />
+        </div>
+      ) : !data ? (
         <p className="card text-sm text-muted-foreground">{tDay("loading")}</p>
       ) : tracks.length === 0 ? (
         <div className="card">
