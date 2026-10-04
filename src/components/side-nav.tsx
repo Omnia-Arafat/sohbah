@@ -2,9 +2,11 @@
 
 import {
   BarChart,
+  BookMarked,
   BookOpen,
   BookOpenText,
   CalendarDays,
+  CircleCheckBig,
   ClipboardList,
   GraduationCap,
   House,
@@ -31,6 +33,8 @@ type NavItem = {
   Icon: typeof House;
   /** Matched as a prefix so a detail page keeps its section highlighted. */
   prefix?: boolean;
+  /** A second path that also lights this row, e.g. a track's own ورد page. */
+  alsoPrefix?: string;
   adminOnly?: boolean;
 };
 
@@ -71,6 +75,15 @@ export function SideNav({
     { href: `/${academySlug}/adhkar`, label: t("adhkar"), Icon: Sunrise, prefix: true },
   ];
 
+  // أنا كطالبة: her own track, حفظ and self-test, for a معلمة, مشرفة or admin
+  // who is a student too. The pages ask for her name and phone the first
+  // time, the same as the dashboard's «أنا كطالبة».
+  const asStudent: NavItem[] = [
+    { href: `/${academySlug}/tracks`, label: t("myTracks"), Icon: Route, prefix: true, alsoPrefix: `/${academySlug}/me/track` },
+    { href: `/${academySlug}/hifz`, label: t("hifz"), Icon: BookMarked, prefix: true },
+    { href: `/${academySlug}/self-test`, label: t("selfTest"), Icon: CircleCheckBig, prefix: true },
+  ];
+
   const supervision: NavItem[] = [
     { href: `/${academySlug}/admin/circles`, label: t("circles"), Icon: Users, prefix: true },
     // Directly under the circles, because that is what a مسار is nearest to —
@@ -100,6 +113,7 @@ export function SideNav({
   ].filter((item) => !item.adminOnly || isAdmin);
 
   function isActive(item: NavItem) {
+    if (item.alsoPrefix && pathname.startsWith(item.alsoPrefix)) return true;
     return item.prefix ? pathname.startsWith(item.href) : pathname === item.href;
   }
 
@@ -167,6 +181,13 @@ export function SideNav({
           {t("groupTeaching")}
         </p>
         {teaching.map((item) => (
+          <Row key={item.href} item={item} />
+        ))}
+
+        <p className="px-3 pb-1.5 pt-4 text-[11px] font-bold text-muted-foreground">
+          {t("asStudent")}
+        </p>
+        {asStudent.map((item) => (
           <Row key={item.href} item={item} />
         ))}
 

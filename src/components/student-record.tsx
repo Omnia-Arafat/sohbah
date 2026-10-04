@@ -7,7 +7,7 @@ import { CircleWhen } from "@/components/circle-when";
 import { formatTime } from "@/lib/format-time";
 import { formatRange } from "@/lib/quran/reference";
 import type { Progress } from "@/lib/quran/progress";
-import { useMyRecord, type MyTrackDay } from "@/lib/use-my-record";
+import { trackQuery, tracksOf, useMyRecord, type MyTrackDay } from "@/lib/use-my-record";
 import type { MyRecitation, RecitationRating } from "@/lib/database.types";
 
 /**
@@ -43,18 +43,17 @@ export function doneCount(day: MyTrackDay | null) {
 
 export function MyTrackCard({ academySlug }: { academySlug: string }) {
   const t = useTranslations("studentHome.track");
+  const tTracks = useTranslations("studentHome.tracksPage");
   const { data } = useMyRecord(academySlug);
-  const days = data?.trackDays ?? [];
-  if (days.length === 0) return null;
-
-  const first = days[0];
-  const today = todayOf(days);
-  const finished = Boolean(today?.recited_new && today?.recited_review);
+  const tracks = tracksOf(data?.trackDays ?? []);
+  if (tracks.length === 0) return null;
 
   return (
     <section className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-xl font-bold">{t("title")}</h2>
+        <h2 className="font-display text-xl font-bold">
+          {tracks.length > 1 ? tTracks("title") : t("title")}
+        </h2>
         <Link
           href={`/${academySlug}/tracks`}
           prefetch={false}
@@ -64,35 +63,43 @@ export function MyTrackCard({ academySlug }: { academySlug: string }) {
           <ChevronLeft aria-hidden="true" className="h-4 w-4 ltr:rotate-180" />
         </Link>
       </div>
-      <Link
-        href={`/${academySlug}/me/track`}
-        prefetch={false}
-        className="card flex flex-col gap-3 border-brand-200 bg-brand-50 dark:border-brand-800 dark:bg-surface"
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 flex-col">
-            <span className="truncate text-base font-bold">{first.track_name}</span>
-            {first.cohort_name && (
-              <span className="truncate text-xs text-muted-foreground">{first.cohort_name}</span>
-            )}
-          </div>
-          <span className="shrink-0 rounded-full border border-brand-200 bg-surface px-2.5 py-0.5 text-xs font-bold text-brand-700 dark:border-brand-800 dark:text-brand-300">
-            {first.duration_weeks
-              ? t("weekOf", { week: first.week_number, total: first.duration_weeks })
-              : t("week", { week: first.week_number })}
-          </span>
-        </div>
-        <div className="flex items-center justify-between gap-3">
-          <span className="flex items-center gap-2 text-sm font-semibold">
-            <CircleCheckBig aria-hidden="true" className="h-5 w-5 shrink-0 text-brand-600 dark:text-brand-300" />
-            {finished ? t("todayDone") : t("today", { done: doneCount(today) })}
-          </span>
-          <span className="inline-flex shrink-0 items-center gap-0.5 text-sm font-bold text-brand-700 dark:text-brand-300">
-            {finished ? t("card") : t("continue")}
-            <ChevronLeft aria-hidden="true" className="h-4 w-4 ltr:rotate-180" />
-          </span>
-        </div>
-      </Link>
+      {tracks.map((days) => {
+        const first = days[0];
+        const today = todayOf(days);
+        const finished = Boolean(today?.recited_new && today?.recited_review);
+        return (
+          <Link
+            key={first.enrollment_id}
+            href={`/${academySlug}/me/track${trackQuery(first.enrollment_id, tracks.length)}`}
+            prefetch={false}
+            className="card flex flex-col gap-3 border-brand-200 bg-brand-50 dark:border-brand-800 dark:bg-surface"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex min-w-0 flex-col">
+                <span className="truncate text-base font-bold">{first.track_name}</span>
+                {first.cohort_name && (
+                  <span className="truncate text-xs text-muted-foreground">{first.cohort_name}</span>
+                )}
+              </div>
+              <span className="shrink-0 rounded-full border border-brand-200 bg-surface px-2.5 py-0.5 text-xs font-bold text-brand-700 dark:border-brand-800 dark:text-brand-300">
+                {first.duration_weeks
+                  ? t("weekOf", { week: first.week_number, total: first.duration_weeks })
+                  : t("week", { week: first.week_number })}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="flex items-center gap-2 text-sm font-semibold">
+                <CircleCheckBig aria-hidden="true" className="h-5 w-5 shrink-0 text-brand-600 dark:text-brand-300" />
+                {finished ? t("todayDone") : t("today", { done: doneCount(today) })}
+              </span>
+              <span className="inline-flex shrink-0 items-center gap-0.5 text-sm font-bold text-brand-700 dark:text-brand-300">
+                {finished ? t("card") : t("continue")}
+                <ChevronLeft aria-hidden="true" className="h-4 w-4 ltr:rotate-180" />
+              </span>
+            </div>
+          </Link>
+        );
+      })}
     </section>
   );
 }

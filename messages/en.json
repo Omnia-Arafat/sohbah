@@ -33,6 +33,9 @@
   },
   "studentHome": {
     "staffSide": {
+      "bannerOnMany": "You are also a student on {count} tracks",
+      "manyToday": "Today's wird on each track",
+      "openTracks": "Open your tracks",
       "studentChip": "Student",
       "title": "Me as a student",
       "prompt": "If you are also a student in a circle or track, sign in once with your name and phone and it stays remembered.",
@@ -1922,7 +1925,7 @@
     "addNote": "For cohorts already running: pick their students and add them directly. Each one does not need to file an application and be accepted — applications are for people joining from today on.",
     "search": "Search by student or father name",
     "noMatch": "No name matches",
-    "noCandidates": "Every student in the academy is already on a track, or none are registered yet.",
+    "noCandidates": "Every student is already on this track, or none are registered yet.",
     "addCount": "{count, plural, =0{Choose a student} one{Add one} other{Add #}}",
     "adding": "Adding…",
     "addedCount": "{count, plural, one{One student added} other{# students added}}",
@@ -1940,7 +1943,7 @@
       "notFound": "Cohort not found.",
       "noneChosen": "Pick at least one student.",
       "wouldOverfill": "That is more students than there are free seats.",
-      "alreadyOnATrack": "One of them is already on another track — two tracks are not allowed.",
+      "alreadyOnATrack": "One of the selected students is already on this track in another cohort.",
       "saveFailed": "Not saved. Try again, and tell the developer if it keeps failing."
     },
     "back": "Back to the track",

@@ -7,6 +7,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { matchesSearch } from "@/lib/arabic-search";
 import { getMe, meKey, subscribeMe } from "@/lib/me-store";
 import { createClient } from "@/lib/supabase/client";
+import { useSearchParams } from "next/navigation";
 
 /*
   No father's name.
@@ -40,6 +41,10 @@ export function PartnerClient({ academySlug }: { academySlug: string }) {
   const router = useRouter();
   const key = useMemo(() => meKey(academySlug), [academySlug]);
   const supabase = useMemo(() => createClient(), []);
+  // The track this page is for: named by ?e= only when she is on several.
+  const requested = useSearchParams().get("e");
+  const trackArg = requested ? { p_enrollment_id: requested } : {};
+  const trackSuffix = requested ? `?e=${requested}` : "";
 
   const me = useSyncExternalStore(
     subscribeMe,
@@ -54,12 +59,13 @@ export function PartnerClient({ academySlug }: { academySlug: string }) {
   const [error, setError] = useState<string | null>(null);
   const [loadedFor, setLoadedFor] = useState<string | null>(null);
 
-  if (me && loadedFor !== me.studentId) {
-    setLoadedFor(me.studentId);
+  if (me && loadedFor !== `${me.studentId}:${requested ?? ""}`) {
+    setLoadedFor(`${me.studentId}:${requested ?? ""}`);
     void (async () => {
       const { data } = await supabase.rpc("my_partner_options" as never, {
         p_student_id: me.studentId,
         p_phone: me.phone,
+        ...trackArg,
       } as never);
       setOptions((data ?? []) as unknown as Option[]);
     })();
@@ -69,7 +75,7 @@ export function PartnerClient({ academySlug }: { academySlug: string }) {
     return (
       <p className="card text-sm text-muted-foreground">
         {t("signInFirst")}{" "}
-        <Link href={`/${academySlug}/me`} className="font-semibold underline">
+        <Link href={`/${academySlug}`} className="font-semibold underline">
           {t("myPage")}
         </Link>
       </p>
@@ -93,13 +99,14 @@ export function PartnerClient({ academySlug }: { academySlug: string }) {
       p_phone: me.phone,
       p_partner_enrollment_id: enrollmentId,
       p_external_name: name,
+      ...trackArg,
     } as never);
     setSaving(false);
     if (rpcError) {
       setError("failed");
       return;
     }
-    router.push(`/${academySlug}/me/track`);
+    router.push(`/${academySlug}/me/track${trackSuffix}`);
   }
 
   return (

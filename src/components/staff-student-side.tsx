@@ -7,7 +7,7 @@ import { Link } from "@/i18n/navigation";
 import { SignIn } from "@/app/[locale]/[academy]/me/me-client";
 import { HifzCard, MyTrackCard, doneCount, todayOf } from "@/components/student-record";
 import { clearMe, setMe } from "@/lib/me-store";
-import { useMe, useMyRecord } from "@/lib/use-my-record";
+import { tracksOf, useMe, useMyRecord } from "@/lib/use-my-record";
 
 /**
  * «أنا كطالبة» — the student half of someone who is also staff.
@@ -83,26 +83,33 @@ export function TrackSelfBanner({ academySlug }: { academySlug: string }) {
   const t = useTranslations("studentHome.staffSide");
   const tTrack = useTranslations("studentHome.track");
   const { data } = useMyRecord(academySlug);
-  const days = data?.trackDays ?? [];
-  if (days.length === 0) return null;
+  const tracks = tracksOf(data?.trackDays ?? []);
+  if (tracks.length === 0) return null;
 
+  // On several tracks, the banner opens the list rather than picking one.
+  const many = tracks.length > 1;
+  const days = tracks[0];
   const today = todayOf(days);
   const finished = Boolean(today?.recited_new && today?.recited_review);
 
   return (
     <Link
-      href={`/${academySlug}/me/track`}
+      href={many ? `/${academySlug}/tracks` : `/${academySlug}/me/track`}
       prefetch={false}
       className="flex items-center gap-3 rounded-2xl bg-brand-900 px-4 py-3 text-white"
     >
       <span className="flex min-w-0 flex-grow flex-col">
-        <span className="truncate text-xs text-brand-200">{t("bannerOn", { track: days[0].track_name })}</span>
+        <span className="truncate text-xs text-brand-200">{many ? t("bannerOnMany", { count: tracks.length }) : t("bannerOn", { track: days[0].track_name })}</span>
         <span className="text-sm font-bold">
-          {finished ? tTrack("todayDone") : tTrack("today", { done: doneCount(today) })}
+          {many
+            ? t("manyToday")
+            : finished
+              ? tTrack("todayDone")
+              : tTrack("today", { done: doneCount(today) })}
         </span>
       </span>
       <span className="inline-flex shrink-0 items-center gap-0.5 rounded-xl bg-white px-3 py-2 text-sm font-bold text-brand-900">
-        {t("openWird")}
+        {many ? t("openTracks") : t("openWird")}
         <ChevronLeft aria-hidden="true" className="h-4 w-4 ltr:rotate-180" />
       </span>
     </Link>

@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { getMe, meKey, subscribeMe } from "@/lib/me-store";
 import { createClient } from "@/lib/supabase/client";
+import { useSearchParams } from "next/navigation";
 import { DateField } from "@/components/date-field";
 
 /**
@@ -26,6 +27,10 @@ export function ExcuseClient({
   const t = useTranslations("excuse");
   const key = useMemo(() => meKey(academySlug), [academySlug]);
   const supabase = useMemo(() => createClient(), []);
+  // The track this page is for: named by ?e= only when she is on several.
+  const requested = useSearchParams().get("e");
+  const trackArg = requested ? { p_enrollment_id: requested } : {};
+  const trackSuffix = requested ? `?e=${requested}` : "";
 
   const me = useSyncExternalStore(
     subscribeMe,
@@ -42,7 +47,7 @@ export function ExcuseClient({
     return (
       <p className="card text-sm text-muted-foreground">
         {t("signInFirst")}{" "}
-        <Link href={`/${academySlug}/me`} className="font-semibold underline">
+        <Link href={`/${academySlug}`} className="font-semibold underline">
           {t("myPage")}
         </Link>
       </p>
@@ -58,6 +63,7 @@ export function ExcuseClient({
       p_phone: me.phone,
       p_date: date,
       p_reason: reason,
+      ...trackArg,
     } as never);
     setSending(false);
     setState(error ? "error" : "sent");
@@ -75,7 +81,7 @@ export function ExcuseClient({
           <p className="font-semibold text-present">{t("sent")}</p>
           <p className="mt-1 text-sm text-muted-foreground">{t("sentNote")}</p>
           <Link
-            href={`/${academySlug}/me/track`}
+            href={`/${academySlug}/me/track${trackSuffix}`}
             className="btn-primary mt-4 inline-flex min-h-11 items-center"
           >
             {t("backToDay")}

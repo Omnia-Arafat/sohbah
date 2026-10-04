@@ -88,7 +88,7 @@ export async function addStudents(
 
   if (error) {
     console.error("addStudents failed", error);
-    // 23505 is the unique violation — one of them is already on a track.
+    // 23505: one of them already holds a place on this track.
     return {
       error: error.code === "23505" ? "alreadyOnATrack" : "saveFailed",
       added: 0,

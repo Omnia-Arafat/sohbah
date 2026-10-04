@@ -138,15 +138,17 @@ function realFatherName(value: string | null | undefined): string {
 export type Candidate = { id: string; name: string; fatherName: string };
 
 /**
- * Students of this academy who are not on ANY track.
+ * Students of this academy who are not already on THIS track.
  *
- * The one-track rule is a database index (uq_one_active_track_per_student), so
- * offering a student who is already on another track would only produce a
+ * A student may be on several tracks (20261004140000_multiple_tracks), but not
+ * hold two places on one — the database refuses that — so offering a student
+ * who is already on this track, in any of its cohorts, would only produce a
  * failed insert. Filtering here means the picker never shows a name that
  * cannot be chosen.
  */
 export async function listAddableStudents(
   academyId: string,
+  trackId: string,
 ): Promise<Candidate[]> {
   const supabase = await createClient();
 
@@ -158,8 +160,9 @@ export async function listAddableStudents(
       .order("name"),
     supabase
       .from("track_enrollments" as never)
-      .select("student_id, status")
-      .in("status" as never, [...HOLDS_A_SEAT, ...AWAITING] as never),
+      .select("student_id, status, track_cohorts!inner(track_id)")
+      .in("status" as never, [...HOLDS_A_SEAT, ...AWAITING] as never)
+      .eq("track_cohorts.track_id" as never, trackId as never),
   ]);
 
   if (studentsResult.error) {

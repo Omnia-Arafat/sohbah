@@ -6,7 +6,8 @@ import { Check, Copy, Download, Share2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { canvasToFile } from "@/lib/friday-share-image";
 import { renderTrackCard } from "@/lib/track-card-image";
-import { useMyRecord, type MyTrackDay } from "@/lib/use-my-record";
+import { trackQuery, tracksOf, useMyRecord, type MyTrackDay } from "@/lib/use-my-record";
+import { useSearchParams } from "next/navigation";
 
 const LINES = [
   "recited_new",
@@ -40,7 +41,12 @@ export function CardClient({
   const tItems = useTranslations("trackDay.items");
   const { me, data } = useMyRecord(academySlug);
 
-  const day: MyTrackDay | null = data?.trackDays.find((row) => row.is_today) ?? null;
+  // The track named by ?e=, or her first.
+  const requested = useSearchParams().get("e");
+  const tracks = tracksOf(data?.trackDays ?? []);
+  const days = tracks.find((group) => group[0].enrollment_id === requested) ?? tracks[0] ?? [];
+  const day: MyTrackDay | null = days.find((row) => row.is_today) ?? null;
+  const query = day ? trackQuery(day.enrollment_id, tracks.length) : "";
 
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState<string | null>(null);
@@ -172,7 +178,7 @@ export function CardClient({
           <p className="font-bold text-accent-700 dark:text-accent-200">{t("notYet")}</p>
           <p className="mt-1 text-sm text-accent-700/85 dark:text-accent-200/85">{t("notYetNote")}</p>
         </section>
-        <Link href={`/${academySlug}/me/track`} className="btn-primary min-h-12 text-center">
+        <Link href={`/${academySlug}/me/track${query}`} className="btn-primary min-h-12 text-center">
           {t("backToDay")}
         </Link>
       </div>
@@ -253,7 +259,7 @@ export function CardClient({
             {copied ? t("copied") : t("copyText")}
           </button>
         )}
-        <Link href={`/${academySlug}/me/track`} className="btn-secondary min-h-11 px-3 text-sm">
+        <Link href={`/${academySlug}/me/track${query}`} className="btn-secondary min-h-11 px-3 text-sm">
           {t("edit")}
         </Link>
       </div>

@@ -6,7 +6,8 @@ import { Check, ChevronRight, Users } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getMe, meKey, subscribeMe } from "@/lib/me-store";
 import { createClient } from "@/lib/supabase/client";
-import { invalidateMyRecord } from "@/lib/use-my-record";
+import { invalidateMyRecord, trackQuery } from "@/lib/use-my-record";
+import { useSearchParams } from "next/navigation";
 
 type Day = {
   session_date: string;
@@ -64,6 +65,8 @@ export function TrackClient({
   );
 
   const [week, setWeek] = useState<Week | null>(null);
+  const requested = useSearchParams().get("e");
+  const [trackCount, setTrackCount] = useState(1);
   const [picked, setPicked] = useState<string | null>(null);
   const [draft, setDraft] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
@@ -77,8 +80,9 @@ export function TrackClient({
     would fire again on every unrelated re-render.
   */
   const [loadedFor, setLoadedFor] = useState<string | null>(null);
-  if (me && loadedFor !== me.studentId && state !== "loading") {
-    setLoadedFor(me.studentId);
+  const loadKey = me ? `${me.studentId}:${requested ?? ""}` : null;
+  if (me && loadedFor !== loadKey && state !== "loading") {
+    setLoadedFor(loadKey);
     setState("loading");
     void (async () => {
       /*
@@ -91,7 +95,13 @@ export function TrackClient({
         p_student_id: me.studentId,
         p_phone: me.phone,
       } as never);
-      const rows = (data ?? []) as unknown as (Day & Omit<Week, "days">)[];
+      const all = (data ?? []) as unknown as (Day & Omit<Week, "days">)[];
+      // She may be on several tracks: this page is the one named by ?e=, or
+      // her first when there is no name (one track, or an older link).
+      const count = new Set(all.map((r) => r.enrollment_id)).size;
+      const wanted = all.some((r) => r.enrollment_id === requested) ? requested : all[0]?.enrollment_id;
+      const rows = all.filter((r) => r.enrollment_id === wanted);
+      setTrackCount(count);
       if (error) {
         setState("error");
         return;
@@ -162,6 +172,7 @@ export function TrackClient({
   }
 
   const day = week.days.find((d) => d.session_date === picked)!;
+  const query = trackQuery(week.enrollment_id, trackCount);
   const core = draft.recited_new && draft.recited_review;
   const dayNames = new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-GB", {
     weekday: "long",
@@ -189,6 +200,8 @@ export function TrackClient({
       p_recited_review: Boolean(draft.recited_review),
       p_heard: Boolean(draft.heard_recitation),
       p_prayed: Boolean(draft.prayed_with_memorised),
+      // Named only when she has more than one; see trackQuery.
+      ...(trackCount > 1 && week ? { p_enrollment_id: week.enrollment_id } : {}),
     } as never);
     setSaving(false);
     if (error) {
@@ -298,7 +311,7 @@ export function TrackClient({
         no معلمة gets on the admin side.
       */}
       <Link
-        href={`/${academySlug}/me/track/partner`}
+        href={`/${academySlug}/me/track/partner${query}`}
         className={`flex items-center gap-2.5 rounded-2xl border px-4 py-3 ${
           week.partner_name
             ? "border-border-subtle bg-surface"
@@ -394,7 +407,7 @@ export function TrackClient({
               the confirmation rather than somewhere she has to go looking. */}
           {core && (
             <Link
-              href={`/${academySlug}/me/track/card`}
+              href={`/${academySlug}/me/track/card${query}`}
               className="mt-2 inline-block text-sm font-bold text-brand-700 underline dark:text-brand-300"
             >
               {t("openCard")}
@@ -413,7 +426,7 @@ export function TrackClient({
       </button>
 
       <Link
-        href={`/${academySlug}/me/track/excuse`}
+        href={`/${academySlug}/me/track/excuse${query}`}
         className="min-h-11 text-center text-sm font-semibold text-muted-foreground underline"
       >
         {t("excuse")}

@@ -137,3 +137,28 @@ export function useMyRecord(academySlug: string) {
 
   return { me, data, progress };
 }
+
+/**
+ * my_track_week as one list of days per track, oldest enrollment first.
+ *
+ * A student may be on several مسارات; every row carries its enrollment.
+ */
+export function tracksOf(days: MyTrackDay[]): MyTrackDay[][] {
+  const groups = new Map<string, MyTrackDay[]>();
+  for (const day of days) {
+    groups.set(day.enrollment_id, [...(groups.get(day.enrollment_id) ?? []), day]);
+  }
+  return [...groups.values()];
+}
+
+/**
+ * The query string that names one track on the track pages: `?e=<enrollment>`.
+ *
+ * Only added when she is on more than one. With one track the pages need no
+ * name for it — and the database functions only accept the argument once
+ * RUN_STEPS_MULTIPLE_TRACKS.sql has run, so a single-track student never
+ * sends it.
+ */
+export function trackQuery(enrollmentId: string, trackCount: number) {
+  return trackCount > 1 ? `?e=${enrollmentId}` : "";
+}

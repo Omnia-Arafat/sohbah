@@ -30,8 +30,9 @@ function SubmitButton({ count }: { count: number }) {
  *
  * A هجرة of twenty students is twenty checkboxes and one save, not twenty
  * round trips — so the list is multi-select and the button carries the count.
- * Only students who are on no track at all appear (see listAddableStudents),
- * because the one-track rule is an index and an unchoosable name is noise.
+ * Only students who are not already on this track appear (see listAddableStudents),
+ * because the database refuses a second place on one track and an unchoosable
+ * name is noise.
  */
 export function AddStudents({
   academySlug,

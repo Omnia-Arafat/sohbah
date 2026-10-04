@@ -6,7 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { doneCount, todayOf } from "@/components/student-record";
 import { SignIn } from "../me/me-client";
 import { setMe } from "@/lib/me-store";
-import { useMe, useMyRecord, type MyTrackDay } from "@/lib/use-my-record";
+import { trackQuery, useMe, useMyRecord, type MyTrackDay } from "@/lib/use-my-record";
 
 function useMyRecordWithKey(academySlug: string) {
   const { key } = useMe(academySlug);
@@ -52,7 +52,7 @@ export function TracksClient({ academySlug }: { academySlug: string }) {
           return (
             <Link
               key={first.enrollment_id}
-              href={finished ? `/${academySlug}/me/track/card` : `/${academySlug}/me/track`}
+              href={`/${academySlug}/me/track${finished ? "/card" : ""}${trackQuery(first.enrollment_id, tracks.length)}`}
               prefetch={false}
               className="card flex flex-col gap-3 transition-colors hover:border-brand-300"
             >

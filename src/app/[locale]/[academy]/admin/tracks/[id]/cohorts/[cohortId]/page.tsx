@@ -64,7 +64,7 @@ export default async function CohortPage({ params }: PageProps) {
 
   const [cohort, candidates] = await Promise.all([
     getCohort(academy.id, cohortId),
-    listAddableStudents(academy.id),
+    listAddableStudents(academy.id, id),
   ]);
 
   if (cohort === "missing-schema" || !cohort) notFound();
