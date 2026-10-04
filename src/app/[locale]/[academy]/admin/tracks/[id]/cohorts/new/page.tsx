@@ -9,6 +9,7 @@ import { getAcademyBySlug } from "@/lib/academy-dal";
 import { createClient } from "@/lib/supabase/server";
 import { getTrackDetail } from "@/lib/track-detail-dal";
 import { CohortForm } from "./cohort-form";
+import { DEFAULT_TIMEZONE } from "@/lib/timezones";
 
 type PageProps = {
   params: Promise<{ locale: string; academy: string; id: string }>;
@@ -83,6 +84,14 @@ export default async function NewCohortPage({ params }: PageProps) {
         trackId={track.id}
         defaultCapacity={track.defaultCapacity}
         teachers={teacherRows ?? []}
+        // The academy's today, so the meeting-day preview counts weeks the way
+        // the database will.
+        today={new Intl.DateTimeFormat("en-CA", {
+          timeZone: DEFAULT_TIMEZONE,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).format(new Date())}
       />
     </div>
   );

@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
+import { CohortStartPicker } from "@/components/cohort-start-picker";
 import { SearchableSelect } from "@/components/searchable-select";
 import { updateCohort, type EditCohortState } from "./actions";
 
@@ -43,36 +44,10 @@ export function EditCohortForm({
   today: string;
 }) {
   const t = useTranslations("cohortEdit");
-  const locale = useLocale();
   const [state, formAction] = useActionState<EditCohortState, FormData>(
     updateCohort,
     { error: null },
   );
-
-  const [startDate, setStartDate] = useState(initial.startDate);
-
-  /*
-    The date's consequences, shown while she is choosing it.
-
-    start_date decides two things at once and neither is obvious from a date
-    picker: which week the cohort is in, and which weekday counts as "اليوم
-    الأول". Printing both back as she types is what turns a silent mistake
-    into an obvious one.
-  */
-  const preview = (() => {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate)) return null;
-    const start = new Date(`${startDate}T00:00:00Z`);
-    if (Number.isNaN(start.getTime())) return null;
-
-    const now = new Date(`${today}T00:00:00Z`);
-    const days = Math.floor((now.getTime() - start.getTime()) / 86_400_000);
-    if (days < 0) return { week: null, weekday: weekdayName(start, locale) };
-
-    return {
-      week: Math.min(Math.floor(days / 7) + 1, durationWeeks),
-      weekday: weekdayName(start, locale),
-    };
-  })();
 
   return (
     <form action={formAction} className="card flex flex-col gap-4" noValidate>
@@ -103,29 +78,14 @@ export function EditCohortForm({
         />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label className="field-label" htmlFor="startDate">
-            {t("fields.startDate")}
-          </label>
-          <input
-            id="startDate"
-            name="startDate"
-            type="date"
-            className="input"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            required
-          />
-          {preview && (
-            <p className="mt-1.5 rounded-lg bg-surface-muted px-2.5 py-2 text-xs leading-relaxed text-foreground/80">
-              {preview.week
-                ? t("preview", { week: preview.week, weekday: preview.weekday })
-                : t("previewFuture", { weekday: preview.weekday })}
-            </p>
-          )}
-        </div>
+      <CohortStartPicker
+        initial={initial.startDate}
+        today={today}
+        durationWeeks={durationWeeks}
+        label={t("fields.startDate")}
+      />
 
+      <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="field-label" htmlFor="maxStudents">
             {t("fields.capacity")}
@@ -198,11 +158,4 @@ export function EditCohortForm({
       <SubmitButton />
     </form>
   );
-}
-
-function weekdayName(date: Date, locale: string) {
-  return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-GB", {
-    weekday: "long",
-    timeZone: "UTC",
-  }).format(date);
 }

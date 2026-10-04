@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { useTranslations } from "next-intl";
+import { CohortStartPicker } from "@/components/cohort-start-picker";
 import { SearchableSelect } from "@/components/searchable-select";
 import { createCohort, type CohortFormState } from "./actions";
 
@@ -21,11 +22,13 @@ export function CohortForm({
   trackId,
   defaultCapacity,
   teachers,
+  today,
 }: {
   academySlug: string;
   trackId: string;
   defaultCapacity: number;
   teachers: { id: string; name: string }[];
+  today: string;
 }) {
   const t = useTranslations("cohortNew");
   const [state, formAction] = useActionState<CohortFormState, FormData>(
@@ -62,22 +65,12 @@ export function CohortForm({
         <p className="mt-1 text-xs text-muted-foreground">{t("fields.nameHint")}</p>
       </div>
 
+      <div>
+        <CohortStartPicker initial="" today={today} label={t("fields.startDate")} />
+        <p className="mt-1 text-xs text-muted-foreground">{t("fields.startHint")}</p>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label className="field-label" htmlFor="startDate">
-            {t("fields.startDate")}
-          </label>
-          <input
-            id="startDate"
-            name="startDate"
-            type="date"
-            className="input"
-            required
-          />
-          <p className="mt-1 text-xs text-muted-foreground">
-            {t("fields.startHint")}
-          </p>
-        </div>
 
         <div>
           <label className="field-label" htmlFor="maxStudents">
