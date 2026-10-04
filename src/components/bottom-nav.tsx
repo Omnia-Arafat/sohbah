@@ -193,6 +193,7 @@ export function BottomNav({
                     <Link
                       key={href}
                       href={href}
+                      prefetch={false}
                       // Closed here rather than on a route change: a tap that
                       // navigates should leave the sheet behind it, and doing
                       // it in the handler keeps it out of an effect.
@@ -239,6 +240,7 @@ export function BottomNav({
           {/* The one creative act in the app, given its own affordance. */}
           <Link
             href={`/${academySlug}/dashboard/new`}
+            prefetch={false}
             className="flex w-[68px] flex-col items-center gap-1"
           >
             <span className="-mt-5 flex h-13 w-13 items-center justify-center rounded-full border-[3px] border-surface bg-brand-600 shadow-[0_6px_14px_rgba(30,110,81,0.32)]">
@@ -293,7 +295,7 @@ function NavTab({
   Icon: typeof House;
 }) {
   return (
-    <Link href={href} className="relative flex w-[68px] flex-col items-center gap-1 pb-2 pt-1.5">
+    <Link href={href} prefetch={false} className="relative flex w-[68px] flex-col items-center gap-1 pb-2 pt-1.5">
       {active && <span className="absolute top-0 h-[3px] w-5 rounded-full bg-brand-600" />}
       <Icon
         className={`h-[23px] w-[23px] ${active ? "text-brand-600 dark:text-brand-300" : "text-muted-foreground"}`}

@@ -108,6 +108,7 @@ export function SideNav({
     return (
       <Link
         href={item.href}
+        prefetch={false}
         className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
           active
             ? "border-s-[3px] border-s-brand-600 bg-brand-50 font-bold text-brand-800 dark:bg-brand-900 dark:text-brand-100"
@@ -132,6 +133,7 @@ export function SideNav({
           phone header in the layout. */}
       <Link
         href={`/${academySlug}/dashboard`}
+        prefetch={false}
         className="flex min-w-0 items-center gap-3 border-b border-border-subtle px-4 py-4"
       >
         {logoPath ? (
@@ -152,6 +154,7 @@ export function SideNav({
       <div className="px-3 py-3">
         <Link
           href={`/${academySlug}/dashboard/new`}
+          prefetch={false}
           className="btn-primary w-full px-4 py-2.5 text-sm"
         >
           <Plus className="h-[18px] w-[18px]" strokeWidth={2.4} aria-hidden="true" />

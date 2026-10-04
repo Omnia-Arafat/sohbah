@@ -58,6 +58,7 @@ export function PublicNavDesktop({ academySlug }: { academySlug: string }) {
               <li key={href}>
                 <Link
                   href={href}
+                  prefetch={false}
                   aria-current={active ? "page" : undefined}
                   className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-xl
                               px-2.5 py-1.5 text-sm transition-colors ${

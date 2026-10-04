@@ -100,7 +100,11 @@ function hasStudentCookie(request: NextRequest) {
 
 /**
  * Refreshes the Supabase session so Server Components see a valid cookie.
- * Students never sign in — this is a no-op for them.
+ * Only called when an auth cookie exists — students never sign in.
+ *
+ * `getClaims()` verifies the JWT locally against the project's cached JWKS
+ * and only talks to Supabase Auth when the token has expired and needs
+ * refreshing; `getUser()` made that round trip on every page view.
  */
 function refreshSupabaseSession(request: NextRequest, response: NextResponse) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -118,7 +122,7 @@ function refreshSupabaseSession(request: NextRequest, response: NextResponse) {
     },
   });
 
-  return supabase.auth.getUser();
+  return supabase.auth.getClaims();
 }
 
 export default async function proxy(request: NextRequest) {
@@ -153,10 +157,15 @@ export default async function proxy(request: NextRequest) {
   }
 
   const response = handleI18n(request);
-  await refreshSupabaseSession(request, response);
+  if (hasAuthCookie(request)) await refreshSupabaseSession(request, response);
   return response;
 }
 
+/**
+ * Pages only. `_next` covers static chunks, image optimization and data
+ * routes; anything with a dot — favicon, icons, sw.js, the manifest,
+ * /quran/* — is a public file and never reaches the proxy.
+ */
 export const config = {
   matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
 };
