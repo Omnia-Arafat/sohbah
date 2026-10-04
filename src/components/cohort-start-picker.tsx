@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { DateField } from "@/components/date-field";
 
 /** The week as the academy says it, from Saturday: JS weekday numbers. */
 const WEEK = [6, 0, 1, 2, 3, 4, 5] as const;
@@ -88,15 +89,7 @@ export function CohortStartPicker({
         <label className="field-label" htmlFor="startDate">
           {label}
         </label>
-        <input
-          id="startDate"
-          name="startDate"
-          type="date"
-          className="input"
-          value={startDate}
-          onChange={(event) => setStartDate(event.target.value)}
-          required
-        />
+        <DateField id="startDate" name="startDate" value={startDate} onChange={setStartDate} required />
       </div>
 
       <fieldset className="min-w-0">

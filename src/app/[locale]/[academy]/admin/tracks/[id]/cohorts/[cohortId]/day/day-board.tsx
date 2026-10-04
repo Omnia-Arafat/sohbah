@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { DateField } from "@/components/date-field";
 
 type Row = {
   enrollment_id: string;
@@ -69,13 +70,7 @@ export function DayBoard({
           <label className="field-label" htmlFor="day">
             {t("day")}
           </label>
-          <input
-            id="day"
-            type="date"
-            className="input"
-            value={date}
-            onChange={(event) => setDate(event.target.value)}
-          />
+          <DateField id="day" value={date} onChange={setDate} />
         </div>
       </div>
 

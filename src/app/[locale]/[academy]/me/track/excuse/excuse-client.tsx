@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { getMe, meKey, subscribeMe } from "@/lib/me-store";
 import { createClient } from "@/lib/supabase/client";
+import { DateField } from "@/components/date-field";
 
 /**
  * «كان لي عذر».
@@ -96,14 +97,7 @@ export function ExcuseClient({
               <label className="field-label" htmlFor="excuseDate">
                 {t("day")}
               </label>
-              <input
-                id="excuseDate"
-                type="date"
-                className="input"
-                max={today}
-                value={date}
-                onChange={(event) => setDate(event.target.value)}
-              />
+              <DateField id="excuseDate" max={today} value={date} onChange={setDate} />
             </div>
 
             <div>

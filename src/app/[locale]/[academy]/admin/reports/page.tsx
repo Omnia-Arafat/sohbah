@@ -3,6 +3,7 @@ import { Star } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BrandSelect } from "@/components/brand-select";
 import { BackLink } from "@/components/back-link";
+import { DateField } from "@/components/date-field";
 import { MonthYearPicker } from "@/components/month-year-picker";
 import { MultiSelectDropdown } from "@/components/multi-select";
 import { Link } from "@/i18n/navigation";
@@ -257,28 +258,14 @@ export default async function ReportsPage({
             <label className="field-label" htmlFor="from">
               {t("filters.from")}
             </label>
-            <input
-              id="from"
-              name="from"
-              type="date"
-              dir="ltr"
-              className="input text-start"
-              defaultValue={range.from}
-            />
+            <DateField id="from" name="from" defaultValue={range.from} />
           </div>
 
           <div className="mode-custom-only">
             <label className="field-label" htmlFor="to">
               {t("filters.to")}
             </label>
-            <input
-              id="to"
-              name="to"
-              type="date"
-              dir="ltr"
-              className="input text-start"
-              defaultValue={range.to}
-            />
+            <DateField id="to" name="to" defaultValue={range.to} />
           </div>
         </div>
 
