@@ -135,6 +135,17 @@ function realFatherName(value: string | null | undefined): string {
   return trimmed === "-" || trimmed === "—" ? "" : trimmed;
 }
 
+/** Close enough to the database's normalize_ar to compare two spellings of a name. */
+function normalizeName(value: string) {
+  return value
+    .trim()
+    .replace(/[ً-ْـ]/g, "")
+    .replace(/[أإآ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/\s+/g, " ");
+}
+
 export type Candidate = {
   /** A student id, or `staff:<teacher id>` for staff with no student row yet. */
   id: string;
@@ -165,7 +176,7 @@ export async function listAddableStudents(
   const [studentsResult, takenResult, staffResult] = await Promise.all([
     supabase
       .from("students")
-      .select("id, name, father_name, teacher_id")
+      .select("id, name, father_name, teacher_id, phone_key")
       .eq("academy_id", academyId)
       .order("name"),
     supabase
@@ -178,7 +189,7 @@ export async function listAddableStudents(
     // here and get their row when added (staff_as_student).
     supabase
       .from("teachers")
-      .select("id, name")
+      .select("id, name, phone")
       .eq("academy_id", academyId)
       .eq("is_active", true)
       .order("name"),
@@ -205,6 +216,7 @@ export async function listAddableStudents(
     name: string;
     father_name: string | null;
     teacher_id: string | null;
+    phone_key: string | null;
   }[];
   const staffWithRow = new Set(students.map((s) => s.teacher_id).filter(Boolean));
 
@@ -218,8 +230,26 @@ export async function listAddableStudents(
     }));
 
   if (staffResult.error) console.error("listAddableStudents (staff) failed", staffResult.error);
-  const fromStaff: Candidate[] = ((staffResult.data ?? []) as { id: string; name: string }[])
-    .filter((teacher) => !staffWithRow.has(teacher.id))
+  /*
+    A member of staff who already has a student row of her own — same number,
+    her name inside its name — is that row, not a second entry. Adding her
+    links it (staff_existing_student), so listing both would invite exactly
+    the duplicate حنان سيد got.
+  */
+  const hasOwnStudentRow = (teacher: { name: string; phone: string | null }) => {
+    const last9 = (teacher.phone ?? "").replace(/\D/g, "").slice(-9);
+    if (last9.length < 9) return false;
+    const name = normalizeName(teacher.name);
+    return students.some(
+      (s) =>
+        !s.teacher_id &&
+        (s.phone_key ?? "").slice(-9) === last9 &&
+        normalizeName(s.name).includes(name),
+    );
+  };
+
+  const fromStaff: Candidate[] = ((staffResult.data ?? []) as { id: string; name: string; phone: string | null }[])
+    .filter((teacher) => !staffWithRow.has(teacher.id) && !hasOwnStudentRow(teacher))
     .map((teacher) => ({
       id: `${STAFF_CANDIDATE}${teacher.id}`,
       name: teacher.name,

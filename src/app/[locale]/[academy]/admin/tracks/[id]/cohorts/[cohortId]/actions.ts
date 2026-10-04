@@ -131,9 +131,10 @@ export async function addStudents(
 /**
  * Take a student off the cohort.
  *
- * `withdrawn`, never a delete: her recitations and any warning she was given
- * stay attached to the row, and the seat she held is freed either way (the
- * seat-freed trigger fires on exactly this transition).
+ * `withdrawn`, never a delete, with the remover named in removed_reason: her
+ * recitations and any warning she was given stay attached to the row, and the
+ * seat she held is freed either way (the seat-freed trigger fires on exactly
+ * this transition).
  */
 export async function removeStudent(formData: FormData): Promise<void> {
   const academySlug = String(formData.get("academySlug") ?? "");
@@ -155,6 +156,9 @@ export async function removeStudent(formData: FormData): Promise<void> {
     .update({
       status: "withdrawn",
       left_at: new Date().toISOString(),
+      // Who took her off. Removals left no name before, so when twelve
+      // students were taken off by mistake nobody could say by whom.
+      removed_reason: `أخرجتها ${session.teacher?.name ?? "—"}`,
     } as never)
     .eq("id" as never, enrolmentId as never)
     .eq("cohort_id" as never, cohortId as never);

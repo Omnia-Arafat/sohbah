@@ -1937,6 +1937,7 @@
     "rosterEmpty": "No student is on this cohort yet.",
     "remove": "Remove from the cohort",
     "removeNamed": "Remove {name} from the cohort",
+    "removeConfirm": "Take {name} off {cohort}? She disappears from the cohort and from her tracks. Her records are not deleted.",
     "waitingTitle": "Awaiting a decision",
     "waitingNote": "In order of application. Accepting is your decision, and only happens when a seat is free.",
     "errors": {

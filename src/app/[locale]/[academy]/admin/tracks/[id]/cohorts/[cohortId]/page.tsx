@@ -11,6 +11,7 @@ import { getAcademyBySlug } from "@/lib/academy-dal";
 import { getCohort, listAddableStudents } from "@/lib/cohort-dal";
 import { AddStudents } from "./add-students";
 import { removeStudent } from "./actions";
+import { ConfirmButton } from "@/components/confirm-button";
 
 type PageProps = {
   params: Promise<{
@@ -268,20 +269,22 @@ export default async function CohortPage({ params }: PageProps) {
                 </span>
 
                 {/* A plain form, so removal works without JavaScript and
-                    cannot happen on a stray GET. */}
+                    cannot happen on a stray GET — and it asks first: twelve
+                    students were taken off their tracks in an afternoon by
+                    this button, one tap each, and none of it was meant. */}
                 <form action={removeStudent}>
                   <input type="hidden" name="academySlug" value={academySlug} />
                   <input type="hidden" name="trackId" value={id} />
                   <input type="hidden" name="cohortId" value={cohort.id} />
                   <input type="hidden" name="enrolmentId" value={enrolment.id} />
-                  <button
-                    type="submit"
+                  <ConfirmButton
+                    label={t("removeNamed", { name: enrolment.studentName })}
                     title={t("remove")}
-                    aria-label={t("removeNamed", { name: enrolment.studentName })}
+                    confirmMessage={t("removeConfirm", { name: enrolment.studentName, cohort: cohort.name })}
                     className="flex min-h-11 items-center rounded-lg border border-border-subtle px-3 text-muted-foreground transition-colors hover:border-absent hover:text-absent"
                   >
                     <UserMinus className="h-4 w-4" aria-hidden="true" />
-                  </button>
+                  </ConfirmButton>
                 </form>
               </li>
             ))}
