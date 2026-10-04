@@ -105,6 +105,7 @@ export default async function AcademyLayout({
                 work out where the circles she runs had gone. */}
             <Link
               href={teacher ? `/${academySlug}/dashboard` : `/${academySlug}`}
+              prefetch={false}
               className={`flex min-w-0 items-center gap-3 ${teacher ? "sm:hidden" : ""}`}
             >
               {academy.logo_path ? (
@@ -177,6 +178,7 @@ export default async function AcademyLayout({
                 */
                 <Link
                   href={`/${academySlug}/login`}
+                  prefetch={false}
                   className="inline-flex items-center gap-1.5 rounded-xl border border-brand-600
                              bg-brand-50 px-3 py-1.5 text-sm font-bold text-brand-700
                              transition-colors hover:bg-brand-100
