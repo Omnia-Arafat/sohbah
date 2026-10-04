@@ -30,7 +30,7 @@ const W = 1080;
 const H = 1500;
 
 /** The families next/font actually registered, read off the live page. */
-function pageFonts(): { sans: string; display: string } {
+export function pageFonts(): { sans: string; display: string } {
   const probe = document.createElement("span");
   probe.className = "font-display";
   document.body.appendChild(probe);

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SetupNotice } from "@/components/setup-notice";
+import { getAcademyBySlug } from "@/lib/academy-dal";
+import { getLocalizedAcademyName } from "@/lib/academy-display";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { CardClient } from "./card-client";
 
@@ -29,5 +31,10 @@ export default async function CardPage({ params }: PageProps) {
     );
   }
 
-  return <CardClient academySlug={academySlug} locale={locale} />;
+  const academy = await getAcademyBySlug(academySlug);
+  const academyName = academy
+    ? await getLocalizedAcademyName(academySlug, locale, academy)
+    : academySlug;
+
+  return <CardClient academySlug={academySlug} locale={locale} academyName={academyName} />;
 }

@@ -77,7 +77,9 @@ export function MyTrackCard({ academySlug }: { academySlug: string }) {
             )}
           </div>
           <span className="shrink-0 rounded-full border border-brand-200 bg-surface px-2.5 py-0.5 text-xs font-bold text-brand-700 dark:border-brand-800 dark:text-brand-300">
-            {t("week", { week: first.week_number })}
+            {first.duration_weeks
+              ? t("weekOf", { week: first.week_number, total: first.duration_weeks })
+              : t("week", { week: first.week_number })}
           </span>
         </div>
         <div className="flex items-center justify-between gap-3">

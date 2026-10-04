@@ -37,6 +37,7 @@
       "labelPending": "My account"
     },
     "track": {
+      "weekOf": "Week {week} of {total}",
       "title": "My track",
       "all": "All my tracks",
       "week": "Week {week}",
@@ -2151,6 +2152,16 @@
     "note": "An excuse is not a recitation that did not happen: the card says «تمّ بفضل الله», and it is never written about a day that was not."
   },
   "card": {
+    "imageHeading": "Completion card",
+    "imageDay": "Wird of {day}",
+    "copyText": "Copy as text",
+    "save": "Save image",
+    "fallback": "Your device can not share images from here. Save the image and send it from your gallery.",
+    "imageAlt": "Wird completion card for {day}",
+    "week": "Week {week} of {total}",
+    "weekOnly": "Week {week}",
+    "teacher": "{gender, select, male{Teacher} other{Teacher}} {name}",
+    "reportedAt": "{date} · {time}",
     "title": "Completion card",
     "heading": "{day}'s portion — completion card",
     "place": "{track} · week {week}",

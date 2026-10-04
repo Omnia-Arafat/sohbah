@@ -49,13 +49,15 @@ export function TracksClient({ academySlug }: { academySlug: string }) {
                 <div className="flex min-w-0 flex-col gap-0.5">
                   <span className="truncate font-display text-xl font-bold">{first.track_name}</span>
                   <span className="truncate text-xs text-muted-foreground">
-                    {[first.cohort_name, first.partner_name && `${tDay("partner")}: ${first.partner_name}`]
+                    {[first.cohort_name, first.teacher_name, first.partner_name && `${tDay("partner")}: ${first.partner_name}`]
                       .filter(Boolean)
                       .join(" · ")}
                   </span>
                 </div>
                 <span className="shrink-0 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand-700 dark:bg-brand-900 dark:text-brand-200">
-                  {tTrack("week", { week: first.week_number })}
+                  {first.duration_weeks
+                    ? tTrack("weekOf", { week: first.week_number, total: first.duration_weeks })
+                    : tTrack("week", { week: first.week_number })}
                 </span>
               </div>
               <div

@@ -37,6 +37,7 @@
       "labelPending": "حسابي"
     },
     "track": {
+      "weekOf": "الأسبوع {week} من {total}",
       "title": "مساري",
       "all": "كل مساراتي",
       "week": "الأسبوع {week}",
@@ -2151,6 +2152,16 @@
     "note": "العذر ليس تسجيلاً لسرد لم يقع: البطاقة تقول «تمّ بفضل الله»، ولا تُكتب عن يوم لم يكن."
   },
   "card": {
+    "imageHeading": "بطاقة تتميم",
+    "imageDay": "ورد يوم {day}",
+    "copyText": "نسخ كنص",
+    "save": "حفظ الصورة",
+    "fallback": "جهازك مش بيشارك صور من هنا. احفظي الصورة وابعتيها من المعرض.",
+    "imageAlt": "بطاقة تتميم ورد يوم {day}",
+    "week": "الأسبوع {week} من {total}",
+    "weekOnly": "الأسبوع {week}",
+    "teacher": "{gender, select, male{المعلم} other{المعلمة}} {name}",
+    "reportedAt": "{date} · {time}",
     "title": "بطاقة التتميم",
     "heading": "بطاقة تتميم ورد يوم {day}",
     "place": "{track} · الأسبوع {week}",

@@ -20,8 +20,10 @@ export type MyTrackDay = {
   recited_review: boolean;
   heard_recitation: boolean;
   prayed_with_memorised: boolean;
-  /** Absent until RUN_STEPS_TRACK_DAY_REPORTED_AT.sql has run. */
+  // The three below are absent until RUN_STEPS_TRACK_DAY_REPORTED_AT.sql has run.
   reported_at?: string | null;
+  teacher_name?: string | null;
+  duration_weeks?: number | null;
 };
 
 export type MyRecordData = {

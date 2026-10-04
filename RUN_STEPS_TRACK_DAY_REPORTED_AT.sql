@@ -19,7 +19,9 @@ returns table (
   recited_review boolean,
   heard_recitation      boolean,
   prayed_with_memorised boolean,
-  reported_at   timestamptz
+  reported_at   timestamptz,
+  teacher_name  text,
+  duration_weeks int
 )
 language plpgsql stable security definer set search_path = public
 as $$
@@ -45,10 +47,11 @@ begin
     with mine as (
       select e.id as enrollment_id, c.id as cohort_id, c.name_ar as cohort_name,
              t.name_ar as track_name, c.start_date, c.timezone,
-             t.duration_weeks
+             t.duration_weeks, tt.name as teacher_name
         from public.track_enrollments e
         join public.track_cohorts c on c.id = e.cohort_id
         join public.tracks t on t.id = c.track_id
+        left join public.teachers tt on tt.id = c.teacher_id
        where e.student_id = p_student_id
          and e.status in ('active', 'warned')
        limit 1
@@ -79,7 +82,9 @@ begin
            coalesce(r.recited_review, false),
            coalesce(r.heard_recitation, false),
            coalesce(r.prayed_with_memorised, false),
-           r.updated_at
+           r.updated_at,
+           s.teacher_name,
+           s.duration_weeks
       from span s
       cross join lateral generate_series(s.meeting_day, s.meeting_day + 6, interval '1 day') as d(day)
       left join public.track_day_reports r

@@ -2,10 +2,11 @@
 
 import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
-import { Check, Users } from "lucide-react";
+import { Check, ChevronRight, Users } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getMe, meKey, subscribeMe } from "@/lib/me-store";
 import { createClient } from "@/lib/supabase/client";
+import { invalidateMyRecord } from "@/lib/use-my-record";
 
 type Day = {
   session_date: string;
@@ -23,6 +24,8 @@ type Week = {
   track_name: string;
   week_number: number;
   partner_name: string | null;
+  teacher_name?: string | null;
+  duration_weeks?: number | null;
   days: Day[];
 };
 
@@ -49,6 +52,8 @@ export function TrackClient({
   locale: string;
 }) {
   const t = useTranslations("trackDay");
+  const tTrack = useTranslations("studentHome.track");
+  const tTracks = useTranslations("studentHome.tracksPage");
   const key = useMemo(() => meKey(academySlug), [academySlug]);
   const supabase = useMemo(() => createClient(), []);
 
@@ -102,6 +107,8 @@ export function TrackClient({
         track_name: head.track_name,
         week_number: head.week_number,
         partner_name: head.partner_name,
+        teacher_name: head.teacher_name,
+        duration_weeks: head.duration_weeks,
         days: rows.map((r) => ({
           session_date: r.session_date,
           is_today: r.is_today,
@@ -188,6 +195,9 @@ export function TrackClient({
       setState("error");
       return;
     }
+    // The home screen, the bar and the card read a shared copy of her record;
+    // drop it so they show what she just saved.
+    invalidateMyRecord();
     setWeek((prev) =>
       prev
         ? {
@@ -203,12 +213,83 @@ export function TrackClient({
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="font-display text-2xl font-bold">{t("title")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t("subtitle", { track: week.track_name, week: week.week_number })}
+      <Link
+        href={`/${academySlug}/tracks`}
+        prefetch={false}
+        className="-mb-2 inline-flex min-h-11 items-center gap-1 self-start text-sm font-bold text-brand-700 dark:text-brand-300"
+      >
+        <ChevronRight aria-hidden="true" className="h-4 w-4 ltr:rotate-180" />
+        {tTracks("title")}
+      </Link>
+
+      {/*
+        The track, the week and the days in one block: which track this is,
+        whose دفعة, and where in it she is, before the four answers.
+      */}
+      <section className="flex flex-col gap-3.5 rounded-2xl bg-brand-900 p-4 text-white">
+        <div>
+          <h1 className="font-display text-2xl font-bold">{week.track_name}</h1>
+          <p className="mt-0.5 text-sm text-brand-100">
+            {[week.cohort_name, week.teacher_name].filter(Boolean).join(" · ")}
+          </p>
+        </div>
+        <p className="rounded-xl bg-white/10 px-3 py-2 text-center text-sm font-bold">
+          {week.duration_weeks
+            ? tTrack("weekOf", { week: week.week_number, total: week.duration_weeks })
+            : tTrack("week", { week: week.week_number })}
         </p>
-      </div>
+
+        {/*
+          The week as a strip, starting at the لقاء — which is where the week
+          starts in the data too. Every day in it is open until the next لقاء,
+          so there is nothing here to explain: what can be tapped, can be tapped.
+        */}
+        <ul className="flex gap-1.5">
+          {week.days.map((d) => {
+            const done = d.recited_new && d.recited_review;
+            const some =
+              d.recited_new ||
+              d.recited_review ||
+              d.heard_recitation ||
+              d.prayed_with_memorised;
+            const isPicked = d.session_date === picked;
+            return (
+              <li key={d.session_date} className="min-w-0 flex-1">
+                <button
+                  type="button"
+                  onClick={() => pick(d)}
+                  aria-current={isPicked}
+                  className={`flex min-h-14 w-full flex-col items-center justify-center gap-1.5 rounded-xl border text-[10px] font-semibold transition-colors ${
+                    isPicked
+                      ? "border-white bg-white text-brand-900"
+                      : "border-white/20 bg-white/5 text-brand-50 hover:border-white/60"
+                  }`}
+                >
+                  <span className="max-w-full truncate px-0.5">
+                    {d.is_meeting
+                      ? t("meeting")
+                      : dayNames.format(new Date(`${d.session_date}T00:00:00Z`))}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className={`h-2 w-2 rounded-full ${
+                      done
+                        ? isPicked
+                          ? "bg-brand-600"
+                          : "bg-brand-300"
+                        : some
+                          ? "border-2 border-accent-400"
+                          : isPicked
+                            ? "bg-brand-100"
+                            : "bg-white/20"
+                    }`}
+                  />
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
 
       {/*
         Her رفيقة, and the way to set one. Without a name here the card goes
@@ -255,61 +336,13 @@ export function TrackClient({
       </Link>
 
       {/*
-        The week as a strip, starting at the لقاء — which is where the week
-        starts in the data too. Every day in it is open until the next لقاء,
-        so there is nothing here to explain: what can be tapped, can be tapped.
-      */}
-      <ul className="flex gap-1.5 rounded-2xl border border-border-subtle bg-surface p-2">
-        {week.days.map((d) => {
-          const done = d.recited_new && d.recited_review;
-          const some =
-            d.recited_new ||
-            d.recited_review ||
-            d.heard_recitation ||
-            d.prayed_with_memorised;
-          const isPicked = d.session_date === picked;
-          return (
-            <li key={d.session_date} className="flex-grow">
-              <button
-                type="button"
-                onClick={() => pick(d)}
-                aria-current={isPicked}
-                className={`flex min-h-14 w-full flex-col items-center justify-center gap-1.5 rounded-xl border text-[10px] font-semibold transition-colors ${
-                  isPicked
-                    ? "border-brand-600 bg-brand-600 text-white"
-                    : "border-border-subtle bg-surface hover:border-brand-600"
-                }`}
-              >
-                <span className="truncate px-0.5">
-                  {d.is_meeting
-                    ? t("meeting")
-                    : dayNames.format(new Date(`${d.session_date}T00:00:00Z`))}
-                </span>
-                <span
-                  aria-hidden="true"
-                  className={`h-2 w-2 rounded-full ${
-                    done
-                      ? isPicked
-                        ? "bg-white"
-                        : "bg-brand-600"
-                      : some
-                        ? "border-2 border-accent-500"
-                        : isPicked
-                          ? "bg-white/40"
-                          : "bg-surface-muted"
-                  }`}
-                />
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-
-      {/*
         The four answers. Whole rows, because a thumb aims at a row and not at
         a small square beside it — and the two that are not required say so on
         themselves, before they are touched rather than after.
       */}
+      <h2 className="-mb-1 font-display text-xl font-bold">
+        {day.is_today ? t("title") : dayNames.format(new Date(`${day.session_date}T00:00:00Z`))}
+      </h2>
       <ul className="flex flex-col gap-2">
         {ITEMS.map(({ key: k, core: isCore }) => {
           const on = Boolean(draft[k]);
