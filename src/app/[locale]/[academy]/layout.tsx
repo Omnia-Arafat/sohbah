@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { LogIn, LogOut } from "lucide-react";
+import { cookies } from "next/headers";
+import { LogOut } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 import { BottomNav } from "@/components/bottom-nav";
@@ -9,6 +10,8 @@ import { PublicNavDesktop } from "@/components/public-nav-desktop";
 import { BrandMark } from "@/components/brand-mark";
 import { LanguageToggle } from "@/components/language-toggle";
 import { SideNav } from "@/components/side-nav";
+import { StudentHeaderAccount } from "@/components/student-header-account";
+import { STUDENT_COOKIE } from "@/lib/student-cookie";
 import { Link } from "@/i18n/navigation";
 import { signOut } from "@/app/[locale]/[academy]/login/actions";
 import { getAcademyBySlug } from "@/lib/academy-dal";
@@ -66,6 +69,7 @@ export default async function AcademyLayout({
   // simply gets `null` here.
   const session = await getTeacherSession();
   const teacher = isActiveTeacher(session) ? session.teacher : null;
+  const studentSignedIn = Boolean((await cookies()).get(STUDENT_COOKIE)?.value);
 
   const academyTagline =
     locale === "ar"
@@ -174,19 +178,13 @@ export default async function AcademyLayout({
                   everyone: lucide draws it pointing right, which in Arabic
                   reads as leaving. Mirrored in RTL, labelled at every width,
                   and pointing at the sign-in page, where staff, students and
-                  the admin link all are.
+                  the admin link all are. A signed-in student gets «خروج» here
+                  instead — see StudentHeaderAccount.
                 */
-                <Link
-                  href={`/${academySlug}/login`}
-                  prefetch={false}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-brand-600
-                             bg-brand-50 px-3 py-1.5 text-sm font-bold text-brand-700
-                             transition-colors hover:bg-brand-100
-                             dark:bg-brand-900 dark:text-brand-200 whitespace-nowrap"
-                >
-                  <LogIn className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" />
-                  {tNav("signIn")}
-                </Link>
+                <StudentHeaderAccount
+                  academySlug={academySlug}
+                  signedIn={studentSignedIn}
+                />
               )}
               <LanguageToggle />
             </div>
