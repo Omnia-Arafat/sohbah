@@ -44,7 +44,7 @@ export const COUNTRIES: readonly Country[] = [
   { iso: "EG", dial: "20", nameAr: "مصر", nameEn: "Egypt", mobile: /^1[0125]\d{8}$/, example: "10 1234 5678" },
   { iso: "SA", dial: "966", nameAr: "السعودية", nameEn: "Saudi Arabia", mobile: /^5\d{8}$/, example: "50 123 4567" },
   { iso: "YE", dial: "967", nameAr: "اليمن", nameEn: "Yemen", mobile: /^7[01378]\d{7}$/, example: "73 123 4567" },
-  { iso: "SD", dial: "249", nameAr: "السودان", nameEn: "Sudan", mobile: /^9\d{8}$/, example: "91 234 5678" },
+  { iso: "SD", dial: "249", nameAr: "السودان", nameEn: "Sudan", mobile: /^(9\d|1[12])\d{7}$/, example: "91 234 5678" },
   { iso: "MA", dial: "212", nameAr: "المغرب", nameEn: "Morocco", mobile: /^[67]\d{8}$/, example: "66 123 4567" },
   { iso: "AE", dial: "971", nameAr: "الإمارات", nameEn: "UAE", mobile: /^5[024568]\d{7}$/, example: "50 123 4567" },
   { iso: "KW", dial: "965", nameAr: "الكويت", nameEn: "Kuwait", mobile: /^[569]\d{7}$/, example: "500 12345" },
