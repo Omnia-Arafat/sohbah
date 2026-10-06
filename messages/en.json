@@ -2093,6 +2093,8 @@
     "noTrack": "You are not on a track right now",
     "noTrackNote": "The track is optional; the rest of the students are in circles. Ask your teacher to join.",
     "failed": "Could not save. Please try again.",
+    "dayClosed": "This day is closed and cannot be recorded now. Pick a day of your week up to today.",
+    "signInAgain": "Sign in with your name again from",
     "saving": "Saving…",
     "saveAndSend": "Save and send the card",
     "saveWhatIsDone": "Save what is done",

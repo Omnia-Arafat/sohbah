@@ -38,6 +38,11 @@ const ITEMS = [
   { key: "prayed_with_memorised", core: false },
 ] as const;
 
+/** Her stored identity no longer opens her record; see use-my-record.ts. */
+function isIdentityError(message: string | undefined) {
+  return message === "student_not_found" || message === "phone_mismatch";
+}
+
 /**
  * ورد اليوم — the student's own four answers about one day.
  *
@@ -70,8 +75,16 @@ export function TrackClient({
   const [picked, setPicked] = useState<string | null>(null);
   const [draft, setDraft] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
-  const [state, setState] = useState<"idle" | "loading" | "saved" | "none" | "error">(
-    "idle",
+  const [state, setState] = useState<
+    "idle" | "loading" | "saved" | "none" | "error" | "signIn"
+  >("idle");
+  /*
+    A failed SAVE is said under the button, not in place of the page: it used
+    to set `state` to "error", which threw away the week, the strip and her
+    ticks and left one red line — she could not even see which day it was.
+  */
+  const [saveError, setSaveError] = useState<"dayClosed" | "signIn" | "failed" | null>(
+    null,
   );
 
   /*
@@ -103,7 +116,9 @@ export function TrackClient({
       const rows = all.filter((r) => r.enrollment_id === wanted);
       setTrackCount(count);
       if (error) {
-        setState("error");
+        // A row merged away or a changed number: retrying cannot fix that,
+        // signing in again can.
+        setState(isIdentityError(error.message) ? "signIn" : "error");
         return;
       }
       if (rows.length === 0) {
@@ -167,6 +182,17 @@ export function TrackClient({
     );
   }
 
+  if (state === "signIn") {
+    return (
+      <p className="card text-sm text-absent">
+        {t("signInAgain")}{" "}
+        <Link href={`/${academySlug}`} className="font-semibold underline">
+          {t("myPage")}
+        </Link>
+      </p>
+    );
+  }
+
   if (state === "error" || !week || !picked) {
     return <p className="card text-sm text-absent">{t("failed")}</p>;
   }
@@ -174,6 +200,9 @@ export function TrackClient({
   const day = week.days.find((d) => d.session_date === picked)!;
   const query = trackQuery(week.enrollment_id, trackCount);
   const core = draft.recited_new && draft.recited_review;
+  // The strip runs from the لقاء to the day before the next one, so it holds
+  // days that have not come yet; the database refuses those (day_closed).
+  const today = week.days.find((d) => d.is_today)?.session_date;
   const dayNames = new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-GB", {
     weekday: "long",
   });
@@ -187,11 +216,13 @@ export function TrackClient({
       prayed_with_memorised: d.prayed_with_memorised,
     });
     setState("idle");
+    setSaveError(null);
   }
 
   async function save() {
     if (!me || !picked) return;
     setSaving(true);
+    setSaveError(null);
     const { error } = await supabase.rpc("report_track_day" as never, {
       p_student_id: me.studentId,
       p_phone: me.phone,
@@ -205,7 +236,13 @@ export function TrackClient({
     } as never);
     setSaving(false);
     if (error) {
-      setState("error");
+      setSaveError(
+        error.message === "day_closed"
+          ? "dayClosed"
+          : isIdentityError(error.message)
+            ? "signIn"
+            : "failed",
+      );
       return;
     }
     // The home screen, the bar and the card read a shared copy of her record;
@@ -266,16 +303,20 @@ export function TrackClient({
               d.heard_recitation ||
               d.prayed_with_memorised;
             const isPicked = d.session_date === picked;
+            const notYet = today !== undefined && d.session_date > today;
             return (
               <li key={d.session_date} className="min-w-0 flex-1">
                 <button
                   type="button"
                   onClick={() => pick(d)}
+                  disabled={notYet}
                   aria-current={isPicked}
                   className={`flex min-h-14 w-full flex-col items-center justify-center gap-1.5 rounded-xl border text-[10px] font-semibold transition-colors ${
                     isPicked
                       ? "border-white bg-white text-brand-900"
-                      : "border-white/20 bg-white/5 text-brand-50 hover:border-white/60"
+                      : notYet
+                        ? "border-white/10 bg-transparent text-brand-50/40"
+                        : "border-white/20 bg-white/5 text-brand-50 hover:border-white/60"
                   }`}
                 >
                   <span className="max-w-full truncate px-0.5">
@@ -424,6 +465,21 @@ export function TrackClient({
       >
         {saving ? t("saving") : core ? t("saveAndSend") : t("saveWhatIsDone")}
       </button>
+
+      {saveError && (
+        <p role="alert" className="-mt-2 text-sm text-absent">
+          {saveError === "signIn" ? (
+            <>
+              {t("signInAgain")}{" "}
+              <Link href={`/${academySlug}`} className="font-semibold underline">
+                {t("myPage")}
+              </Link>
+            </>
+          ) : (
+            t(saveError)
+          )}
+        </p>
+      )}
 
       <Link
         href={`/${academySlug}/me/track/excuse${query}`}
