@@ -48,6 +48,17 @@ export type MyRecordData = {
  */
 const inflight = new Map<string, Promise<MyRecordData | "stale">>();
 
+/*
+  The shared copy is never kept forever. On a phone the app stays open for
+  days; a student added to a second مسار kept seeing one, because nothing
+  asked again until she happened to reload. Coming back to the app clears it.
+*/
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") invalidateMyRecord();
+  });
+}
+
 function load(me: Me): Promise<MyRecordData | "stale"> {
   const cacheKey = `${me.studentId}:${me.phone}`;
   const cached = inflight.get(cacheKey);
@@ -96,7 +107,11 @@ function load(me: Me): Promise<MyRecordData | "stale"> {
 /** Forget the shared copy, e.g. after she saves today's ورد. */
 export function invalidateMyRecord() {
   inflight.clear();
+  refreshListeners.forEach((listener) => listener());
 }
+
+/** Mounted readers, told to load again when the shared copy is dropped. */
+const refreshListeners = new Set<() => void>();
 
 export function useMe(academySlug: string) {
   const key = useMemo(() => meKey(academySlug), [academySlug]);
@@ -111,7 +126,16 @@ export function useMe(academySlug: string) {
 export function useMyRecord(academySlug: string) {
   const { key, me } = useMe(academySlug);
   const [result, setResult] = useState<{ for: string; data: MyRecordData } | null>(null);
+  const [generation, setGeneration] = useState(0);
   const forKey = me ? `${me.studentId}:${me.phone}` : null;
+
+  useEffect(() => {
+    const listener = () => setGeneration((n) => n + 1);
+    refreshListeners.add(listener);
+    return () => {
+      refreshListeners.delete(listener);
+    };
+  }, []);
 
   useEffect(() => {
     if (!me) return;
@@ -130,7 +154,7 @@ export function useMyRecord(academySlug: string) {
     return () => {
       cancelled = true;
     };
-  }, [me, key]);
+  }, [me, key, generation]);
 
   const data = result && result.for === forKey ? result.data : null;
   const progress = useMemo(() => (data ? buildProgress(data.entries) : null), [data]);
