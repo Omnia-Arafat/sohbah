@@ -6,10 +6,12 @@ import { Link } from "@/i18n/navigation";
 import { BackLink, ChevronForward } from "@/components/back-link";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
-import { canSupervise } from "@/lib/auth/roles";
+import { canSupervise, isAdminRole } from "@/lib/auth/roles";
+import { loadCohortSupervisors } from "@/lib/cohort-supervisors";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { getCohort, listAddableStudents } from "@/lib/cohort-dal";
 import { AddStudents } from "./add-students";
+import { CohortSupervisorsCard } from "./cohort-supervisors";
 import { removeStudent } from "./actions";
 import { ConfirmButton } from "@/components/confirm-button";
 
@@ -63,9 +65,10 @@ export default async function CohortPage({ params }: PageProps) {
     );
   }
 
-  const [cohort, candidates] = await Promise.all([
+  const [cohort, candidates, supervisors] = await Promise.all([
     getCohort(academy.id, cohortId),
     listAddableStudents(academy.id, id),
+    loadCohortSupervisors(academy.id, cohortId, isAdminRole(session.teacher)),
   ]);
 
   if (cohort === "missing-schema" || !cohort) notFound();
@@ -156,6 +159,15 @@ export default async function CohortPage({ params }: PageProps) {
           </span>
           <ChevronForward className="h-4 w-4" />
         </Link>
+      )}
+
+      {supervisors && (
+        <CohortSupervisorsCard
+          academySlug={academySlug}
+          trackId={id}
+          cohortId={cohort.id}
+          supervisors={supervisors}
+        />
       )}
 
       {/*

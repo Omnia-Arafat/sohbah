@@ -136,7 +136,7 @@ function realFatherName(value: string | null | undefined): string {
 }
 
 /** Close enough to the database's normalize_ar to compare two spellings of a name. */
-function normalizeName(value: string) {
+export function normalizeName(value: string) {
   return value
     .trim()
     .replace(/[ً-ْـ]/g, "")

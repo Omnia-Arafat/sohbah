@@ -2325,5 +2325,43 @@
     "kindTeacher": "Teacher",
     "kindSupervisor": "Supervisor",
     "tieNote": "Ranked by count; at a tie, whoever reached it first."
+  },
+  "cohortSupervisors": {
+    "title": "Cohort supervisors",
+    "hint": "A cohort can have more than one supervisor. Picking a teacher or student who isn't a supervisor gives her the supervisor role first.",
+    "none": "This cohort has no supervisor yet.",
+    "placeholder": "Search by name",
+    "noMatches": "No one by that name.",
+    "assign": "Assign supervisor",
+    "assigning": "Assigning...",
+    "assigned": "{name} is now a supervisor of this cohort.",
+    "remove": "Remove {name} from this cohort's supervisors",
+    "confirmRemove": "Remove {name} from this cohort's supervisors? Her role and account stay as they are.",
+    "kind": {
+      "staff": "teacher",
+      "student": "student"
+    },
+    "willGrant": {
+      "staff": "{name} will get the academy-wide supervisor role, then be assigned to this cohort.",
+      "student": "A staff account with the academy-wide supervisor role will be created for {name} (her phone number and a temporary password), then she'll be assigned to this cohort. Her student record stays as it is."
+    },
+    "accountCreated": "{name}'s account was created and she's now a supervisor of this cohort. Send her these sign-in details:",
+    "signInPhone": "Phone number",
+    "signInPassword": "Password",
+    "passwordOnce": "The password is shown only once. Copy it now and send it to her; she can change it later.",
+    "errors": {
+      "notAuthorized": "Only a supervisor or an admin can assign supervisors.",
+      "needsAdmin": "Only an admin can give the supervisor role. Pick an existing supervisor, or ask an admin.",
+      "notFound": "Couldn't find her. Refresh the page and try again.",
+      "pickFirst": "Pick someone from the list first.",
+      "notConfigured": "Account creation isn't enabled on the server.",
+      "otherSide": "This student isn't on the same side as the cohort.",
+      "noPhone": "This student has no valid phone number, and that's what she signs in with. Fix her number first.",
+      "phoneBelongsToStaff": "This student's number belongs to another staff member ({name}). If they're the same person, assign {name} directly.",
+      "staffInactive": "{name}'s staff account is suspended. Activate it first from the teachers page.",
+      "nameTaken": "There's already a staff member with that name ({name}). If it's her, assign her directly.",
+      "accountFailed": "Couldn't create her sign-in. Nothing was saved; please try again.",
+      "saveFailed": "Couldn't save. Please try again."
+    }
   }
 }
