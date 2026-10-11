@@ -70,7 +70,9 @@ export function TrackClient({
   );
 
   const [week, setWeek] = useState<Week | null>(null);
-  const requested = useSearchParams().get("e");
+  const searchParams = useSearchParams();
+  const requested = searchParams.get("e");
+  const requestedDay = searchParams.get("d");
   const [trackCount, setTrackCount] = useState(1);
   const [picked, setPicked] = useState<string | null>(null);
   const [draft, setDraft] = useState<Record<string, boolean>>({});
@@ -144,7 +146,9 @@ export function TrackClient({
           prayed_with_memorised: r.prayed_with_memorised,
         })),
       });
-      const today = rows.find((r) => r.is_today) ?? rows[0];
+      // The day named by ?d= (back from its card), else today.
+      const today =
+        rows.find((r) => r.session_date === requestedDay) ?? rows.find((r) => r.is_today) ?? rows[0];
       setPicked(today.session_date);
       setDraft({
         recited_new: today.recited_new,
@@ -448,7 +452,7 @@ export function TrackClient({
               the confirmation rather than somewhere she has to go looking. */}
           {core && (
             <Link
-              href={`/${academySlug}/me/track/card${query}`}
+              href={`/${academySlug}/me/track/card${trackQuery(week.enrollment_id, trackCount, picked)}`}
               className="mt-2 inline-block text-sm font-bold text-brand-700 underline dark:text-brand-300"
             >
               {t("openCard")}

@@ -183,6 +183,12 @@ export function tracksOf(days: MyTrackDay[]): MyTrackDay[][] {
  * RUN_STEPS_MULTIPLE_TRACKS.sql has run, so a single-track student never
  * sends it.
  */
-export function trackQuery(enrollmentId: string, trackCount: number) {
-  return trackCount > 1 ? `?e=${enrollmentId}` : "";
+export function trackQuery(enrollmentId: string, trackCount: number, day?: string) {
+  const params = new URLSearchParams();
+  if (trackCount > 1) params.set("e", enrollmentId);
+  // `?d=`: the day she is on, so the card shows the day she saved — any day of
+  // her week, not only today — and "تعديل" brings her back to it.
+  if (day) params.set("d", day);
+  const query = params.toString();
+  return query ? `?${query}` : "";
 }

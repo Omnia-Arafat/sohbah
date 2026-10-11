@@ -42,11 +42,17 @@ export function CardClient({
   const { me, data } = useMyRecord(academySlug);
 
   // The track named by ?e=, or her first.
-  const requested = useSearchParams().get("e");
+  const searchParams = useSearchParams();
+  const requested = searchParams.get("e");
+  const requestedDay = searchParams.get("d");
   const tracks = tracksOf(data?.trackDays ?? []);
   const days = tracks.find((group) => group[0].enrollment_id === requested) ?? tracks[0] ?? [];
-  const day: MyTrackDay | null = days.find((row) => row.is_today) ?? null;
-  const query = day ? trackQuery(day.enrollment_id, tracks.length) : "";
+  // The day named by ?d= — she may have saved any day of her week — or today.
+  const day: MyTrackDay | null =
+    days.find((row) => row.session_date === requestedDay) ??
+    days.find((row) => row.is_today) ??
+    null;
+  const query = day ? trackQuery(day.enrollment_id, tracks.length, day.session_date) : "";
 
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState<string | null>(null);
