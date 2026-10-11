@@ -551,6 +551,23 @@
       "cancel": "Cancel",
       "saveError": "Could not save the log. Please try again.",
       "summary": "{range} · {count} ayat"
+    },
+    "add": {
+      "title": "Add a student to the queue",
+      "hint": "For a student who couldn't join from the link or arrived after registration closed. She gets the last number; move her with the arrows.",
+      "placeholder": "Search by the student's name",
+      "noMatches": "No student by that name, or she's already in the queue.",
+      "submit": "Add to queue",
+      "adding": "Adding...",
+      "pickFirst": "Pick the student from the list first.",
+      "added": "{name} was added to the queue as number {position}.",
+      "already": "{name} is already in the queue as number {position}.",
+      "errors": {
+        "not_today": "This circle doesn't meet today, so there is no queue to add her to.",
+        "forbidden": "Only the circle's teacher or a supervisor can add to the queue.",
+        "gender_mismatch": "This student doesn't belong to this circle.",
+        "generic": "Couldn't add her. Please try again."
+      }
     }
   },
   "admin": {

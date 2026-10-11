@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Pencil } from "lucide-react";
-import { canEditAnyCircle } from "@/lib/auth/roles";
+import { canEditAnyCircle, canSupervise } from "@/lib/auth/roles";
+import { fullStudentName } from "@/lib/student-name";
 import { Link } from "@/i18n/navigation";
 import { CopyLinkButton } from "@/components/copy-link-button";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
@@ -147,6 +148,26 @@ export default async function TeacherSessionPage({ params }: SessionPageProps) {
         })
       : { data: [] };
 
+  // The same people staff_add_to_queue() lets in: her own circle, or any
+  // circle when she supervises. Only this circle's side is offered.
+  const canManageQueue =
+    circle.teacher_id === session.teacher.id || canSupervise(session.teacher);
+  const { data: studentRows, error: studentsError } = canManageQueue
+    ? await supabase
+        .from("students")
+        .select("id, name, father_name")
+        .eq("academy_id", circle.academy_id)
+        .eq("gender_category", circle.gender_category)
+        .order("name")
+    : { data: null, error: null };
+  if (studentsError) console.error("students load failed", studentsError);
+  const addableStudents = canManageQueue
+    ? (studentRows ?? []).map((student) => ({
+        id: student.id,
+        label: fullStudentName(student.name, student.father_name),
+      }))
+    : null;
+
   return (
     <div className="flex flex-col gap-6">
       <section>
@@ -254,6 +275,7 @@ export default async function TeacherSessionPage({ params }: SessionPageProps) {
             circleGenderCategory={circle.gender_category}
             recordsRecitation={recordsRecitation}
             initialLogs={logRows ?? []}
+            addableStudents={addableStudents}
           />
         ) : (
           <p className="card text-muted-foreground">{t("errors.generic")}</p>

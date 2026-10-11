@@ -13,6 +13,7 @@ import { ayahCount, formatRange, nextAyah, type AyahRef } from "@/lib/quran/refe
 import { createClient } from "@/lib/supabase/client";
 import { useLiveQueue } from "@/lib/use-live-queue";
 import { useReorderAnimation } from "@/lib/use-reorder-animation";
+import { AddToQueue } from "./add-to-queue";
 import { RecitationLogSheet } from "./recitation-log-sheet";
 import { realFatherName } from "@/lib/student-name";
 
@@ -33,6 +34,11 @@ type SessionClientProps = {
   recordsRecitation: boolean;
   /** Today's logs, keyed by queue row on the server. */
   initialLogs: CircleRecitationLog[];
+  /**
+   * Students the viewer may give a turn to. Null when she may not manage this
+   * queue — not her circle, and she is not a supervisor.
+   */
+  addableStudents: { id: string; label: string }[] | null;
 };
 
 const RECITATION_OPTIONS: RecitationStatus[] = ["waiting", "reciting", "done"];
@@ -47,6 +53,7 @@ export function SessionClient({
   circleGenderCategory,
   recordsRecitation,
   initialLogs,
+  addableStudents,
 }: SessionClientProps) {
   const t = useTranslations("session");
   const tLog = useTranslations("session.log");
@@ -316,6 +323,16 @@ export function SessionClient({
           tone="text-present"
         />
       </section>
+
+      {addableStudents && (
+        <AddToQueue
+          supabase={supabase}
+          circleId={circleId}
+          students={addableStudents}
+          queuedStudentIds={new Set(queue.map((row) => row.student_id))}
+          onAdded={refreshQueue}
+        />
+      )}
 
       {error && (
         <p className="text-sm text-absent" role="alert">
