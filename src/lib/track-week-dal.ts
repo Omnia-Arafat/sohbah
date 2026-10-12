@@ -161,7 +161,7 @@ export async function cohortsOnWeek(
 
   const { data, error } = await supabase
     .from("track_cohorts" as never)
-    .select("id, name_ar, start_date, status, teachers(name)")
+    .select("id, name_ar, start_date, status, teachers!track_cohorts_teacher_id_fkey(name)")
     .eq("track_id" as never, trackId as never)
     .eq("status" as never, "running" as never);
 

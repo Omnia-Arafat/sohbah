@@ -88,7 +88,7 @@ export async function getTrackDetail(
         "track_weeks(id, week_number, title_ar, is_published, cohort_id, " +
         "track_week_days(new_from_surah, review_text_ar)), " +
         "track_cohorts(id, name_ar, status, start_date, max_students, " +
-        "teachers(name), track_enrollments(status))",
+        "teachers!track_cohorts_teacher_id_fkey(name), track_enrollments(status))",
     )
     .eq("academy_id" as never, academyId as never)
     .eq("id" as never, trackId as never)

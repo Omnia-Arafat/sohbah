@@ -68,7 +68,7 @@ export async function getCohort(
     .from("track_cohorts" as never)
     .select(
       "id, name_ar, status, start_date, max_students, track_id, " +
-        "teachers(name), tracks!inner(name_ar, duration_weeks, academy_id), " +
+        "teachers!track_cohorts_teacher_id_fkey(name), tracks!inner(name_ar, duration_weeks, academy_id), " +
         "track_enrollments(id, student_id, status, requested_at, joined_at, " +
         "students(name, father_name))",
     )

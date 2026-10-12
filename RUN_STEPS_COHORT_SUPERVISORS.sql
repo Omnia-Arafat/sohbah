@@ -18,7 +18,7 @@ create or replace function public.is_cohort_supervisor_candidate(p_cohort_id uui
 returns boolean
 language sql stable security definer set search_path = public
 as $$
-  select exists (
+  select exists ( 
     select 1
       from public.track_cohorts c
       join public.teachers t on t.academy_id = c.academy_id
