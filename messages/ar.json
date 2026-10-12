@@ -676,7 +676,11 @@
       "teacherSearch": "اكتب اسمًا للبحث…",
       "teacherNoMatches": "لا توجد معلمة بهذا الاسم.",
       "searchPlaceholder": "بحث باسم المعلم أو المعلمة…",
-      "searchEmpty": "مفيش حلقة بالاسم ده."
+      "searchEmpty": "مفيش حلقة بالاسم ده.",
+      "filterByType": "تصفية حسب النوع",
+      "allTypes": "الكل",
+      "studentCount": "{count, plural, zero{لا طالبات} one{طالبة واحدة} two{طالبتان} few{# طالبات} other{# طالبة}}",
+      "noCohortStudents": "لا طالبات مسجّلات في هذه الدفعة."
     },
     "students": {
       "title": "إدارة الطلاب",

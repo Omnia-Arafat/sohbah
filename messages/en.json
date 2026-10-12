@@ -678,7 +678,11 @@
       "teacherSearch": "Type a name to search…",
       "teacherNoMatches": "No teacher matches that name.",
       "searchPlaceholder": "Search by teacher name…",
-      "searchEmpty": "No circle matches that name."
+      "searchEmpty": "No circle matches that name.",
+      "filterByType": "Filter by type",
+      "allTypes": "All",
+      "studentCount": "{count, plural, one{# student} other{# students}}",
+      "noCohortStudents": "No students enrolled in this cohort."
     },
     "students": {
       "title": "Manage students",
