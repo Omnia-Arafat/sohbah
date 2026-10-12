@@ -6,6 +6,7 @@ import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { canSupervise } from "@/lib/auth/roles";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { createClient } from "@/lib/supabase/server";
+import { trackCircleForTeacher } from "@/lib/track-cohort-circle";
 
 export type EditCohortState = { error: string | null };
 
@@ -55,6 +56,13 @@ export async function updateCohort(
 
   const supabase = await createClient();
 
+  // Her circle when one can be found; with no teacher there is no لقاء. A
+  // teacher with no single «مسارات» circle leaves whatever link was there.
+  const circleId = teacherId === ""
+    ? null
+    : await trackCircleForTeacher(supabase, academy.id, teacherId);
+  const circleLink = teacherId === "" || circleId ? { circle_id: circleId } : {};
+
   // Scoped by academy as well as id: an id from another academy is not this
   // admin's to edit, and the policy would refuse it anyway.
   const { error } = await supabase
@@ -62,6 +70,7 @@ export async function updateCohort(
     .update({
       name_ar: name,
       teacher_id: teacherId === "" ? null : teacherId,
+      ...circleLink,
       start_date: startDate,
       max_students: maxStudents,
       status,

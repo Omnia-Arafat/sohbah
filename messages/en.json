@@ -1292,6 +1292,11 @@
       "downloadButton": "Download PDF",
       "totalsLabel": "Totals",
       "studentColumn": "Student"
+    },
+    "tabs": {
+      "label": "Reports",
+      "attendance": "Attendance",
+      "tracks": "Tracks"
     }
   },
   "setup": {
@@ -2188,7 +2193,11 @@
       "recited_review": "Recited the review portion",
       "heard_recitation": "Heard the portion from a skilled reciter",
       "prayed_with_memorised": "Prayed with what is memorised"
-    }
+    },
+    "editHint": "You can record the portion on the student's behalf: tap any box to tick or untick it; it saves straight away. A card you record shows your name.",
+    "recordedBy": "Recorded by {name}",
+    "you": "you",
+    "saveFailed": "The change was not saved — please try again."
   },
   "excuse": {
     "title": "I had an excuse",
@@ -2367,5 +2376,44 @@
       "accountFailed": "Couldn't create her sign-in. Nothing was saved; please try again.",
       "saveFailed": "Couldn't save. Please try again."
     }
+  },
+  "trackReport": {
+    "title": "Tracks report",
+    "subtitle": "How each student kept her daily portion in her cohort, over any period.",
+    "filters": {
+      "track": "Track",
+      "cohort": "Cohort",
+      "cohortHint": "Leave empty for every cohort — or pick one or more."
+    },
+    "totals": {
+      "done": "portion days completed of {due}",
+      "missed": "days missed",
+      "pending": "excuses awaiting a decision"
+    },
+    "rule": "Portion days are the five days after the weekly meeting (the meeting day and Friday do not count), counted from 3 October 2026 when the portion cards started. A day counts as missed only once its week closes at the next meeting, with no new or review recitation.",
+    "cohorts": {
+      "title": "Cohorts",
+      "students": "{count, plural, one{# student} other{# students}}"
+    },
+    "columns": {
+      "commitment": "Commitment",
+      "done": "Portion",
+      "missed": "Missed",
+      "excused": "Excused",
+      "meetings": "Meetings"
+    },
+    "results": {
+      "title": "{count, plural, one{# student} other{# students}}",
+      "empty": "No students in these cohorts during this period.",
+      "legend": "Commitment = completed portion days ÷ required days, after accepted excuses. «Meetings» = sessions she joined in her cohort's circle ÷ sessions the circle held in the period, counted from the cohort's start."
+    },
+    "pendingExcuses": "{count, plural, one{# pending excuse} other{# pending excuses}}",
+    "status": {
+      "warned": "Warned",
+      "completed": "Completed",
+      "removed": "Removed",
+      "withdrawn": "Withdrew"
+    },
+    "loadError": "Part of the tracks data failed to load — numbers may be incomplete."
   }
 }

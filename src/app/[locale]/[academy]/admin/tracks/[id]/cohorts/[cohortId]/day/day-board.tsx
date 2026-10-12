@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, PenLine } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { DateField } from "@/components/date-field";
 
@@ -15,7 +15,11 @@ type Row = {
   recited_review: boolean;
   heard_recitation: boolean;
   prayed_with_memorised: boolean;
+  recorded_by_name?: string | null;
+  can_edit?: boolean;
 };
+
+type CardKey = (typeof COLUMNS)[number]["key"];
 
 /** The card's own order, and which two the academy counts. */
 const COLUMNS = [
@@ -63,17 +67,59 @@ export function DayBoard({
   const [date, setDate] = useState(initialDate);
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loadedFor, setLoadedFor] = useState<string | null>(null);
+  const [saving, setSaving] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState(false);
 
   if (loadedFor !== date) {
     setLoadedFor(date);
+    setSaveError(false);
     void (async () => {
-      const { data } = await supabase.rpc("cohort_day_reports" as never, {
-        p_cohort_id: cohortId,
-        p_date: date,
-      } as never);
+      const args = { p_cohort_id: cohortId, p_date: date } as never;
+      const board = await supabase.rpc("cohort_day_board" as never, args);
+      if (!board.error) {
+        setRows((board.data ?? []) as unknown as Row[]);
+        return;
+      }
+      // Until RUN_STEPS_STAFF_REPORT_TRACK_DAY.sql is applied: read-only board.
+      const { data } = await supabase.rpc("cohort_day_reports" as never, args);
       setRows((data ?? []) as unknown as Row[]);
     })();
   }
+
+  async function toggle(row: Row, key: CardKey) {
+    if (!row.can_edit || saving) return;
+    const next = { ...row, [key]: !row[key] };
+    const any =
+      next.recited_new || next.recited_review || next.heard_recitation || next.prayed_with_memorised;
+    const forDate = date;
+    setSaving(row.enrollment_id);
+    setSaveError(false);
+    setRows((current) =>
+      (current ?? []).map((r) =>
+        r.enrollment_id === row.enrollment_id
+          ? { ...next, reported: any, recorded_by_name: any ? t("you") : null }
+          : r,
+      ),
+    );
+    const { error } = await supabase.rpc("staff_report_track_day" as never, {
+      p_enrollment_id: row.enrollment_id,
+      p_session_date: forDate,
+      p_recited_new: next.recited_new,
+      p_recited_review: next.recited_review,
+      p_heard: next.heard_recitation,
+      p_prayed: next.prayed_with_memorised,
+    } as never);
+    setSaving(null);
+    if (error) {
+      console.error("staff_report_track_day failed", error);
+      setSaveError(true);
+      setRows((current) =>
+        (current ?? []).map((r) => (r.enrollment_id === row.enrollment_id ? row : r)),
+      );
+    }
+  }
+
+  const editable = (rows ?? []).some((r) => r.can_edit);
 
   // Only the two required ones count as "behind". An optional item left blank
   // is not a shortfall and must never be presented as one.
@@ -159,6 +205,18 @@ export function DayBoard({
         )}
       </div>
 
+      {editable && (
+        <p className="rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3 text-xs leading-relaxed text-brand-800 dark:border-brand-800 dark:bg-brand-900/40 dark:text-brand-100">
+          {t("editHint")}
+        </p>
+      )}
+
+      {saveError && (
+        <p role="alert" className="rounded-2xl border border-absent px-4 py-3 text-xs font-bold text-absent">
+          {t("saveFailed")}
+        </p>
+      )}
+
       {rows !== null && rows.length > 0 && (
         <p className="rounded-2xl border border-border-subtle bg-surface px-4 py-3 text-sm font-bold">
           {t("summary", { reported, total: rows.length, done })}
@@ -214,6 +272,12 @@ export function DayBoard({
                       ? row.partner_name ?? t("noPartner")
                       : t("notReported")}
                   </span>
+                  {row.reported && row.recorded_by_name && (
+                    <span className="mt-0.5 flex items-center gap-1 truncate text-[10px] font-bold text-accent-700 dark:text-accent-200">
+                      <PenLine className="h-3 w-3 shrink-0" aria-hidden="true" />
+                      {t("recordedBy", { name: row.recorded_by_name })}
+                    </span>
+                  )}
                 </span>
 
                 {COLUMNS.map(({ key, core }) => {
@@ -229,11 +293,22 @@ export function DayBoard({
                     : core
                       ? "border-2 border-accent-500 text-accent-700 dark:text-accent-200"
                       : "bg-surface-muted text-muted-foreground";
+                  const Cell = row.can_edit ? "button" : "span";
                   return (
-                    <span
+                    <Cell
                       key={key}
+                      {...(row.can_edit
+                        ? {
+                            type: "button" as const,
+                            onClick: () => void toggle(row, key),
+                            disabled: saving !== null,
+                            "aria-pressed": on,
+                          }
+                        : {})}
                       title={t(`items.${key}`)}
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${cls}`}
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${cls} ${
+                        row.can_edit ? "cursor-pointer transition active:scale-95 disabled:opacity-60" : ""
+                      }`}
                     >
                       {on ? (
                         <Check className="h-4 w-4" strokeWidth={3} aria-hidden="true" />
@@ -247,7 +322,7 @@ export function DayBoard({
                           item: t(`items.${key}`),
                         })}
                       </span>
-                    </span>
+                    </Cell>
                   );
                 })}
               </li>

@@ -22,7 +22,7 @@ type CirclesAdminPageProps = {
 type CohortRoster = {
   id: string;
   name_ar: string;
-  teacher_id: string | null;
+  circle_id: string | null;
   tracks: { name_ar: string } | null;
   track_enrollments: { status: string; students: { name: string } | null }[] | null;
 };
@@ -121,25 +121,24 @@ export default async function CirclesAdminPage({
     ? circles.filter((circle) => circle.type === selectedType)
     : circles;
 
-  // A track circle is its teacher's weekly meeting: track_cohorts.circle_id is
-  // never filled in, so the cohorts it serves are the ones she teaches. One
+  // A track circle is the weekly لقاء of the cohorts linked to it — one
   // teacher can hold two cohorts on the same circle.
   const { data: cohortsRaw, error: cohortsError } = await supabase
     .from("track_cohorts" as never)
     .select(
-      "id, name_ar, teacher_id, tracks(name_ar), track_enrollments(status, students(name))",
+      "id, name_ar, circle_id, tracks(name_ar), track_enrollments(status, students(name))",
     )
     .eq("academy_id" as never, academy.id as never)
     .in("status" as never, ["registering", "running"] as never);
   if (cohortsError) console.error("Failed to fetch cohorts:", cohortsError);
   const cohorts = (cohortsRaw ?? []) as unknown as CohortRoster[];
 
-  const cohortsByTeacher = new Map<string, CohortRoster[]>();
+  const cohortsByCircle = new Map<string, CohortRoster[]>();
   for (const cohort of cohorts) {
-    if (!cohort.teacher_id) continue;
-    const list = cohortsByTeacher.get(cohort.teacher_id) ?? [];
+    if (!cohort.circle_id) continue;
+    const list = cohortsByCircle.get(cohort.circle_id) ?? [];
     list.push(cohort);
-    cohortsByTeacher.set(cohort.teacher_id, list);
+    cohortsByCircle.set(cohort.circle_id, list);
   }
 
   return (
@@ -203,8 +202,7 @@ export default async function CirclesAdminPage({
       ) : (
         <div id="circles-list" className="scroll-list grid gap-4">
           {shownCircles.map((circle) => {
-            const circleCohorts =
-              circle.type === "tracks" ? cohortsByTeacher.get(circle.teacher_id) ?? [] : [];
+            const circleCohorts = cohortsByCircle.get(circle.id) ?? [];
             return (
             <div
               key={circle.id}

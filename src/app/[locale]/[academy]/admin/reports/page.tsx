@@ -3,9 +3,8 @@ import { Star } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BrandSelect } from "@/components/brand-select";
 import { BackLink } from "@/components/back-link";
-import { DateField } from "@/components/date-field";
-import { MonthYearPicker } from "@/components/month-year-picker";
 import { MultiSelectDropdown } from "@/components/multi-select";
+import { ReportRangeFields, ReportTabs } from "@/components/report-range-fields";
 import { Link } from "@/i18n/navigation";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { getTeacherDisplayLabel } from "@/lib/academy-display";
@@ -17,7 +16,7 @@ import type {
   Teacher,
 } from "@/lib/database.types";
 import { loadCircleTypes } from "@/lib/circle-types";
-import { REPORT_MODES, resolveRange } from "@/lib/report-range";
+import { resolveRange } from "@/lib/report-range";
 import { createClient } from "@/lib/supabase/server";
 import { staffSideFilter } from "@/lib/viewer";
 
@@ -162,7 +161,10 @@ export default async function ReportsPage({
     <div className="flex flex-col gap-6">
       <section>
         <BackLink href={`/${academySlug}/admin`}>{t("back")}</BackLink>
-        <h1 className="font-display mt-2 text-2xl font-bold sm:text-3xl">
+        <div className="mt-3">
+          <ReportTabs academySlug={academySlug} active="attendance" />
+        </div>
+        <h1 className="font-display mt-3 text-2xl font-bold sm:text-3xl">
           {t("title")}
         </h1>
         <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
@@ -173,101 +175,7 @@ export default async function ReportsPage({
         be bookmarked or shared and needs no client-side JavaScript.
       */}
       <form className="range-form card flex flex-col gap-4">
-        <div>
-          <label className="field-label" htmlFor="mode">
-            {t("filters.mode")}
-          </label>
-          <BrandSelect
-            id="mode"
-            name="mode"
-            className="report-mode"
-            defaultValue={range.mode}
-            options={REPORT_MODES.map((mode) => ({
-              value: mode,
-              label: t(`filters.modes.${mode}`),
-            }))}
-          />
-        </div>
-
-        {/* Exactly one of these four shows at a time, driven purely by which
-            option in #mode is selected — see `.range-form` in globals.css.
-            A single-field mode (month, year) spans the full row instead of
-            leaving the other grid cell empty beside it. */}
-        <div className="grid gap-4 sm:grid-cols-2">
-          {/* A separate field name from the month-mode picker below, even
-              though both mean "month" — two inputs sharing one `name` would
-              both submit, since CSS `display: none` hides an input without
-              removing it from the form. */}
-          <div className="mode-week-only">
-            <label className="field-label" htmlFor="weekMonth">
-              {t("filters.month")}
-            </label>
-            <MonthYearPicker
-              id="weekMonth"
-              name="weekMonth"
-              defaultValue={range.month}
-              locale={locale}
-            />
-          </div>
-
-          <div className="mode-week-only">
-            <label className="field-label" htmlFor="week">
-              {t("filters.week")}
-            </label>
-            <BrandSelect
-              id="week"
-              name="week"
-              defaultValue={String(range.week)}
-              options={[1, 2, 3, 4].map((week) => ({
-                value: String(week),
-                label: t(`filters.weekOptions.${week}`),
-              }))}
-            />
-          </div>
-
-          <div className="mode-month-only sm:col-span-2">
-            <label className="field-label" htmlFor="month">
-              {t("filters.month")}
-            </label>
-            <MonthYearPicker
-              id="month"
-              name="month"
-              defaultValue={range.month}
-              locale={locale}
-            />
-          </div>
-
-          <div className="mode-year-only sm:col-span-2">
-            <label className="field-label" htmlFor="year">
-              {t("filters.year")}
-            </label>
-            <input
-              id="year"
-              name="year"
-              type="number"
-              inputMode="numeric"
-              min="2020"
-              max="2100"
-              dir="ltr"
-              className="input text-start"
-              defaultValue={range.year}
-            />
-          </div>
-
-          <div className="mode-custom-only">
-            <label className="field-label" htmlFor="from">
-              {t("filters.from")}
-            </label>
-            <DateField id="from" name="from" defaultValue={range.from} />
-          </div>
-
-          <div className="mode-custom-only">
-            <label className="field-label" htmlFor="to">
-              {t("filters.to")}
-            </label>
-            <DateField id="to" name="to" defaultValue={range.to} />
-          </div>
-        </div>
+        <ReportRangeFields range={range} locale={locale} />
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>

@@ -6,6 +6,7 @@ import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { canSupervise } from "@/lib/auth/roles";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { createClient } from "@/lib/supabase/server";
+import { trackCircleForTeacher } from "@/lib/track-cohort-circle";
 
 export type CohortFormState = { error: string | null };
 
@@ -48,6 +49,9 @@ export async function createCohort(
   }
 
   const supabase = await createClient();
+  const circleId = teacherId === ""
+    ? null
+    : await trackCircleForTeacher(supabase, academy.id, teacherId);
 
   // `Database` predates these tables; see src/lib/tracks-dal.ts.
   const { error } = await supabase.from("track_cohorts" as never).insert({
@@ -55,6 +59,7 @@ export async function createCohort(
     academy_id: academy.id,
     name_ar: name,
     teacher_id: teacherId === "" ? null : teacherId,
+    circle_id: circleId,
     start_date: startDate,
     max_students: maxStudents,
     status,
