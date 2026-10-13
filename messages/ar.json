@@ -2488,10 +2488,11 @@
       "noCardsFor": "لا بطاقات، {count} يوم غياب",
       "missedDays": "{count} يوم غياب",
       "shining": "متألقات الدفعة",
-      "noFullWeeks": "لا أسابيع بالدرجة الكاملة بعد.",
+      "noFullWeeks": "لا درجات محسوبة بعد.",
       "fullIn": "٤٠ / ٤٠ في الأسبوع {weeks}",
       "teacherSignature": "توقيع المعلمة",
-      "supervisorSignature": "توقيع المشرفة"
+      "supervisorSignature": "توقيع المشرفة",
+      "scoreLine": "{points} من {max}"
     }
   }
 }

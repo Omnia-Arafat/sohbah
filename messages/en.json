@@ -2488,10 +2488,11 @@
       "noCardsFor": "no cards, {count} days missed",
       "missedDays": "{count} days missed",
       "shining": "Full-marks students",
-      "noFullWeeks": "No full weeks yet.",
+      "noFullWeeks": "No scores counted yet.",
       "fullIn": "40 / 40 in week {weeks}",
       "teacherSignature": "Teacher's signature",
-      "supervisorSignature": "Supervisor's signature"
+      "supervisorSignature": "Supervisor's signature",
+      "scoreLine": "{points} of {max}"
     }
   }
 }

@@ -18,6 +18,23 @@ export const dynamic = "force-dynamic";
 /** The most recent weeks a cohort page has room for, side by side on A4. */
 const WEEK_COLUMNS = 6;
 
+const C = {
+  ink: "#14231C",
+  muted: "#3F5248",
+  rule: "#D5DFD8",
+  green900: "#12382C",
+  green700: "#1E6E51",
+  green50: "#EDF7F2",
+  green100: "#D3ECE0",
+  gold: "#C4913A",
+  goldSoft: "#F1D9A0",
+  goldBg: "#FBF4E4",
+  goldInk: "#5C4316",
+  maroon: "#7A2433",
+  maroonBg: "#FBEDEB",
+  stripe: "#F6F9F7",
+};
+
 export async function generateMetadata({
   params,
 }: Pick<PrintPageProps, "params">): Promise<Metadata> {
@@ -64,14 +81,15 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
 
   const rowById = new Map(report.rows.map((r) => [r.enrollmentId, r]));
   const totalPages = 1 + view.cohorts.length;
+  const pct = (avg: number | null) => (avg === null ? 0 : Math.round((avg / 40) * 100));
 
   return (
-    <div className="track-print mx-auto flex max-w-[794px] flex-col text-[#14231C] print:max-w-none">
+    <div className="track-print mx-auto flex max-w-[794px] flex-col print:max-w-none" style={{ color: C.ink }}>
       <style>{`
+        .track-print, .track-print * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         @media print {
-          @page { size: A4; margin: 12mm 12mm 14mm; }
-          .track-print { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          .track-sheet { box-shadow: none !important; border: 0 !important; margin: 0 !important; min-height: auto !important; }
+          @page { size: A4; margin: 10mm; }
+          .track-sheet { box-shadow: none !important; border: 0 !important; border-radius: 0 !important; margin: 0 !important; min-height: 277mm !important; }
         }
       `}</style>
 
@@ -80,88 +98,116 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
       </div>
 
       <Sheet pageLabel={tp("page", { page: num.format(1), total: num.format(totalPages) })} footer={academyName}>
-        <div className="flex items-start justify-between gap-6">
-          <div>
-            <p className="text-xs font-bold text-brand-600">{academyName}</p>
-            <h1 className="font-display mt-1 text-[34px] font-bold leading-tight">{t("title")}</h1>
-            <p className="mt-1 text-sm text-[#3F5248]">
-              {rangeLabel} · {trackName ?? t("filters.allTracks")} ·{" "}
-              {tp("cohortCount", { count: view.cohorts.length })}
-            </p>
+        <Band>
+          <div className="flex items-start justify-between gap-6">
+            <div className="min-w-0">
+              <p className="text-xs font-bold" style={{ color: C.goldSoft }}>
+                {academyName}
+              </p>
+              <h1 className="font-display mt-1 text-[36px] font-bold leading-tight text-white">{t("title")}</h1>
+              <p className="mt-1 text-sm" style={{ color: C.green100 }}>
+                {rangeLabel} · {trackName ?? t("filters.allTracks")} ·{" "}
+                {tp("cohortCount", { count: view.cohorts.length })}
+              </p>
+            </div>
+            {academy.logo_path ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={academy.logo_path} alt="" className="h-16 w-16 shrink-0 rounded-full bg-white object-contain p-1" />
+            ) : null}
           </div>
-          {academy.logo_path ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={academy.logo_path} alt="" className="h-16 w-16 shrink-0 object-contain" />
-          ) : null}
-        </div>
+        </Band>
 
-        <div className="mt-6 grid grid-cols-4 gap-2.5">
-          <Box label={t("kpis.average")} tone="brand">
-            {view.average === null ? "—" : num.format(view.average)}{" "}
-            <small className="text-sm font-semibold text-[#3F5248]">/ {num.format(40)}</small>
-          </Box>
-          <Box label={t("kpis.done")}>
-            {num.format(view.done)}{" "}
-            <small className="text-sm font-semibold text-[#3F5248]">{t("kpis.of", { due: num.format(view.due) })}</small>
-          </Box>
-          <Box label={t("kpis.missed")} tone="absent">
-            {num.format(view.missed)}
-          </Box>
-          <Box label={tp("noCards")} tone="absent">
-            {num.format(view.noCards)}
-          </Box>
-        </div>
+        <div className="px-8 pt-6">
+          <div className="grid grid-cols-4 gap-2.5">
+            <Kpi label={t("kpis.average")} bg={C.green50} fg={C.green700}>
+              {view.average === null ? "—" : num.format(view.average)}
+              <small className="ms-1 text-sm font-semibold" style={{ color: C.muted }}>
+                / {num.format(40)}
+              </small>
+              <Bar value={pct(view.average)} />
+            </Kpi>
+            <Kpi label={t("kpis.done")} bg={C.green50} fg={C.green900}>
+              {num.format(view.done)}
+              <small className="ms-1 text-sm font-semibold" style={{ color: C.muted }}>
+                {t("kpis.of", { due: num.format(view.due) })}
+              </small>
+            </Kpi>
+            <Kpi label={t("kpis.missed")} bg={C.maroonBg} fg={C.maroon}>
+              {num.format(view.missed)}
+            </Kpi>
+            <Kpi label={tp("noCards")} bg={C.goldBg} fg={C.goldInk}>
+              {num.format(view.noCards)}
+            </Kpi>
+          </div>
 
-        <h2 className="font-display mt-6 mb-2 text-xl font-bold">{tp("cohorts")}</h2>
-        {view.cohorts.length === 0 ? (
-          <p className="text-sm text-[#3F5248]">{t("results.empty")}</p>
-        ) : (
-          <table className="w-full border-collapse text-[13px]">
-            <thead>
-              <tr className="border-b-[1.5px] border-[#12382C]">
-                <th className="px-1 py-1.5 text-start font-bold">{tp("cohort")}</th>
-                <th className="px-1 py-1.5 text-start font-bold">{tp("teacher")}</th>
-                <th className="w-14 px-1 py-1.5 text-center font-bold">{tp("students")}</th>
-                <th className="w-44 px-1 py-1.5 text-start font-bold">{tp("averageOf40")}</th>
-                <th className="w-12 px-1 py-1.5 text-center font-bold">{t("columns.missed")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {view.cohorts.map((c) => (
-                <tr key={c.id} className="border-b border-[#D5DFD8]">
-                  <td className="px-1 py-1.5 font-semibold">
-                    {c.trackName} · {c.name}
-                  </td>
-                  <td className="px-1 py-1.5 text-[#3F5248]">{c.teacherName ?? "—"}</td>
-                  <td className="px-1 py-1.5 text-center tabular-nums">{num.format(c.students)}</td>
-                  <td className="px-1 py-1.5">
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-[#E3ECE6]">
-                        <div
-                          className="h-full bg-brand-600"
-                          style={{ width: `${c.average === null ? 0 : Math.round((c.average / 40) * 100)}%` }}
-                        />
-                      </div>
-                      <span className="w-9 text-end font-extrabold tabular-nums">
-                        {c.average === null ? "—" : num.format(c.average)}
-                      </span>
-                    </div>
-                  </td>
-                  <td
-                    className="px-1 py-1.5 text-center font-bold tabular-nums"
-                    style={{ color: c.missed >= 10 ? "#7A2433" : undefined }}
-                  >
-                    {num.format(c.missed)}
-                  </td>
+          <h2 className="font-display mt-6 mb-2 text-xl font-bold" style={{ color: C.green900 }}>
+            {tp("cohorts")}
+          </h2>
+          {view.cohorts.length === 0 ? (
+            <p className="text-sm" style={{ color: C.muted }}>
+              {t("results.empty")}
+            </p>
+          ) : (
+            <table className="w-full border-collapse overflow-hidden rounded-lg text-[12.5px]">
+              <thead>
+                <tr style={{ background: C.green900, color: "#FFFFFF" }}>
+                  <th className="px-2 py-2 text-start font-bold">{tp("cohort")}</th>
+                  <th className="px-2 py-2 text-start font-bold">{tp("teacher")}</th>
+                  <th className="w-14 px-1 py-2 text-center font-bold">{tp("students")}</th>
+                  <th className="w-44 px-2 py-2 text-start font-bold">{tp("averageOf40")}</th>
+                  <th className="w-14 px-1 py-2 text-center font-bold">{t("columns.missed")}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              </thead>
+              <tbody>
+                {view.cohorts.map((c, i) => {
+                  const tone = c.average === null ? null : scoreTone(c.average, 40);
+                  return (
+                    <tr
+                      key={c.id}
+                      style={{ background: i % 2 ? C.stripe : "#FFFFFF", borderBottom: `1px solid ${C.rule}` }}
+                    >
+                      <td className="px-2 py-1.5 font-semibold">
+                        {c.trackName} · {c.name}
+                      </td>
+                      <td className="px-2 py-1.5" style={{ color: C.muted }}>
+                        {c.teacherName ?? "—"}
+                      </td>
+                      <td className="px-1 py-1.5 text-center tabular-nums">{num.format(c.students)}</td>
+                      <td className="px-2 py-1.5">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2.5 flex-1 overflow-hidden rounded-full" style={{ background: C.green100 }}>
+                            <div
+                              className="h-full rounded-full"
+                              style={{ width: `${pct(c.average)}%`, background: tone ? tone.bg : C.green700 }}
+                            />
+                          </div>
+                          <span
+                            className="min-w-11 rounded-md px-1.5 py-0.5 text-center font-extrabold tabular-nums"
+                            style={tone ? { background: tone.bg, color: tone.fg } : undefined}
+                          >
+                            {c.average === null ? "—" : num.format(c.average)}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-1 py-1.5 text-center">
+                        <Pill danger={c.missed >= 10}>{num.format(c.missed)}</Pill>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
 
-        <p className="mt-auto border-t border-[#C9D6CD] pt-3 text-xs leading-relaxed text-[#3F5248]">
-          {tp("rules")} {tp("generatedOn", { date: generatedOn })}
-        </p>
+          <Legend t={t} />
+
+          <div
+            className="mt-5 rounded-lg px-4 py-3 text-xs leading-relaxed"
+            style={{ background: C.goldBg, color: C.goldInk, border: `1px solid #EAD7A8` }}
+          >
+            {tp("rules")} {tp("generatedOn", { date: generatedOn })}
+          </div>
+        </div>
       </Sheet>
 
       {view.cohorts.map((c, ci) => {
@@ -171,10 +217,22 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
         const followUp = details
           .filter((r) => r.missed >= 3 || (r.due > 0 && r.done === 0) || r.pendingExcuses > 0)
           .slice(0, 6);
-        const shining = details
-          .map((r) => ({ name: r.studentName, weeks: r.weeks.filter(isFullWeek).map((w) => w.week) }))
-          .filter((r) => r.weeks.length > 0)
-          .slice(0, 6);
+        // The cohort's top three by score, ties included, whether or not
+        // anyone reached a full 40 yet.
+        const ranked = details
+          .filter((r) => r.maxPoints > 0 && r.points > 0)
+          .map((r) => ({
+            id: r.enrollmentId,
+            name: r.studentName,
+            points: r.points,
+            maxPoints: r.maxPoints,
+            ratio: r.points / r.maxPoints,
+            fullWeeks: r.weeks.filter(isFullWeek).map((w) => w.week),
+          }))
+          .sort((a, b) => b.ratio - a.ratio || b.points - a.points);
+        const cutoff = ranked[Math.min(2, ranked.length - 1)]?.ratio ?? 1;
+        const shining = ranked.filter((r) => r.ratio >= cutoff).slice(0, 6);
+        const avgTone = c.average === null ? null : scoreTone(c.average, 40);
 
         return (
           <Sheet
@@ -183,129 +241,170 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
             pageLabel={tp("page", { page: num.format(ci + 2), total: num.format(totalPages) })}
             footer={`${academyName} · ${t("title")}`}
           >
-            <div className="flex items-start justify-between gap-6">
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-brand-600">
-                  {t("title")} · {rangeLabel}
-                </p>
-                <h1 className="font-display mt-1 text-[30px] font-bold leading-tight">
-                  {c.trackName} · {c.name}
-                </h1>
-                <p className="mt-1 text-[13px] text-[#3F5248]">
-                  {c.teacherName ? `${tp("teacherIs", { name: c.teacherName })} · ` : ""}
-                  {t("focus.students", { count: c.students })}
-                </p>
-              </div>
-              <div className="shrink-0 rounded-xl border-[1.5px] border-brand-600 px-4 py-2 text-center">
-                <div className="text-2xl font-extrabold text-brand-600 tabular-nums">
-                  {c.average === null ? "—" : num.format(c.average)}
+            <Band>
+              <div className="flex items-center justify-between gap-6">
+                <div className="min-w-0">
+                  <p className="text-xs font-bold" style={{ color: C.goldSoft }}>
+                    {t("title")} · {rangeLabel}
+                  </p>
+                  <h1 className="font-display mt-1 text-[30px] font-bold leading-tight text-white">
+                    {c.trackName} · {c.name}
+                  </h1>
+                  <p className="mt-1 text-[13px]" style={{ color: C.green100 }}>
+                    {c.teacherName ? `${tp("teacherIs", { name: c.teacherName })} · ` : ""}
+                    {t("focus.students", { count: c.students })}
+                  </p>
                 </div>
-                <div className="text-[11px] font-semibold text-[#3F5248]">{tp("cohortAverage")}</div>
+                <div
+                  className="shrink-0 rounded-xl px-4 py-2 text-center"
+                  style={{ background: avgTone?.bg === C.green900 ? C.goldSoft : (avgTone?.bg ?? "#FFFFFF") }}
+                >
+                  <div
+                    className="text-[26px] font-extrabold leading-tight tabular-nums"
+                    style={{ color: avgTone?.bg === C.green900 ? C.green900 : (avgTone?.fg ?? C.green900) }}
+                  >
+                    {c.average === null ? "—" : num.format(c.average)}
+                  </div>
+                  <div className="text-[11px] font-semibold" style={{ color: C.green900 }}>
+                    {tp("cohortAverage")}
+                  </div>
+                </div>
               </div>
-            </div>
+            </Band>
 
-            <table className="mt-5 w-full border-collapse text-[12px]">
-              <thead>
-                <tr className="border-b-[1.5px] border-[#12382C] align-bottom">
-                  <th className="px-1 py-1.5 text-start font-bold">{t("focus.student")}</th>
-                  {weeks.map((w) => (
-                    <th key={w.week} className="px-1 py-1.5 text-center font-bold">
-                      {t("focus.week", { week: num.format(w.week) })}
-                      <div className="text-[10px] font-normal text-[#3F5248]">
-                        {w.open ? t("focus.running") : `${fmt(w.from, shortDate)} – ${fmt(w.to, shortDate)}`}
-                      </div>
+            <div className="px-8 pt-5">
+              <table className="w-full border-collapse text-[12px]">
+                <thead>
+                  <tr className="align-bottom" style={{ background: C.green900, color: "#FFFFFF" }}>
+                    <th className="px-2 py-2 text-start font-bold">{t("focus.student")}</th>
+                    {weeks.map((w) => (
+                      <th key={w.week} className="px-1 py-2 text-center font-bold">
+                        {t("focus.week", { week: num.format(w.week) })}
+                        <div className="text-[10px] font-normal" style={{ color: C.green100 }}>
+                          {w.open ? t("focus.running") : `${fmt(w.from, shortDate)} – ${fmt(w.to, shortDate)}`}
+                        </div>
+                      </th>
+                    ))}
+                    <th className="w-12 px-1 py-2 text-center font-bold" style={{ background: C.green700 }}>
+                      {t("rules.recitation")}
                     </th>
-                  ))}
-                  <th className="w-12 px-1 py-1.5 text-center font-bold">{t("rules.recitation")}</th>
-                  <th className="w-12 px-1 py-1.5 text-center font-bold">{t("rules.meeting")}</th>
-                  <th className="w-16 px-1 py-1.5 text-center font-bold">{t("focus.total")}</th>
-                  <th className="w-10 px-1 py-1.5 text-center font-bold">{t("columns.missed")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {c.rows.map((r) => (
-                  <tr key={r.enrollmentId} className="border-b border-[#D5DFD8]">
-                    <th className="px-1 py-2 text-start font-semibold">{r.name}</th>
-                    {r.cells.slice(offset).map((cell, i) => {
-                      if (!cell || cell.max === 0) {
+                    <th className="w-12 px-1 py-2 text-center font-bold" style={{ background: C.gold }}>
+                      {t("rules.meeting")}
+                    </th>
+                    <th className="w-16 px-1 py-2 text-center font-bold">{t("focus.total")}</th>
+                    <th className="w-12 px-1 py-2 text-center font-bold">{t("columns.missed")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {c.rows.map((r, ri) => (
+                    <tr
+                      key={r.enrollmentId}
+                      style={{ background: ri % 2 ? C.stripe : "#FFFFFF", borderBottom: `1px solid ${C.rule}` }}
+                    >
+                      <th className="px-2 py-1.5 text-start font-semibold">{r.name}</th>
+                      {r.cells.slice(offset).map((cell, i) => {
+                        if (!cell || cell.max === 0) {
+                          return (
+                            <td key={i} className="px-1 py-1.5 text-center" style={{ color: C.muted }}>
+                              —
+                            </td>
+                          );
+                        }
+                        const tone = scoreTone(cell.total, cell.max);
                         return (
-                          <td key={i} className="px-1 py-2 text-center text-[#3F5248]">
-                            —
+                          <td key={i} className="px-1 py-1 text-center">
+                            <span
+                              className="inline-block min-w-[54px] rounded-md px-1 py-1 font-bold tabular-nums"
+                              style={
+                                cell.open
+                                  ? { border: "1.5px dashed #8A9A91", color: C.muted }
+                                  : { background: tone.bg, color: tone.fg }
+                              }
+                            >
+                              {num.format(cell.total)}/{num.format(cell.max)}
+                            </span>
                           </td>
                         );
-                      }
-                      const tone = scoreTone(cell.total, cell.max);
-                      return (
-                        <td
-                          key={i}
-                          className="px-1 py-2 text-center font-bold tabular-nums"
-                          style={cell.open ? { color: "#3F5248" } : { background: tone.bg, color: tone.fg }}
-                        >
-                          {num.format(cell.total)}/{num.format(cell.max)}
-                        </td>
-                      );
-                    })}
-                    <td className="px-1 py-2 text-center tabular-nums">{num.format(r.recitation)}</td>
-                    <td className="px-1 py-2 text-center tabular-nums">{num.format(r.meeting)}</td>
-                    <td className="px-1 py-2 text-center font-extrabold tabular-nums">
-                      {r.maxPoints > 0 ? `${num.format(r.points)}/${num.format(r.maxPoints)}` : "—"}
-                    </td>
-                    <td
-                      className="px-1 py-2 text-center font-bold tabular-nums"
-                      style={{ color: r.missed >= 5 ? "#7A2433" : undefined }}
-                    >
-                      {num.format(r.missed)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {offset > 0 && (
-              <p className="mt-1.5 text-[11px] text-[#3F5248]">{tp("olderWeeks", { count: offset })}</p>
-            )}
+                      })}
+                      <td className="px-1 py-1.5 text-center font-semibold tabular-nums" style={{ background: C.green50, color: C.green700 }}>
+                        {num.format(r.recitation)}
+                      </td>
+                      <td className="px-1 py-1.5 text-center font-semibold tabular-nums" style={{ background: C.goldBg, color: C.goldInk }}>
+                        {num.format(r.meeting)}
+                      </td>
+                      <td className="px-1 py-1.5 text-center font-extrabold tabular-nums">
+                        {r.maxPoints > 0 ? `${num.format(r.points)}/${num.format(r.maxPoints)}` : "—"}
+                      </td>
+                      <td className="px-1 py-1.5 text-center">
+                        <Pill danger={r.missed >= 5}>{num.format(r.missed)}</Pill>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {offset > 0 && (
+                <p className="mt-1.5 text-[11px]" style={{ color: C.muted }}>
+                  {tp("olderWeeks", { count: offset })}
+                </p>
+              )}
 
-            <div className="mt-5 grid grid-cols-2 gap-3.5">
-              <div className="rounded-xl border border-[#C9D6CD] px-4 py-3">
-                <h2 className="font-display mb-1.5 text-lg font-bold">{tp("followUp")}</h2>
-                {followUp.length === 0 ? (
-                  <p className="text-[12.5px] text-[#3F5248]">{tp("nobody")}</p>
-                ) : (
-                  <ul className="text-[12.5px] leading-[1.8]">
-                    {followUp.map((r) => (
-                      <li key={r.enrollmentId}>
-                        <b>{r.studentName}</b> —{" "}
-                        {r.due > 0 && r.done === 0
-                          ? tp("noCardsFor", { count: r.missed })
-                          : tp("missedDays", { count: r.missed })}
-                        {r.pendingExcuses > 0 ? ` · ${t("pendingExcuses", { count: r.pendingExcuses })}` : ""}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-              <div className="rounded-xl border border-[#C9D6CD] px-4 py-3">
-                <h2 className="font-display mb-1.5 text-lg font-bold">{tp("shining")}</h2>
-                {shining.length === 0 ? (
-                  <p className="text-[12.5px] text-[#3F5248]">{tp("noFullWeeks")}</p>
-                ) : (
-                  <ul className="text-[12.5px] leading-[1.8]">
-                    {shining.map((s) => (
-                      <li key={s.name}>
-                        <b>{s.name}</b> — {tp("fullIn", { weeks: s.weeks.map((w) => num.format(w)).join("، ") })}
-                      </li>
-                    ))}
-                  </ul>
-                )}
+              <Legend t={t} />
+
+              <div className="mt-5 grid grid-cols-2 gap-3.5">
+                <div className="rounded-xl px-4 py-3" style={{ background: C.maroonBg, border: `1px solid #EBC3BD` }}>
+                  <h2 className="font-display mb-1.5 text-lg font-bold" style={{ color: C.maroon }}>
+                    {tp("followUp")}
+                  </h2>
+                  {followUp.length === 0 ? (
+                    <p className="text-[12.5px]" style={{ color: C.muted }}>
+                      {tp("nobody")}
+                    </p>
+                  ) : (
+                    <ul className="text-[12.5px] leading-[1.8]">
+                      {followUp.map((r) => (
+                        <li key={r.enrollmentId}>
+                          <b>{r.studentName}</b> —{" "}
+                          {r.due > 0 && r.done === 0
+                            ? tp("noCardsFor", { count: r.missed })
+                            : tp("missedDays", { count: r.missed })}
+                          {r.pendingExcuses > 0 ? ` · ${t("pendingExcuses", { count: r.pendingExcuses })}` : ""}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                <div className="rounded-xl px-4 py-3" style={{ background: C.goldBg, border: `1px solid #EAD7A8` }}>
+                  <h2 className="font-display mb-1.5 text-lg font-bold" style={{ color: C.goldInk }}>
+                    {tp("shining")}
+                  </h2>
+                  {shining.length === 0 ? (
+                    <p className="text-[12.5px]" style={{ color: C.muted }}>
+                      {tp("noFullWeeks")}
+                    </p>
+                  ) : (
+                    <ul className="text-[12.5px] leading-[1.8]">
+                      {shining.map((s) => (
+                        <li key={s.id}>
+                          <b>{s.name}</b> —{" "}
+                          {tp("scoreLine", { points: num.format(s.points), max: num.format(s.maxPoints) })}
+                          {s.fullWeeks.length > 0
+                            ? ` · ${tp("fullIn", { weeks: s.fullWeeks.map((w) => num.format(w)).join("، ") })}`
+                            : ""}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className="mt-auto grid grid-cols-2 gap-10 pt-8 text-xs text-[#3F5248]">
+            <div className="mt-auto grid grid-cols-2 gap-10 px-8 pt-8 text-xs" style={{ color: C.muted }}>
               <div>
-                <div className="h-8 border-b border-[#8A9A91]" />
+                <div className="h-8 border-b" style={{ borderColor: "#8A9A91" }} />
                 <div className="mt-1.5">{tp("teacherSignature")}</div>
               </div>
               <div>
-                <div className="h-8 border-b border-[#8A9A91]" />
+                <div className="h-8 border-b" style={{ borderColor: "#8A9A91" }} />
                 <div className="mt-1.5">{tp("supervisorSignature")}</div>
               </div>
             </div>
@@ -316,7 +415,7 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
   );
 }
 
-/** One A4 page: a band at the top, the content, and a footer line. */
+/** One A4 page: content, then a footer band. */
 function Sheet({
   children,
   breakBefore,
@@ -330,40 +429,91 @@ function Sheet({
 }) {
   return (
     <section
-      className="track-sheet mb-6 flex min-h-[1050px] flex-col overflow-hidden rounded-lg border border-border-subtle bg-white shadow-sm print:min-h-[265mm]"
+      className="track-sheet mb-6 flex min-h-[1090px] flex-col overflow-hidden rounded-xl border border-border-subtle bg-white shadow-sm"
       style={{ breakBefore: breakBefore ? "page" : undefined }}
     >
-      <div className="h-2.5 bg-[#12382C]" />
-      <div className="h-1 bg-[#C4913A]" />
-      <div className="flex flex-1 flex-col px-10 pt-8 pb-6 print:px-2">
-        {children}
-        <div className="mt-6 flex justify-between border-t border-[#C9D6CD] pt-2.5 text-[11px] text-[#3F5248]">
-          <span>{footer}</span>
-          <span>{pageLabel}</span>
-        </div>
+      <div className="flex flex-1 flex-col">{children}</div>
+      <div
+        className="mt-6 flex justify-between px-8 py-2.5 text-[11px] font-semibold"
+        style={{ background: C.green900, color: C.green100 }}
+      >
+        <span>{footer}</span>
+        <span>{pageLabel}</span>
       </div>
     </section>
   );
 }
 
-function Box({
+/** The dark green head of every page, with a gold rule under it. */
+function Band({ children }: { children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="px-8 py-6" style={{ background: C.green900 }}>
+        {children}
+      </div>
+      <div className="h-1.5" style={{ background: C.gold }} />
+    </div>
+  );
+}
+
+function Kpi({
   label,
-  tone,
+  bg,
+  fg,
   children,
 }: {
   label: string;
-  tone?: "brand" | "absent";
+  bg: string;
+  fg: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-[#C9D6CD] px-3.5 py-3">
-      <div className="text-xs font-semibold text-[#3F5248]">{label}</div>
-      <div
-        className="text-2xl font-extrabold leading-tight tabular-nums"
-        style={{ color: tone === "brand" ? "#1E6E51" : tone === "absent" ? "#7A2433" : undefined }}
-      >
+    <div className="rounded-xl px-3.5 py-3" style={{ background: bg }}>
+      <div className="text-xs font-semibold" style={{ color: C.muted }}>
+        {label}
+      </div>
+      <div className="mt-0.5 text-[26px] font-extrabold leading-tight tabular-nums" style={{ color: fg }}>
         {children}
       </div>
+    </div>
+  );
+}
+
+function Bar({ value }: { value: number }) {
+  return (
+    <div className="mt-2 h-2 overflow-hidden rounded-full" style={{ background: C.green100 }}>
+      <div className="h-full rounded-full" style={{ width: `${value}%`, background: C.green700 }} />
+    </div>
+  );
+}
+
+function Pill({ danger, children }: { danger: boolean; children: React.ReactNode }) {
+  return (
+    <span
+      className="inline-block min-w-8 rounded-full px-2 py-0.5 text-center font-bold tabular-nums"
+      style={danger ? { background: C.maroon, color: "#FFFFFF" } : { background: C.maroonBg, color: C.maroon }}
+    >
+      {children}
+    </span>
+  );
+}
+
+function Legend({ t }: { t: (key: string) => string }) {
+  const items: [string, string][] = [
+    ["#12382C", t("focus.legend.full")],
+    ["#2F7D5B", t("focus.legend.high")],
+    ["#A8D9C2", t("focus.legend.mid")],
+    ["#EFE4C2", t("focus.legend.low")],
+    ["#F4D9D6", t("focus.legend.poor")],
+  ];
+  return (
+    <div className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1 text-[11px]" style={{ color: C.muted }}>
+      {items.map(([color, text]) => (
+        <span key={text} className="inline-flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded-sm" style={{ background: color }} />
+          {text}
+        </span>
+      ))}
     </div>
   );
 }
