@@ -41,5 +41,5 @@ export async function loadTrackReportForQuery(academySlug: string, query: TrackR
     ? await loadTrackReport(supabase, academy.id, range, { trackId, cohortIds })
     : { cohorts: [], rows: [], error: false };
 
-  return { academy, range, tracks, trackId, cohortsForTrack, cohortIds, report };
+  return { academy, range, tracks, trackId, allCohorts, cohortsForTrack, cohortIds, report };
 }

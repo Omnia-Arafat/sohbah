@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { ChevronDown, Download } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BackLink } from "@/components/back-link";
-import { BrandSelect } from "@/components/brand-select";
-import { MultiSelectDropdown } from "@/components/multi-select";
 import { ReportRangeFields, ReportTabs } from "@/components/report-range-fields";
 import { Link } from "@/i18n/navigation";
 import { requireStaffSession } from "@/lib/auth/dal";
@@ -11,6 +9,7 @@ import type { DayStatus, TrackReportRow } from "@/lib/track-report";
 import { loadTrackReportForQuery, type TrackReportSearchParams } from "@/lib/track-report-query";
 import { buildTrackReportView, isFullWeek, weekTotal } from "@/lib/track-report-view";
 import { CohortFocus } from "./cohort-focus";
+import { TrackCohortFields } from "./track-cohort-fields";
 
 
 type TrackReportPageProps = {
@@ -47,7 +46,7 @@ export default async function TrackReportPage({ params, searchParams }: TrackRep
   await requireStaffSession(`/${academySlug}/admin/reports/tracks`);
 
   const query = await searchParams;
-  const { range, tracks, trackId, cohortsForTrack, cohortIds, report } =
+  const { range, tracks, trackId, allCohorts, cohortIds, report } =
     await loadTrackReportForQuery(academySlug, query);
   const view = buildTrackReportView(report);
 
@@ -119,40 +118,18 @@ export default async function TrackReportPage({ params, searchParams }: TrackRep
 
       <form className="range-form card flex flex-col gap-4">
         <ReportRangeFields range={range} locale={locale} />
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="field-label" htmlFor="track">
-              {t("filters.track")}
-            </label>
-            <BrandSelect
-              id="track"
-              name="track"
-              defaultValue={trackId ?? ""}
-              options={[
-                { value: "", label: t("filters.allTracks") },
-                ...tracks.map(([id, name]) => ({ value: id, label: name })),
-              ]}
-            />
-          </div>
-          <div>
-            <label className="field-label" htmlFor="cohort">
-              {t("filters.cohort")}
-            </label>
-            <MultiSelectDropdown
-              id="cohort"
-              name="cohort"
-              options={cohortsForTrack.map((c) => ({
-                value: c.id,
-                label: c.teacherName
-                  ? `${c.trackName} · ${c.name} (${c.teacherName})`
-                  : `${c.trackName} · ${c.name}`,
-              }))}
-              defaultValues={cohortIds}
-              allLabel={t("filters.allCohorts", { count: cohortsForTrack.length })}
-              doneLabel={tReports("filters.done")}
-            />
-          </div>
-        </div>
+        <TrackCohortFields
+          tracks={tracks.map(([id, name]) => ({ id, name }))}
+          cohorts={allCohorts.map((c) => ({
+            id: c.id,
+            trackId: c.trackId,
+            label: c.teacherName
+              ? `${c.trackName} · ${c.name} (${c.teacherName})`
+              : `${c.trackName} · ${c.name}`,
+          }))}
+          defaultTrackId={trackId ?? ""}
+          defaultCohortIds={cohortIds}
+        />
         <button type="submit" className="btn-primary w-full sm:w-auto sm:self-start">
           {tReports("filters.apply")}
         </button>
