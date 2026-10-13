@@ -188,25 +188,24 @@ export async function loadTrackReport(
   ];
 
   const [cards, absences, excuses, meetings, meetingScores, ruleSets] = await Promise.all([
-    supabase
-      .from("track_day_reports" as never)
-      .select("enrollment_id, session_date, recited_new, recited_review")
-      .in("enrollment_id" as never, enrollmentIds as never)
-      .gte("session_date" as never, range.from as never)
-      .lte("session_date" as never, range.to as never),
+    // Staff have no select on the cards or the excuse requests; these two
+    // functions are the door (20261013100000_track_report_reads.sql).
+    supabase.rpc("track_report_cards" as never, {
+      p_enrollment_ids: enrollmentIds,
+      p_from: range.from,
+      p_to: range.to,
+    } as never),
     supabase
       .from("track_absences" as never)
       .select("enrollment_id, absence_date")
       .in("enrollment_id" as never, enrollmentIds as never)
       .gte("absence_date" as never, range.from as never)
       .lte("absence_date" as never, range.to as never),
-    supabase
-      .from("track_excuse_requests" as never)
-      .select("enrollment_id, absence_date")
-      .in("enrollment_id" as never, enrollmentIds as never)
-      .eq("status" as never, "pending" as never)
-      .gte("absence_date" as never, range.from as never)
-      .lte("absence_date" as never, range.to as never),
+    supabase.rpc("track_report_pending_excuses" as never, {
+      p_enrollment_ids: enrollmentIds,
+      p_from: range.from,
+      p_to: range.to,
+    } as never),
     supabase
       .from("attendance_records")
       .select("student_id, circle_id, session_date")
