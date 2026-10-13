@@ -63,10 +63,19 @@ export type TrackReportRow = {
   points: number;
   maxPoints: number;
   weeks: TrackReportWeek[];
+  /** The five required days of her latest week in the period, in order. */
+  recentDays: DayStatus[];
 };
+
+export type DayStatus = "done" | "partial" | "missed" | "excused" | "open";
 
 export type TrackReportWeek = {
   week: number;
+  /** The week's لقاء day and the day before the next one. */
+  from: string;
+  to: string;
+  /** Still running: its days can still be reported. */
+  open: boolean;
   recitation: number;
   recitationMax: number;
   /** null when the معلمة has not marked this week's لقاء for the cohort. */
@@ -340,11 +349,21 @@ export async function loadTrackReport(
     const herExcused = excusedBy.get(e.id);
     const rules = rulesFor(cohort.id, cohort.trackId, fromDays(today));
     const weekOf = (day: number) => Math.floor((day - start) / 7) + 1;
+    const daysBy = new Map<number, DayStatus[]>();
     const weeks = new Map<number, TrackReportWeek>();
     const weekEntry = (week: number) => {
       let entry = weeks.get(week);
       if (!entry) {
-        entry = { week, recitation: 0, recitationMax: 0, meeting: null, meetingMax: null };
+        entry = {
+          week,
+          from: fromDays(start + (week - 1) * 7),
+          to: fromDays(start + week * 7 - 1),
+          open: start + week * 7 > today,
+          recitation: 0,
+          recitationMax: 0,
+          meeting: null,
+          meetingMax: null,
+        };
         weeks.set(week, entry);
       }
       return entry;
@@ -361,10 +380,24 @@ export async function loadTrackReport(
       const iso = fromDays(day);
       const card = herCards?.get(iso);
       const closesOn = day + (7 - offset);
-      if (!card && closesOn > today) continue;
+      const dayList = daysBy.get(weekOf(day)) ?? [];
+      daysBy.set(weekOf(day), dayList);
+      if (!card && closesOn > today) {
+        dayList.push("open");
+        continue;
+      }
 
       due++;
       const entry = weekEntry(weekOf(day));
+      dayList.push(
+        card && card.new && card.review
+          ? "done"
+          : card && (card.new || card.review)
+            ? "partial"
+            : herExcused?.has(iso)
+              ? "excused"
+              : "missed",
+      );
       if (card && (card.new || card.review)) {
         done++;
         entry.recitationMax += rules.perDay;
@@ -394,6 +427,7 @@ export async function loadTrackReport(
     }
 
     const weekList = [...weeks.values()].sort((a, b) => a.week - b.week);
+    const latestDays = [...daysBy.keys()].sort((a, b) => b - a)[0];
     const points = weekList.reduce((n, w) => n + w.recitation + (w.meeting ?? 0), 0);
     const maxPoints = weekList.reduce((n, w) => n + w.recitationMax + (w.meetingMax ?? 0), 0);
 
@@ -426,6 +460,7 @@ export async function loadTrackReport(
       points,
       maxPoints,
       weeks: weekList,
+      recentDays: latestDays === undefined ? [] : daysBy.get(latestDays)!,
     };
   });
 

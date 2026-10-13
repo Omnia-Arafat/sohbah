@@ -2391,46 +2391,107 @@
   },
   "trackReport": {
     "title": "Tracks report",
-    "subtitle": "How each student kept her daily portion in her cohort, over any period.",
+    "subtitle": "Each student's weekly score out of 40, cohort by cohort.",
     "filters": {
       "track": "Track",
+      "allTracks": "All tracks",
       "cohort": "Cohort",
-      "cohortHint": "Leave empty for every cohort — or pick one or more."
+      "allCohorts": "All cohorts ({count})"
     },
-    "totals": {
-      "done": "portion days completed of {due}",
-      "missed": "days missed",
-      "pending": "excuses awaiting a decision"
+    "loadError": "Part of the tracks data failed to load — numbers may be incomplete.",
+    "kpis": {
+      "label": "Summary",
+      "average": "Average score",
+      "done": "Portion days completed",
+      "doneNote": "Since 3 October, when the portion cards started",
+      "of": "of {due}",
+      "missed": "Days missed",
+      "noCards": "{count, plural, one{# student with no card} other{# students with no card}}",
+      "fullWeeks": "Full weeks",
+      "pending": "{count, plural, one{# excuse awaiting a decision} other{# excuses awaiting a decision}}"
     },
-    "rule": "Portion days are the five days after the weekly meeting (the meeting day and Friday do not count), counted from 3 October 2026 when the portion cards started. A day counts as missed only once its week closes at the next meeting, with no new or review recitation.",
-    "cohorts": {
-      "title": "Cohorts",
-      "students": "{count, plural, one{# student} other{# students}}"
+    "focus": {
+      "students": "{count, plural, one{# student} other{# students}}",
+      "average": "Average / 40",
+      "prev": "Previous cohort",
+      "next": "Next cohort",
+      "position": "{current} of {total}",
+      "student": "Student",
+      "week": "Week {week}",
+      "running": "Running",
+      "total": "Total",
+      "legend": {
+        "full": "40, full",
+        "high": "32 or more",
+        "mid": "24–31",
+        "low": "16–23",
+        "poor": "Under 16",
+        "open": "Week not closed"
+      }
+    },
+    "rules": {
+      "title": "How the score works",
+      "recitation": "Portion",
+      "recitationNote": "5 points for each day with both new and review recited, the five days after the meeting.",
+      "meeting": "Meeting",
+      "meetingNote": "Past recitation 5 · New recitation 5 · Reading the new portion 5",
+      "week": "Week",
+      "counting": "The meeting counts only in weeks the teacher marked it. A day counts as missed once its week closes at the next meeting; portion days count from 3 October 2026."
+    },
+    "ranking": {
+      "title": "Student ranking",
+      "count": "{count, plural, one{# student} other{# students}} · by score",
+      "noWeeks": "No weeks counted for her in this period.",
+      "full": "full",
+      "unmarked": "not marked"
     },
     "columns": {
-      "commitment": "Commitment",
-      "done": "Portion",
+      "score": "Score",
+      "days": "Days of her latest week",
       "missed": "Missed",
-      "excused": "Excused",
-      "meetings": "Meetings",
-      "score": "Score"
+      "meetings": "Meetings"
     },
-    "results": {
-      "title": "{count, plural, one{# student} other{# students}}",
-      "empty": "No students in these cohorts during this period.",
-      "legend": "Score: 5 per complete portion day (new and review) × 5 days = 25, plus 5 for each meeting item (past recitation, new recitation, reading the new portion) = 15 — 40 a week. The meeting counts only in weeks the teacher marked it. 💎 = full marks. Commitment = completed portion days ÷ required days after excuses. «Meetings» = sessions she joined in her cohort's circle ÷ sessions it held."
+    "days": {
+      "done": "full recitation",
+      "partial": "partial recitation",
+      "missed": "missed",
+      "excused": "excused",
+      "open": "not closed yet"
     },
-    "pendingExcuses": "{count, plural, one{# pending excuse} other{# pending excuses}}",
     "status": {
       "warned": "Warned",
       "completed": "Completed",
       "removed": "Removed",
       "withdrawn": "Withdrew"
     },
-    "loadError": "Part of the tracks data failed to load — numbers may be incomplete.",
-    "weekLine": "Week {week}: portion {recitation}/{recitationMax}",
-    "weekMeeting": " · meeting {meeting}/{meetingMax}",
-    "weekMeetingUnmarked": " · meeting not marked",
-    "weeksSummary": "Scores week by week"
+    "pendingExcuses": "{count, plural, one{# pending excuse} other{# pending excuses}}",
+    "results": {
+      "empty": "No students in these cohorts during this period.",
+      "legend": "The portion counts from the day the student joined the cohort. «Meetings» = sessions she joined in her cohort's circle ÷ sessions it held."
+    },
+    "print": {
+      "page": "Page {page} of {total}",
+      "cohortCount": "{count, plural, one{# cohort} other{# cohorts}}",
+      "noCards": "Students with no card",
+      "cohorts": "Cohorts",
+      "cohort": "Track · cohort",
+      "teacher": "Teacher",
+      "students": "Students",
+      "averageOf40": "Average score / 40",
+      "rules": "Weekly score: portion 5 × 5 days = 25, plus meeting items 5 each = 15. Portion days count from 3 October 2026.",
+      "generatedOn": "Generated {date}.",
+      "teacherIs": "Teacher: {name}",
+      "cohortAverage": "Cohort average / 40",
+      "olderWeeks": "{count, plural, one{# older week is} other{# older weeks are}} counted in the totals but not shown as columns.",
+      "followUp": "Needs follow-up",
+      "nobody": "Nobody.",
+      "noCardsFor": "no cards, {count} days missed",
+      "missedDays": "{count} days missed",
+      "shining": "Full-marks students",
+      "noFullWeeks": "No full weeks yet.",
+      "fullIn": "40 / 40 in week {weeks}",
+      "teacherSignature": "Teacher's signature",
+      "supervisorSignature": "Supervisor's signature"
+    }
   }
 }

@@ -1,33 +1,21 @@
 import type { Metadata } from "next";
+import { ChevronDown, Download } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BackLink } from "@/components/back-link";
 import { BrandSelect } from "@/components/brand-select";
 import { MultiSelectDropdown } from "@/components/multi-select";
 import { ReportRangeFields, ReportTabs } from "@/components/report-range-fields";
+import { Link } from "@/i18n/navigation";
 import { requireStaffSession } from "@/lib/auth/dal";
-import { getAcademyContext } from "@/lib/academy-context";
-import { resolveRange } from "@/lib/report-range";
-import { createClient } from "@/lib/supabase/server";
-import {
-  loadTrackReport,
-  loadTrackReportCohorts,
-  type TrackReportRow,
-  type TrackReportWeek,
-} from "@/lib/track-report";
+import type { DayStatus, TrackReportRow } from "@/lib/track-report";
+import { loadTrackReportForQuery, type TrackReportSearchParams } from "@/lib/track-report-query";
+import { buildTrackReportView, isFullWeek, weekTotal } from "@/lib/track-report-view";
+import { CohortFocus } from "./cohort-focus";
+
 
 type TrackReportPageProps = {
   params: Promise<{ locale: string; academy: string }>;
-  searchParams: Promise<{
-    mode?: string;
-    month?: string;
-    weekMonth?: string;
-    week?: string;
-    year?: string;
-    from?: string;
-    to?: string;
-    track?: string;
-    cohort?: string | string[];
-  }>;
+  searchParams: Promise<TrackReportSearchParams>;
 };
 
 /** Authorized route: never prerender it. */
@@ -41,10 +29,15 @@ export async function generateMetadata({
   return { title: t("title") };
 }
 
-export default async function TrackReportPage({
-  params,
-  searchParams,
-}: TrackReportPageProps) {
+const DAY_STYLE: Record<DayStatus, string> = {
+  done: "bg-brand-600",
+  partial: "bg-brand-200",
+  missed: "border-2 border-[#7A2433] bg-surface",
+  excused: "bg-[#EFE4C2]",
+  open: "border-[1.5px] border-dashed border-[#8A9A91] bg-surface",
+};
+
+export default async function TrackReportPage({ params, searchParams }: TrackReportPageProps) {
   const { locale, academy: academySlug } = await params;
   setRequestLocale(locale);
 
@@ -52,79 +45,80 @@ export default async function TrackReportPage({
   const tReports = await getTranslations("reports");
 
   await requireStaffSession(`/${academySlug}/admin/reports/tracks`);
-  const academy = await getAcademyContext(academySlug);
 
   const query = await searchParams;
-  const range = resolveRange(query);
-  const supabase = await createClient();
+  const { range, tracks, trackId, cohortsForTrack, cohortIds, report } =
+    await loadTrackReportForQuery(academySlug, query);
+  const view = buildTrackReportView(report);
 
-  const { cohorts: allCohorts } = academy
-    ? await loadTrackReportCohorts(supabase, academy.id)
-    : { cohorts: [] };
+  const ar = locale === "ar";
+  const num = new Intl.NumberFormat(ar ? "ar-EG" : "en", { maximumFractionDigits: 1 });
+  const longDate = new Intl.DateTimeFormat(ar ? "ar-EG" : "en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+  const rangeLabel = `${longDate.format(new Date(`${range.from}T00:00:00Z`))} – ${longDate.format(
+    new Date(`${range.to}T00:00:00Z`),
+  )}`;
 
-  // Everything below comes from a user-editable URL: keep only ids that are
-  // really this academy's.
-  const tracks = [
-    ...new Map(allCohorts.map((c) => [c.trackId, c.trackName])).entries(),
-  ].sort((a, b) => a[1].localeCompare(b[1], "ar"));
-  const trackId = tracks.some(([id]) => id === query.track) ? query.track! : null;
-  const cohortsForTrack = trackId
-    ? allCohorts.filter((c) => c.trackId === trackId)
-    : allCohorts;
-  const cohortIds = (
-    Array.isArray(query.cohort) ? query.cohort : query.cohort ? [query.cohort] : []
-  ).filter((id) => cohortsForTrack.some((c) => c.id === id));
-
-  const report = academy
-    ? await loadTrackReport(supabase, academy.id, range, { trackId, cohortIds })
-    : { cohorts: [], rows: [], error: false };
-
-  const cohortLabel = (c: { trackName: string; name: string }) =>
-    `${c.trackName} · ${c.name}`;
-
-  // Per-cohort summary, in the same order as the filter list.
-  const summaries = report.cohorts
-    .map((cohort) => {
-      const rows = report.rows.filter((r) => r.cohortId === cohort.id);
-      const done = rows.reduce((n, r) => n + r.done, 0);
-      const counted = rows.reduce((n, r) => n + r.due - r.excused, 0);
-      return {
-        cohort,
-        students: rows.length,
-        missed: rows.reduce((n, r) => n + r.missed, 0),
-        commitment: counted > 0 ? Math.round((done / counted) * 100) : null,
-      };
-    })
-    .filter((s) => s.students > 0);
+  const printParams = new URLSearchParams({ mode: range.mode });
+  if (range.mode === "week") {
+    printParams.set("weekMonth", range.month);
+    printParams.set("week", String(range.week));
+  } else if (range.mode === "month") {
+    printParams.set("month", range.month);
+  } else if (range.mode === "year") {
+    printParams.set("year", range.year);
+  } else if (range.mode === "custom") {
+    printParams.set("from", range.from);
+    printParams.set("to", range.to);
+  }
+  if (trackId) printParams.set("track", trackId);
+  cohortIds.forEach((id) => printParams.append("cohort", id));
+  const printHref = `/${academySlug}/admin/reports/tracks/print?${printParams.toString()}`;
 
   const cohortById = new Map(report.cohorts.map((c) => [c.id, c]));
-  const totals = report.rows.reduce(
-    (acc, r) => ({
-      due: acc.due + r.due - r.excused,
-      done: acc.done + r.done,
-      missed: acc.missed + r.missed,
-      pending: acc.pending + r.pendingExcuses,
-    }),
-    { due: 0, done: 0, missed: 0, pending: 0 },
-  );
+  const cohortLabel = (row: TrackReportRow) => {
+    const c = cohortById.get(row.cohortId);
+    return c ? `${c.trackName} · ${c.name}` : "";
+  };
 
   return (
-    <div className="flex flex-col gap-6">
-      <section>
+    <div className="flex flex-col gap-5 sm:gap-6">
+      <section className="flex flex-col gap-3">
         <BackLink href={`/${academySlug}/admin`}>{tReports("back")}</BackLink>
-        <div className="mt-3">
-          <ReportTabs academySlug={academySlug} active="tracks" />
-        </div>
-        <h1 className="font-display mt-3 text-2xl font-bold sm:text-3xl">
-          {t("title")}
-        </h1>
-        <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
+        <ReportTabs academySlug={academySlug} active="tracks" />
       </section>
 
-      {/* A plain GET form, like the attendance report: the state is the URL. */}
+      <header className="rounded-3xl bg-brand-900 px-5 py-6 text-white sm:px-7 sm:py-7">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="font-display text-[32px] font-bold leading-tight sm:text-[44px]">
+              {t("title")}
+            </h1>
+            <p className="mt-1 text-[15px] text-brand-100">{t("subtitle")}</p>
+          </div>
+          <div className="flex flex-wrap gap-2.5">
+            <span className="inline-flex items-center rounded-full border border-white/25 px-4 py-2 text-sm">
+              {rangeLabel}
+            </span>
+            <Link
+              href={printHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full bg-[#F1D9A0] px-4 py-2 text-sm font-bold text-brand-900"
+            >
+              <Download className="h-4 w-4" aria-hidden="true" />
+              {tReports("filters.downloadPdf")}
+            </Link>
+          </div>
+        </div>
+      </header>
+
       <form className="range-form card flex flex-col gap-4">
         <ReportRangeFields range={range} locale={locale} />
-
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="field-label" htmlFor="track">
@@ -135,12 +129,11 @@ export default async function TrackReportPage({
               name="track"
               defaultValue={trackId ?? ""}
               options={[
-                { value: "", label: tReports("filters.all") },
+                { value: "", label: t("filters.allTracks") },
                 ...tracks.map(([id, name]) => ({ value: id, label: name })),
               ]}
             />
           </div>
-
           <div>
             <label className="field-label" htmlFor="cohort">
               {t("filters.cohort")}
@@ -151,243 +144,278 @@ export default async function TrackReportPage({
               options={cohortsForTrack.map((c) => ({
                 value: c.id,
                 label: c.teacherName
-                  ? `${cohortLabel(c)} (${c.teacherName})`
-                  : cohortLabel(c),
+                  ? `${c.trackName} · ${c.name} (${c.teacherName})`
+                  : `${c.trackName} · ${c.name}`,
               }))}
               defaultValues={cohortIds}
-              allLabel={tReports("filters.all")}
+              allLabel={t("filters.allCohorts", { count: cohortsForTrack.length })}
               doneLabel={tReports("filters.done")}
             />
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              {t("filters.cohortHint")}
-            </p>
           </div>
         </div>
-
-        <button type="submit" className="btn-primary w-full sm:w-auto">
+        <button type="submit" className="btn-primary w-full sm:w-auto sm:self-start">
           {tReports("filters.apply")}
         </button>
       </form>
 
-      {report.error && (
-        <p className="card text-sm text-absent">{t("loadError")}</p>
-      )}
+      {report.error && <p className="card text-sm text-absent">{t("loadError")}</p>}
 
-      <section className="card">
-        <p className="text-sm text-muted-foreground">
-          {tReports("appliedRange", { from: range.from, to: range.to })}
-        </p>
-        <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm">
-          <span>
-            <span className="font-semibold text-present">{totals.done}</span>{" "}
-            <span className="text-muted-foreground">
-              {t("totals.done", { due: totals.due })}
-            </span>
+      <section aria-label={t("kpis.label")} className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
+        <Kpi label={t("kpis.average")}>
+          <span className="text-brand-700 dark:text-brand-200">
+            {view.average === null ? "—" : num.format(view.average)}
           </span>
-          <span>
-            <span className="font-semibold text-absent">{totals.missed}</span>{" "}
-            <span className="text-muted-foreground">{t("totals.missed")}</span>
-          </span>
-          {totals.pending > 0 && (
-            <span>
-              <span className="font-semibold text-accent-700 dark:text-accent-300">
-                {totals.pending}
-              </span>{" "}
-              <span className="text-muted-foreground">{t("totals.pending")}</span>
+          <Unit>/ {num.format(40)}</Unit>
+          {view.average !== null && (
+            <span className="mt-2 block h-1.5 w-full overflow-hidden rounded-full bg-brand-100 sm:mt-3 sm:h-2 dark:bg-brand-900">
+              <span
+                className="block h-full bg-brand-600"
+                style={{ width: `${Math.round((view.average / 40) * 100)}%` }}
+              />
             </span>
           )}
-        </div>
-        <p className="mt-3 text-xs text-muted-foreground">{t("rule")}</p>
+        </Kpi>
+        <Kpi label={t("kpis.done")} note={t("kpis.doneNote")}>
+          {num.format(view.done)}
+          <Unit>{t("kpis.of", { due: num.format(view.due) })}</Unit>
+        </Kpi>
+        <Kpi
+          label={t("kpis.missed")}
+          note={view.noCards > 0 ? t("kpis.noCards", { count: view.noCards }) : undefined}
+          noteTone="absent"
+        >
+          <span className="text-[#7A2433] dark:text-[#E8A39B]">{num.format(view.missed)}</span>
+        </Kpi>
+        <Kpi
+          label={t("kpis.fullWeeks")}
+          note={view.pending > 0 ? t("kpis.pending", { count: view.pending }) : undefined}
+        >
+          {num.format(view.fullWeeks)}
+        </Kpi>
       </section>
 
-      {summaries.length > 1 && (
-        <section>
-          <h2 className="mb-3 text-lg font-semibold">{t("cohorts.title")}</h2>
-          <ul className="grid gap-2 sm:grid-cols-2">
-            {summaries.map((s) => (
-              <li key={s.cohort.id} className="card flex items-center gap-3 py-3">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold">{cohortLabel(s.cohort)}</p>
-                  <p className="truncate text-sm text-muted-foreground">
-                    {s.cohort.teacherName ?? ""}
-                    {s.cohort.teacherName ? " · " : ""}
-                    {t("cohorts.students", { count: s.students })}
-                  </p>
-                </div>
-                <div className="flex shrink-0 gap-3 text-sm tabular-nums">
-                  <Stat value={s.commitment === null ? "—" : `${s.commitment}%`} label={t("columns.commitment")} />
-                  <Stat value={s.missed} label={t("columns.missed")} tone={s.missed > 0 ? "absent" : "muted"} />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      <section>
-        <h2 className="mb-3 text-lg font-semibold">
-          {t("results.title", { count: report.rows.length })}
-        </h2>
-
-        {report.rows.length === 0 ? (
-          <p className="card text-muted-foreground">{t("results.empty")}</p>
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:gap-6">
+        {view.cohorts.length > 0 ? (
+          <CohortFocus cohorts={view.cohorts} />
         ) : (
-          <ol className="scroll-list flex flex-col gap-2">
-            {report.rows.map((row, index) => (
-              <StudentRow
-                key={row.enrollmentId}
-                row={row}
-                rank={index + 1}
-                cohort={cohortById.get(row.cohortId)}
-                cohortLabel={cohortLabel}
-                statusLabel={
-                  row.status === "active" ? null : t(`status.${row.status}`)
-                }
-                labels={{
-                  score: t("columns.score"),
-                  weekLine: (w) =>
-                    t("weekLine", {
-                      week: w.week,
-                      recitation: w.recitation,
-                      recitationMax: w.recitationMax,
-                    }) +
-                    (w.meeting === null
-                      ? t("weekMeetingUnmarked")
-                      : t("weekMeeting", { meeting: w.meeting, meetingMax: w.meetingMax ?? 0 })),
-                  weeksSummary: t("weeksSummary"),
-                  commitment: t("columns.commitment"),
-                  done: t("columns.done"),
-                  missed: t("columns.missed"),
-                  excused: t("columns.excused"),
-                  meetings: t("columns.meetings"),
-                  pending: (count: number) => t("pendingExcuses", { count }),
-                }}
-              />
-            ))}
-          </ol>
+          <p className="card text-muted-foreground lg:flex-[999_1_640px]">{t("results.empty")}</p>
         )}
 
-        <p className="mt-3 text-xs text-muted-foreground">{t("results.legend")}</p>
-      </section>
-    </div>
-  );
-}
-
-function Stat({
-  value,
-  label,
-  tone = "default",
-}: {
-  value: string | number;
-  label: string;
-  tone?: "default" | "present" | "absent" | "muted";
-}) {
-  const color = {
-    default: "",
-    present: "text-present",
-    absent: "text-absent",
-    muted: "text-muted-foreground",
-  }[tone];
-  return (
-    <div className="flex flex-col items-center gap-0.5">
-      <span className={`font-semibold ${color}`}>{value}</span>
-      <span className="text-[10px] leading-none text-muted-foreground">{label}</span>
-    </div>
-  );
-}
-
-function StudentRow({
-  row,
-  rank,
-  cohort,
-  cohortLabel,
-  statusLabel,
-  labels,
-}: {
-  row: TrackReportRow;
-  rank: number;
-  cohort: { trackName: string; name: string } | undefined;
-  cohortLabel: (c: { trackName: string; name: string }) => string;
-  statusLabel: string | null;
-  labels: {
-    score: string;
-    weekLine: (w: TrackReportWeek) => string;
-    weeksSummary: string;
-    commitment: string;
-    done: string;
-    missed: string;
-    excused: string;
-    meetings: string;
-    pending: (count: number) => string;
-  };
-}) {
-  return (
-    <li className="card flex flex-col gap-3 py-3">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-muted text-xs font-bold">
-            {rank}
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="truncate font-semibold">
-              {row.studentName}
-              {statusLabel && (
-                <span className="badge-waiting ms-2 text-xs font-normal">{statusLabel}</span>
-              )}
-            </p>
-            <p className="truncate text-sm text-muted-foreground">
-              {cohort ? cohortLabel(cohort) : ""}
-              {row.pendingExcuses > 0 && (
-                <span className="text-accent-700 dark:text-accent-300">
-                  {" · "}
-                  {labels.pending(row.pendingExcuses)}
-                </span>
-              )}
-            </p>
+        <aside className="flex flex-col gap-4 lg:flex-[1_1_300px]">
+          <div className="card">
+            <h2 className="font-display text-[22px] font-bold">{t("rules.title")}</h2>
+            <div className="mt-3 flex h-3.5 overflow-hidden rounded-full" aria-hidden="true">
+              <span className="block h-full w-[62.5%] bg-brand-600" />
+              <span className="block h-full w-[37.5%] bg-accent-500" />
+            </div>
+            <dl className="mt-4 flex flex-col gap-3 text-sm">
+              <div>
+                <div className="flex justify-between gap-3 font-bold">
+                  <dt className="inline-flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-sm bg-brand-600" aria-hidden="true" />
+                    {t("rules.recitation")}
+                  </dt>
+                  <dd className="font-extrabold">{num.format(25)}</dd>
+                </div>
+                <p className="mt-0.5 text-[13px] text-muted-foreground">{t("rules.recitationNote")}</p>
+              </div>
+              <div>
+                <div className="flex justify-between gap-3 font-bold">
+                  <dt className="inline-flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-sm bg-accent-500" aria-hidden="true" />
+                    {t("rules.meeting")}
+                  </dt>
+                  <dd className="font-extrabold">{num.format(15)}</dd>
+                </div>
+                <p className="mt-0.5 text-[13px] text-muted-foreground">{t("rules.meetingNote")}</p>
+              </div>
+              <div className="flex justify-between gap-3 border-t border-border-subtle pt-3 font-extrabold">
+                <dt>{t("rules.week")}</dt>
+                <dd className="text-brand-700 dark:text-brand-200">{num.format(40)}</dd>
+              </div>
+            </dl>
           </div>
-        </div>
-
-        <div className="flex shrink-0 justify-around gap-3 text-sm tabular-nums sm:justify-start">
-          <Stat
-            value={row.maxPoints > 0 ? `${row.points}/${row.maxPoints}` : "—"}
-            label={labels.score}
-            tone="present"
-          />
-          <Stat
-            value={row.commitment === null ? "—" : `${row.commitment}%`}
-            label={labels.commitment}
-          />
-          <Stat value={`${row.done}/${row.due - row.excused}`} label={labels.done} tone="present" />
-          <Stat value={row.missed} label={labels.missed} tone={row.missed > 0 ? "absent" : "muted"} />
-          <Stat value={row.excused} label={labels.excused} tone="muted" />
-          <Stat
-            value={row.meetingsHeld === null ? "—" : `${row.meetings}/${row.meetingsHeld}`}
-            label={labels.meetings}
-          />
-        </div>
+          <p className="rounded-2xl border border-accent-300 bg-accent-100 px-4 py-3.5 text-[13px] leading-relaxed text-accent-700 dark:border-accent-700 dark:bg-accent-700/20 dark:text-accent-200">
+            {t("rules.counting")}
+          </p>
+        </aside>
       </div>
 
-      {row.weeks.length > 0 && (
-        <details className="rounded-lg border border-border px-3 py-2 text-sm">
-          <summary className="cursor-pointer text-muted-foreground">{labels.weeksSummary}</summary>
-          <ul className="mt-2 flex flex-col gap-1 tabular-nums">
-            {row.weeks.map((w) => {
-              const total = w.recitation + (w.meeting ?? 0);
-              const max = w.recitationMax + (w.meetingMax ?? 0);
-              const perfect = w.meeting !== null && max > 0 && total === max;
+      <section className="overflow-hidden rounded-2xl border border-border-subtle bg-surface">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle px-4 py-4 sm:px-5">
+          <h2 className="font-display text-2xl font-bold">{t("ranking.title")}</h2>
+          <span className="text-sm text-muted-foreground">
+            {t("ranking.count", { count: report.rows.length })}
+          </span>
+        </div>
+
+        {report.rows.length === 0 ? (
+          <p className="px-5 py-6 text-muted-foreground">{t("results.empty")}</p>
+        ) : (
+          <ol className="scroll-list">
+            {report.rows.map((row, index) => {
+              const recitation = row.weeks.reduce((n, w) => n + w.recitation, 0);
+              const meeting = row.weeks.reduce((n, w) => n + (w.meeting ?? 0), 0);
+              const pct = (v: number) => (row.maxPoints > 0 ? (v / row.maxPoints) * 100 : 0);
+              const rankTone =
+                index === 0
+                  ? "bg-brand-900 text-[#F1D9A0]"
+                  : index < 3
+                    ? "bg-brand-100 text-brand-900 dark:bg-brand-800 dark:text-brand-100"
+                    : "bg-surface-muted";
               return (
-                <li key={w.week} className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">{labels.weekLine(w)}</span>
-                  <span className="shrink-0 font-semibold">
-                    {perfect && <span aria-hidden="true">💎 </span>}
-                    {total}/{max}
-                  </span>
+                <li key={row.enrollmentId} className="border-t border-border-subtle first:border-t-0">
+                  <details className="group">
+                    <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3.5 group-open:bg-surface-muted sm:px-5 [&::-webkit-details-marker]:hidden">
+                      <span
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold tabular-nums ${rankTone}`}
+                      >
+                        {num.format(index + 1)}
+                      </span>
+                      <span className="min-w-0 flex-[1_1_180px]">
+                        <span className="block truncate text-[15px] font-bold">
+                          {row.studentName}
+                          {row.status !== "active" && (
+                            <span className="badge-waiting ms-2 text-xs font-normal">
+                              {t(`status.${row.status}`)}
+                            </span>
+                          )}
+                        </span>
+                        <span className="block truncate text-[13px] text-muted-foreground">
+                          {cohortLabel(row)}
+                          {row.pendingExcuses > 0 && (
+                            <span className="text-accent-700 dark:text-accent-300">
+                              {" · "}
+                              {t("pendingExcuses", { count: row.pendingExcuses })}
+                            </span>
+                          )}
+                        </span>
+                      </span>
+                      <span className="flex min-w-[150px] flex-[1_1_180px] flex-col gap-1.5">
+                        <span className="flex justify-between text-[13px]">
+                          <span className="text-muted-foreground">{t("columns.score")}</span>
+                          <span className="font-extrabold tabular-nums">
+                            {row.maxPoints > 0
+                              ? `${num.format(row.points)} / ${num.format(row.maxPoints)}`
+                              : "—"}
+                          </span>
+                        </span>
+                        <span className="flex h-2 overflow-hidden rounded-full bg-brand-100 dark:bg-brand-900">
+                          <span className="block h-full bg-brand-600" style={{ width: `${pct(recitation)}%` }} />
+                          <span className="block h-full bg-accent-500" style={{ width: `${pct(meeting)}%` }} />
+                        </span>
+                      </span>
+                      {row.recentDays.length > 0 && (
+                        <span className="flex items-center gap-1" title={t("columns.days")}>
+                          {row.recentDays.map((status, i) => (
+                            <span key={i} className={`h-[18px] w-[18px] rounded-[5px] ${DAY_STYLE[status]}`}>
+                              <span className="sr-only">{t(`days.${status}`)}</span>
+                            </span>
+                          ))}
+                        </span>
+                      )}
+                      <span className="flex gap-4 tabular-nums">
+                        <span className="text-center">
+                          <span
+                            className={`block font-extrabold ${
+                              row.missed > 0 ? "text-[#7A2433] dark:text-[#E8A39B]" : "text-muted-foreground"
+                            }`}
+                          >
+                            {num.format(row.missed)}
+                          </span>
+                          <span className="block text-[11px] text-muted-foreground">{t("columns.missed")}</span>
+                        </span>
+                        <span className="text-center">
+                          <span className="block font-extrabold">
+                            {row.meetingsHeld === null
+                              ? "—"
+                              : `${num.format(row.meetings)} / ${num.format(row.meetingsHeld)}`}
+                          </span>
+                          <span className="block text-[11px] text-muted-foreground">{t("columns.meetings")}</span>
+                        </span>
+                      </span>
+                      <ChevronDown
+                        className="h-[18px] w-[18px] text-muted-foreground transition-transform group-open:rotate-180"
+                        aria-hidden="true"
+                      />
+                    </summary>
+                    <div className="grid gap-2.5 bg-surface-muted px-4 pb-4 pt-1 sm:grid-cols-[repeat(auto-fit,minmax(220px,1fr))] sm:px-5 sm:ps-[68px]">
+                      {row.weeks.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">{t("ranking.noWeeks")}</p>
+                      ) : (
+                        row.weeks.map((w) => {
+                          const { total, max } = weekTotal(w);
+                          return (
+                            <div key={w.week} className="rounded-xl border border-border-subtle bg-surface px-3.5 py-3 text-[13px]">
+                              <div className="flex justify-between font-bold">
+                                <span>
+                                  {t("focus.week", { week: num.format(w.week) })}
+                                  {isFullWeek(w) && <span className="ms-1.5 text-accent-700 dark:text-accent-300">{t("ranking.full")}</span>}
+                                </span>
+                                <span className="tabular-nums">
+                                  {num.format(total)} / {num.format(max)}
+                                </span>
+                              </div>
+                              <div className="mt-1.5 flex justify-between text-muted-foreground">
+                                <span>{t("rules.recitation")}</span>
+                                <span className="tabular-nums">
+                                  {num.format(w.recitation)} / {num.format(w.recitationMax)}
+                                </span>
+                              </div>
+                              <div className="mt-0.5 flex justify-between text-muted-foreground">
+                                <span>{t("rules.meeting")}</span>
+                                <span className="tabular-nums">
+                                  {w.meeting === null
+                                    ? t("ranking.unmarked")
+                                    : `${num.format(w.meeting)} / ${num.format(w.meetingMax ?? 0)}`}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </details>
                 </li>
               );
             })}
-          </ul>
-        </details>
-      )}
-    </li>
+          </ol>
+        )}
+      </section>
+
+      <p className="text-center text-xs leading-relaxed text-muted-foreground">{t("results.legend")}</p>
+    </div>
   );
+}
+
+function Kpi({
+  label,
+  note,
+  noteTone,
+  children,
+}: {
+  label: string;
+  note?: string;
+  noteTone?: "absent";
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-border-subtle bg-surface px-3.5 py-3 sm:px-5 sm:py-4">
+      <div className="text-xs font-semibold text-muted-foreground sm:text-[13px]">{label}</div>
+      <div className="mt-1 text-[26px] font-extrabold leading-tight tabular-nums sm:text-4xl">{children}</div>
+      {note && (
+        <div
+          className={`mt-2 hidden text-[13px] sm:block ${
+            noteTone === "absent" ? "font-semibold text-[#7A2433] dark:text-[#E8A39B]" : "text-muted-foreground"
+          }`}
+        >
+          {note}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Unit({ children }: { children: React.ReactNode }) {
+  return <span className="ms-1.5 text-[13px] font-semibold text-muted-foreground sm:text-base">{children}</span>;
 }
