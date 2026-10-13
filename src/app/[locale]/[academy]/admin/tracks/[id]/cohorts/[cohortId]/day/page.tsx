@@ -78,6 +78,7 @@ export default async function CohortDayPage({ params }: PageProps) {
 
       <DayBoard
         cohortId={cohortId}
+        teacherId={session.teacher.id}
         initialDate={today()}
         cohort={
           cohort

@@ -14,6 +14,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { formatTime } from "@/lib/format-time";
 import { createClient } from "@/lib/supabase/server";
 import { LessonCard } from "@/components/lesson-card";
+import { MeetingScores } from "@/components/meeting-scores";
 import { loadCurricula, loadUnits } from "@/lib/curricula";
 import { SessionClient } from "./session-client";
 import { LessonPicker } from "./lesson-picker";
@@ -42,6 +43,60 @@ async function loadCircle(id: string) {
     return null;
   }
   return data;
+}
+
+type TrackCohortRow = {
+  id: string;
+  name_ar: string;
+  teacher_id: string | null;
+  start_date: string;
+  timezone: string;
+  tracks: { name_ar: string; duration_weeks: number } | null;
+  track_enrollments: { id: string; status: string; students: { name: string } | null }[] | null;
+};
+
+// The دفعات whose weekly لقاء is this circle, each at the week it is in today.
+async function loadTrackCohorts(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  circleId: string,
+) {
+  const { data, error } = await supabase
+    .from("track_cohorts" as never)
+    .select(
+      "id, name_ar, teacher_id, start_date, timezone, tracks(name_ar, duration_weeks), " +
+        "track_enrollments(id, status, students(name))",
+    )
+    .eq("circle_id" as never, circleId as never)
+    .eq("status" as never, "running" as never);
+  if (error) console.error("track cohorts load failed", error);
+
+  return ((data ?? []) as unknown as TrackCohortRow[]).flatMap((row) => {
+    const today = new Intl.DateTimeFormat("en-CA", {
+      timeZone: row.timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+    const day = 86_400_000;
+    const since = Math.floor((Date.parse(`${today}T00:00:00Z`) - Date.parse(`${row.start_date}T00:00:00Z`)) / day);
+    if (since < 0) return [];
+    const week = Math.min(Math.floor(since / 7) + 1, row.tracks?.duration_weeks ?? 40);
+    const meetingDate = new Date(Date.parse(`${row.start_date}T00:00:00Z`) + (week - 1) * 7 * day)
+      .toISOString()
+      .slice(0, 10);
+    return [{
+      id: row.id,
+      name: row.name_ar,
+      trackName: row.tracks?.name_ar ?? "",
+      teacherId: row.teacher_id,
+      week,
+      meetingDate,
+      students: (row.track_enrollments ?? [])
+        .filter((e) => e.status === "active" || e.status === "warned")
+        .map((e) => ({ enrollment_id: e.id, student_name: e.students?.name ?? "" }))
+        .sort((a, b) => a.student_name.localeCompare(b.student_name, "ar")),
+    }];
+  });
 }
 
 export async function generateMetadata({
@@ -161,6 +216,8 @@ export default async function TeacherSessionPage({ params }: SessionPageProps) {
         .order("name")
     : { data: null, error: null };
   if (studentsError) console.error("students load failed", studentsError);
+  const trackCohorts = await loadTrackCohorts(supabase, circle.id);
+
   const addableStudents = canManageQueue
     ? (studentRows ?? []).map((student) => ({
         id: student.id,
@@ -281,6 +338,20 @@ export default async function TeacherSessionPage({ params }: SessionPageProps) {
           <p className="card text-muted-foreground">{t("errors.generic")}</p>
         )}
       </section>
+
+      {trackCohorts.map((cohort) => (
+        <section key={cohort.id} className="card">
+          <MeetingScores
+            cohortId={cohort.id}
+            week={cohort.week}
+            meetingDate={cohort.meetingDate}
+            students={cohort.students}
+            canEdit={cohort.teacherId === session.teacher.id || canSupervise(session.teacher)}
+            teacherId={session.teacher.id}
+            cohortLabel={`${cohort.trackName} · ${cohort.name}`}
+          />
+        </section>
+      ))}
     </div>
   );
 }

@@ -59,7 +59,22 @@ export type TrackReportRow = {
   meetingsHeld: number | null;
   /** done / (due − excused), 0..100; null when nothing was due. */
   commitment: number | null;
+  /** The weekly score: سرد days plus the لقاء's بنود, summed over the period. */
+  points: number;
+  maxPoints: number;
+  weeks: TrackReportWeek[];
 };
+
+export type TrackReportWeek = {
+  week: number;
+  recitation: number;
+  recitationMax: number;
+  /** null when the معلمة has not marked this week's لقاء for the cohort. */
+  meeting: number | null;
+  meetingMax: number | null;
+};
+
+type ScoreRules = { perDay: number; components: { id: string; points: number }[] };
 
 export type TrackReport = {
   cohorts: TrackReportCohort[];
@@ -163,7 +178,7 @@ export async function loadTrackReport(
     ...new Set(cohorts.map((c) => c.circle_id).filter((id): id is string => Boolean(id))),
   ];
 
-  const [cards, absences, excuses, meetings] = await Promise.all([
+  const [cards, absences, excuses, meetings, meetingScores, ruleSets] = await Promise.all([
     supabase
       .from("track_day_reports" as never)
       .select("enrollment_id, session_date, recited_new, recited_review")
@@ -189,14 +204,74 @@ export async function loadTrackReport(
       .in("circle_id", circleIds)
       .gte("session_date", range.from)
       .lte("session_date", range.to),
+    supabase
+      .from("track_meeting_scores" as never)
+      .select("enrollment_id, week_number, component_id, points_awarded, excused")
+      .in("enrollment_id" as never, enrollmentIds as never),
+    supabase
+      .from("track_rule_sets" as never)
+      .select(
+        "id, track_id, cohort_id, effective_from, " +
+          "track_score_rules(points_per_recitation_day), " +
+          "track_meeting_components(id, points, is_active)",
+      )
+      .in("track_id" as never, [...new Set(cohorts.map((c) => c.trackId))] as never),
   ]);
 
-  for (const [name, result] of Object.entries({ cards, absences, excuses, meetings })) {
+  const results = { cards, absences, excuses, meetings, meetingScores, ruleSets };
+  for (const [name, result] of Object.entries(results)) {
     if (result.error) console.error(`track report: ${name} failed`, result.error);
   }
   const error =
-    loaded.error ||
-    Boolean(enrollError || cards.error || absences.error || excuses.error || meetings.error);
+    loaded.error || Boolean(enrollError) || Object.values(results).some((r) => r.error);
+
+  // The rule set in force today, the cohort's own before its track's.
+  const ruleRows = (ruleSets.data ?? []) as unknown as {
+    id: string;
+    track_id: string;
+    cohort_id: string | null;
+    effective_from: string;
+    track_score_rules: { points_per_recitation_day: number }[] | null;
+    track_meeting_components: { id: string; points: number; is_active: boolean }[] | null;
+  }[];
+  const rulesFor = (cohortId: string, trackId: string, on: string): ScoreRules => {
+    const pick = ruleRows
+      .filter(
+        (r) =>
+          r.track_id === trackId &&
+          (r.cohort_id === cohortId || r.cohort_id === null) &&
+          r.effective_from <= on,
+      )
+      .sort(
+        (a, b) =>
+          Number(a.cohort_id === null) - Number(b.cohort_id === null) ||
+          b.effective_from.localeCompare(a.effective_from),
+      )[0];
+    return {
+      perDay: Number(pick?.track_score_rules?.[0]?.points_per_recitation_day ?? 5),
+      components: (pick?.track_meeting_components ?? [])
+        .filter((c) => c.is_active)
+        .map((c) => ({ id: c.id, points: Number(c.points) })),
+    };
+  };
+
+  // A week's لقاء counts once the معلمة has marked anyone in the cohort for it.
+  const enrollmentCohort = new Map(enrollments.map((e) => [e.id, e.cohort_id]));
+  const markedWeeks = new Set<string>();
+  const scoresBy = new Map<string, { component_id: string; points_awarded: number; excused: boolean }[]>();
+  for (const row of (meetingScores.data ?? []) as unknown as {
+    enrollment_id: string;
+    week_number: number;
+    component_id: string;
+    points_awarded: number;
+    excused: boolean;
+  }[]) {
+    markedWeeks.add(`${enrollmentCohort.get(row.enrollment_id)}:${row.week_number}`);
+    const key = `${row.enrollment_id}:${row.week_number}`;
+    const list = scoresBy.get(key) ?? [];
+    list.push(row);
+    scoresBy.set(key, list);
+  }
 
   const cardsBy = new Map<string, Map<string, { new: boolean; review: boolean }>>();
   for (const row of (cards.data ?? []) as unknown as {
@@ -263,6 +338,17 @@ export async function loadTrackReport(
 
     const herCards = cardsBy.get(e.id);
     const herExcused = excusedBy.get(e.id);
+    const rules = rulesFor(cohort.id, cohort.trackId, fromDays(today));
+    const weekOf = (day: number) => Math.floor((day - start) / 7) + 1;
+    const weeks = new Map<number, TrackReportWeek>();
+    const weekEntry = (week: number) => {
+      let entry = weeks.get(week);
+      if (!entry) {
+        entry = { week, recitation: 0, recitationMax: 0, meeting: null, meetingMax: null };
+        weeks.set(week, entry);
+      }
+      return entry;
+    };
     let due = 0;
     let done = 0;
     let full = 0;
@@ -278,15 +364,38 @@ export async function loadTrackReport(
       if (!card && closesOn > today) continue;
 
       due++;
+      const entry = weekEntry(weekOf(day));
       if (card && (card.new || card.review)) {
         done++;
-        if (card.new && card.review) full++;
+        entry.recitationMax += rules.perDay;
+        if (card.new && card.review) {
+          full++;
+          entry.recitation += rules.perDay;
+        }
       } else if (herExcused?.has(iso)) {
         excused++;
       } else {
         missed++;
+        entry.recitationMax += rules.perDay;
       }
     }
+
+    for (let week = weekOf(meetingFirst); week <= weekOf(last); week++) {
+      const meetingDay = start + (week - 1) * 7;
+      if (meetingDay < meetingFirst || meetingDay > last) continue;
+      if (!markedWeeks.has(`${cohort.id}:${week}`)) continue;
+      const marks = scoresBy.get(`${e.id}:${week}`) ?? [];
+      const excusedIds = new Set(marks.filter((m) => m.excused).map((m) => m.component_id));
+      const entry = weekEntry(week);
+      entry.meeting = marks.reduce((n, m) => n + Number(m.points_awarded), 0);
+      entry.meetingMax = rules.components
+        .filter((c) => !excusedIds.has(c.id))
+        .reduce((n, c) => n + c.points, 0);
+    }
+
+    const weekList = [...weeks.values()].sort((a, b) => a.week - b.week);
+    const points = weekList.reduce((n, w) => n + w.recitation + (w.meeting ?? 0), 0);
+    const maxPoints = weekList.reduce((n, w) => n + w.recitationMax + (w.meetingMax ?? 0), 0);
 
     const counted = due - excused;
     const inWindow = (d: string) => {
@@ -314,11 +423,16 @@ export async function loadTrackReport(
       meetings: sessions,
       meetingsHeld: held,
       commitment: counted > 0 ? Math.round((done / counted) * 100) : null,
+      points,
+      maxPoints,
+      weeks: weekList,
     };
   });
 
+  const ratio = (r: TrackReportRow) => (r.maxPoints > 0 ? r.points / r.maxPoints : -1);
   rows.sort(
     (a, b) =>
+      ratio(b) - ratio(a) ||
       (b.commitment ?? -1) - (a.commitment ?? -1) ||
       b.done - a.done ||
       a.studentName.localeCompare(b.studentName, "ar"),

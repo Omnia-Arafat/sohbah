@@ -2197,7 +2197,19 @@
     "editHint": "You can record the portion on the student's behalf: tap any box to tick or untick it; it saves straight away. A card you record shows your name.",
     "recordedBy": "Recorded by {name}",
     "you": "you",
-    "saveFailed": "The change was not saved — please try again."
+    "saveFailed": "The change was not saved — please try again.",
+    "meetingScores": {
+      "title": "Week {week} meeting scores",
+      "hintEdit": "Tick each item the student did at the meeting — 5 points each, {max} in all. Saves straight away.",
+      "hintRead": "The weekly meeting items, {max} in all.",
+      "student": "Student",
+      "total": "Total",
+      "loading": "Loading…",
+      "empty": "No students in this cohort.",
+      "saveFailed": "The score was not saved — please try again.",
+      "doneLabel": "{item}: done",
+      "missingLabel": "{item}: not done"
+    }
   },
   "excuse": {
     "title": "I had an excuse",
@@ -2400,12 +2412,13 @@
       "done": "Portion",
       "missed": "Missed",
       "excused": "Excused",
-      "meetings": "Meetings"
+      "meetings": "Meetings",
+      "score": "Score"
     },
     "results": {
       "title": "{count, plural, one{# student} other{# students}}",
       "empty": "No students in these cohorts during this period.",
-      "legend": "Commitment = completed portion days ÷ required days, after accepted excuses. «Meetings» = sessions she joined in her cohort's circle ÷ sessions the circle held in the period, counted from the cohort's start."
+      "legend": "Score: 5 per complete portion day (new and review) × 5 days = 25, plus 5 for each meeting item (past recitation, new recitation, reading the new portion) = 15 — 40 a week. The meeting counts only in weeks the teacher marked it. 💎 = full marks. Commitment = completed portion days ÷ required days after excuses. «Meetings» = sessions she joined in her cohort's circle ÷ sessions it held."
     },
     "pendingExcuses": "{count, plural, one{# pending excuse} other{# pending excuses}}",
     "status": {
@@ -2414,6 +2427,10 @@
       "removed": "Removed",
       "withdrawn": "Withdrew"
     },
-    "loadError": "Part of the tracks data failed to load — numbers may be incomplete."
+    "loadError": "Part of the tracks data failed to load — numbers may be incomplete.",
+    "weekLine": "Week {week}: portion {recitation}/{recitationMax}",
+    "weekMeeting": " · meeting {meeting}/{meetingMax}",
+    "weekMeetingUnmarked": " · meeting not marked",
+    "weeksSummary": "Scores week by week"
   }
 }

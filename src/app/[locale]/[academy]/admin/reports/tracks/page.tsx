@@ -12,6 +12,7 @@ import {
   loadTrackReport,
   loadTrackReportCohorts,
   type TrackReportRow,
+  type TrackReportWeek,
 } from "@/lib/track-report";
 
 type TrackReportPageProps = {
@@ -243,6 +244,17 @@ export default async function TrackReportPage({
                   row.status === "active" ? null : t(`status.${row.status}`)
                 }
                 labels={{
+                  score: t("columns.score"),
+                  weekLine: (w) =>
+                    t("weekLine", {
+                      week: w.week,
+                      recitation: w.recitation,
+                      recitationMax: w.recitationMax,
+                    }) +
+                    (w.meeting === null
+                      ? t("weekMeetingUnmarked")
+                      : t("weekMeeting", { meeting: w.meeting, meetingMax: w.meetingMax ?? 0 })),
+                  weeksSummary: t("weeksSummary"),
                   commitment: t("columns.commitment"),
                   done: t("columns.done"),
                   missed: t("columns.missed"),
@@ -298,6 +310,9 @@ function StudentRow({
   cohortLabel: (c: { trackName: string; name: string }) => string;
   statusLabel: string | null;
   labels: {
+    score: string;
+    weekLine: (w: TrackReportWeek) => string;
+    weeksSummary: string;
     commitment: string;
     done: string;
     missed: string;
@@ -307,43 +322,72 @@ function StudentRow({
   };
 }) {
   return (
-    <li className="card flex flex-col gap-3 py-3 sm:flex-row sm:items-center">
-      <div className="flex min-w-0 flex-1 items-center gap-3">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-muted text-xs font-bold">
-          {rank}
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold">
-            {row.studentName}
-            {statusLabel && (
-              <span className="badge-waiting ms-2 text-xs font-normal">{statusLabel}</span>
-            )}
-          </p>
-          <p className="truncate text-sm text-muted-foreground">
-            {cohort ? cohortLabel(cohort) : ""}
-            {row.pendingExcuses > 0 && (
-              <span className="text-accent-700 dark:text-accent-300">
-                {" · "}
-                {labels.pending(row.pendingExcuses)}
-              </span>
-            )}
-          </p>
+    <li className="card flex flex-col gap-3 py-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-muted text-xs font-bold">
+            {rank}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-semibold">
+              {row.studentName}
+              {statusLabel && (
+                <span className="badge-waiting ms-2 text-xs font-normal">{statusLabel}</span>
+              )}
+            </p>
+            <p className="truncate text-sm text-muted-foreground">
+              {cohort ? cohortLabel(cohort) : ""}
+              {row.pendingExcuses > 0 && (
+                <span className="text-accent-700 dark:text-accent-300">
+                  {" · "}
+                  {labels.pending(row.pendingExcuses)}
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex shrink-0 justify-around gap-3 text-sm tabular-nums sm:justify-start">
+          <Stat
+            value={row.maxPoints > 0 ? `${row.points}/${row.maxPoints}` : "—"}
+            label={labels.score}
+            tone="present"
+          />
+          <Stat
+            value={row.commitment === null ? "—" : `${row.commitment}%`}
+            label={labels.commitment}
+          />
+          <Stat value={`${row.done}/${row.due - row.excused}`} label={labels.done} tone="present" />
+          <Stat value={row.missed} label={labels.missed} tone={row.missed > 0 ? "absent" : "muted"} />
+          <Stat value={row.excused} label={labels.excused} tone="muted" />
+          <Stat
+            value={row.meetingsHeld === null ? "—" : `${row.meetings}/${row.meetingsHeld}`}
+            label={labels.meetings}
+          />
         </div>
       </div>
 
-      <div className="flex shrink-0 justify-around gap-3 text-sm tabular-nums sm:justify-start">
-        <Stat
-          value={row.commitment === null ? "—" : `${row.commitment}%`}
-          label={labels.commitment}
-        />
-        <Stat value={`${row.done}/${row.due - row.excused}`} label={labels.done} tone="present" />
-        <Stat value={row.missed} label={labels.missed} tone={row.missed > 0 ? "absent" : "muted"} />
-        <Stat value={row.excused} label={labels.excused} tone="muted" />
-        <Stat
-          value={row.meetingsHeld === null ? "—" : `${row.meetings}/${row.meetingsHeld}`}
-          label={labels.meetings}
-        />
-      </div>
+      {row.weeks.length > 0 && (
+        <details className="rounded-lg border border-border px-3 py-2 text-sm">
+          <summary className="cursor-pointer text-muted-foreground">{labels.weeksSummary}</summary>
+          <ul className="mt-2 flex flex-col gap-1 tabular-nums">
+            {row.weeks.map((w) => {
+              const total = w.recitation + (w.meeting ?? 0);
+              const max = w.recitationMax + (w.meetingMax ?? 0);
+              const perfect = w.meeting !== null && max > 0 && total === max;
+              return (
+                <li key={w.week} className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">{labels.weekLine(w)}</span>
+                  <span className="shrink-0 font-semibold">
+                    {perfect && <span aria-hidden="true">💎 </span>}
+                    {total}/{max}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </details>
+      )}
     </li>
   );
 }

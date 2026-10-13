@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Check, ChevronLeft, ChevronRight, PenLine } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { DateField } from "@/components/date-field";
+import { MeetingScores } from "@/components/meeting-scores";
 
 type Row = {
   enrollment_id: string;
@@ -53,10 +54,12 @@ function shiftDay(date: string, days: number) {
 
 export function DayBoard({
   cohortId,
+  teacherId,
   initialDate,
   cohort,
 }: {
   cohortId: string;
+  teacherId: string | null;
   initialDate: string;
   cohort: DayBoardCohort | null;
 }) {
@@ -346,6 +349,17 @@ export function DayBoard({
       </div>
 
       <p className="text-xs leading-relaxed text-muted-foreground">{t("note")}</p>
+
+      {week !== null && cohort && rows !== null && (
+        <MeetingScores
+          cohortId={cohortId}
+          week={week}
+          meetingDate={shiftDay(cohort.startDate, (week - 1) * 7)}
+          students={rows}
+          canEdit={editable}
+          teacherId={teacherId}
+        />
+      )}
     </div>
   );
 }
