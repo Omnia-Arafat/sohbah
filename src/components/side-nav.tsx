@@ -7,6 +7,7 @@ import {
   BookOpenText,
   CalendarDays,
   CircleCheckBig,
+  ClipboardCheck,
   ClipboardList,
   GraduationCap,
   House,
@@ -82,6 +83,8 @@ export function SideNav({
     { href: `/${academySlug}/tracks`, label: t("myTracks"), Icon: Route, prefix: true, alsoPrefix: `/${academySlug}/me/track` },
     { href: `/${academySlug}/hifz`, label: t("hifz"), Icon: BookMarked, prefix: true },
     { href: `/${academySlug}/self-test`, label: t("selfTest"), Icon: CircleCheckBig, prefix: true },
+    // Every quiz is open to staff as to students — even the one she wrote.
+    { href: `/${academySlug}/quizzes`, label: t("myQuizzes"), Icon: ClipboardCheck, prefix: true },
   ];
 
   const supervision: NavItem[] = [

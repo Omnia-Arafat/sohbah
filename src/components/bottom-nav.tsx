@@ -8,6 +8,7 @@ import {
   BookOpenText,
   CalendarDays,
   CircleCheckBig,
+  ClipboardCheck,
   ClipboardList,
   GraduationCap,
   House,
@@ -151,6 +152,7 @@ export function BottomNav({
     { href: `/${academySlug}/tracks`, label: t("myTracks"), Icon: Route },
     { href: `/${academySlug}/hifz`, label: t("hifz"), Icon: BookMarked },
     { href: `/${academySlug}/self-test`, label: t("selfTest"), Icon: CircleCheckBig },
+    { href: `/${academySlug}/quizzes`, label: t("myQuizzes"), Icon: ClipboardCheck },
   ];
 
   return (
@@ -198,11 +200,11 @@ export function BottomNav({
             */}
             {/*
               أنا كطالبة: a معلمة, مشرفة or admin who is also a student reaches
-              her own track and حفظ from here. One row, tinted, above the
+              her own track, حفظ and quizzes from here. Two short rows, tinted, above the
               staff grid — not a heading for it — so the grid keeps the height
               its comment below fights for. المصحف and الأذكار stay in the grid.
             */}
-            <div className="mb-3 grid grid-cols-3 gap-1.5">
+            <div className="mb-3 grid grid-cols-2 gap-1.5">
               {studentLinks.map(({ href, label, Icon }) => (
                 <Link
                   key={href}

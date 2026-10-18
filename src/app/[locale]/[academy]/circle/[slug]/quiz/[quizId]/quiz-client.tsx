@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -11,6 +11,7 @@ import type {
 } from "@/lib/database.types";
 import { loadPaper, saveAnswer, submitAttempt } from "./actions";
 import { fullStudentName } from "@/lib/student-name";
+import { getMe, meKey, subscribeMe } from "@/lib/me-store";
 
 const MIN_QUERY = 2;
 const DEBOUNCE_MS = 250;
@@ -83,6 +84,18 @@ export function QuizClient({
   const [gateError, setGateError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
 
+  // Whoever this browser already knows — a student, or a معلمة who entered as
+  // herself from الاختبارات — starts in one tap. Her phone still goes to
+  // start_quiz_attempt and is checked there exactly as a typed one would be.
+  const key = useMemo(() => meKey(academySlug), [academySlug]);
+  const me = useSyncExternalStore(
+    subscribeMe,
+    useCallback(() => getMe(key), [key]),
+    () => null,
+  );
+  const [notMe, setNotMe] = useState(false);
+  const remembered = me && !notMe && !student ? me : null;
+
   const trimmed = query.trim();
 
   useEffect(() => {
@@ -137,11 +150,12 @@ export function QuizClient({
     if (outcome.status === "error") {
       // Her attempts are spent: that is a finished quiz, not a dead end. Her
       // phone has just been checked, so take her to the result she already has.
-      if (outcome.reason === "no_attempts_left" && student) {
+      const studentId = String(formData.get("studentId") ?? "");
+      if (outcome.reason === "no_attempts_left" && studentId) {
         const { data: lastId } = await supabase.rpc("latest_quiz_attempt", {
           p_quiz_id: quizId,
-          p_student_id: student.id,
-          p_phone: phone,
+          p_student_id: studentId,
+          p_phone: String(formData.get("phone") ?? ""),
         });
         if (lastId) {
           router.push(resultPath(lastId));
@@ -287,6 +301,36 @@ export function QuizClient({
   }
 
   // --- the gate -------------------------------------------------------------
+  if (!attemptId && remembered) {
+    return (
+      <form action={handleStart} className="card flex flex-col gap-4">
+        <input type="hidden" name="slug" value={slug} />
+        <input type="hidden" name="quizId" value={quizId} />
+        <input type="hidden" name="studentId" value={remembered.studentId} />
+        <input type="hidden" name="phone" value={remembered.phone} />
+
+        <div className="flex items-center justify-between gap-3">
+          <p className="font-medium">
+            {t("gate.asMe", { name: fullStudentName(remembered.name, remembered.fatherName) })}
+          </p>
+          <button
+            type="button"
+            className="shrink-0 text-sm font-medium text-brand-700 underline dark:text-brand-300"
+            onClick={() => setNotMe(true)}
+          >
+            {t("gate.change")}
+          </button>
+        </div>
+
+        {gateError && <p className="text-sm text-absent">{t(`errors.${gateError}`)}</p>}
+
+        <button type="submit" className="btn-primary w-full sm:w-auto" disabled={starting}>
+          {starting ? t("gate.starting") : t("gate.start")}
+        </button>
+      </form>
+    );
+  }
+
   if (!attemptId) {
     return (
       <form action={handleStart} className="card flex flex-col gap-4">

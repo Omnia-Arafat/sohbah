@@ -5,8 +5,9 @@ import { ChevronLeft, ClipboardCheck, Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { AcademyQuiz, MyQuizAttempt } from "@/lib/database.types";
-import { getMe, meKey, subscribeMe } from "@/lib/me-store";
+import { getMe, meKey, setMe, subscribeMe } from "@/lib/me-store";
 import { createClient } from "@/lib/supabase/client";
+import { staffAsStudent } from "./actions";
 
 /**
  * الاختبارات — two tabs, because there are two different things here and a
@@ -25,9 +26,12 @@ import { createClient } from "@/lib/supabase/client";
 export function QuizzesClient({
   academySlug,
   locale,
+  isStaff,
 }: {
   academySlug: string;
   locale: string;
+  /** A signed-in معلمة, مشرفة or admin: offered her own student row in one tap. */
+  isStaff: boolean;
 }) {
   const t = useTranslations("quizzes");
   const supabase = useMemo(() => createClient(), []);
@@ -42,6 +46,17 @@ export function QuizzesClient({
   const [tab, setTab] = useState<"teacher" | "self">("teacher");
   const [quizzes, setQuizzes] = useState<AcademyQuiz[] | null>(null);
   const [results, setResults] = useState<MyQuizAttempt[]>([]);
+  const [staffPending, setStaffPending] = useState(false);
+  const [staffError, setStaffError] = useState<string | null>(null);
+
+  async function enterAsStaff() {
+    setStaffPending(true);
+    setStaffError(null);
+    const outcome = await staffAsStudent();
+    setStaffPending(false);
+    if (outcome.ok) setMe(key, outcome.me);
+    else setStaffError(outcome.reason);
+  }
 
   useEffect(() => {
     if (!me) return;
@@ -105,15 +120,35 @@ export function QuizzesClient({
       ) : !me ? (
         /* A quiz records a score against a named student, so unlike the
            self-test there is nothing meaningful to show before we know who
-           she is. She is sent to the one screen that asks. */
-        <section className="card">
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {t("signInPrompt")}
-          </p>
-          <Link href={`/${academySlug}`} className="btn-primary mt-3 w-full">
-            {t("signInCta")}
-          </Link>
-        </section>
+           she is. She is sent to the one screen that asks — unless she is
+           staff, whose own student row is one tap away. */
+        isStaff ? (
+          <section className="card">
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {t("staffPrompt")}
+            </p>
+            <button
+              type="button"
+              onClick={enterAsStaff}
+              disabled={staffPending}
+              className="btn-primary mt-3 w-full"
+            >
+              {staffPending ? "…" : t("staffCta")}
+            </button>
+            {staffError && (
+              <p className="mt-2 text-sm text-absent">{t(`staffErrors.${staffError}`)}</p>
+            )}
+          </section>
+        ) : (
+          <section className="card">
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {t("signInPrompt")}
+            </p>
+            <Link href={`/${academySlug}`} className="btn-primary mt-3 w-full">
+              {t("signInCta")}
+            </Link>
+          </section>
+        )
       ) : quizzes === null ? (
         <p className="card text-sm text-muted-foreground">…</p>
       ) : (

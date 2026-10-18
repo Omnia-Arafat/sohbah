@@ -1415,7 +1415,8 @@
     "install": "Install the app",
     "tracks": "Tracks",
     "challenges": "Challenges",
-    "excuses": "Excuses"
+    "excuses": "Excuses",
+    "myQuizzes": "My quizzes"
   },
   "lesson": {
     "today": "Today's lesson",
@@ -1446,7 +1447,8 @@
       "phonePlaceholder": "01xxxxxxxxx",
       "phoneHint": "The same number you registered with.",
       "start": "Start the quiz",
-      "starting": "Opening…"
+      "starting": "Opening…",
+      "asMe": "Starting as: {name}"
     },
     "done": {
       "title": "Submitted",
@@ -1700,7 +1702,14 @@
     "score": "{score}%",
     "selfIntro": "Your own tests, whenever you like and as often as you like — not recorded with your teacher.",
     "selfCta": "Start a self-test",
-    "myPage": "My page"
+    "myPage": "My page",
+    "staffPrompt": "You can sit any quiz like a student — even one you wrote. You will enter with the name and phone on your staff account.",
+    "staffCta": "Continue as myself",
+    "staffErrors": {
+      "notStaff": "Sign in with your staff account first.",
+      "staffPhoneMissing": "Your account has no phone number — ask a supervisor to add it.",
+      "generic": "Something went wrong. Try again."
+    }
   },
   "install": {
     "title": "Install the app",

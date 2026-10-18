@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SetupNotice } from "@/components/setup-notice";
+import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { QuizzesClient } from "./quizzes-client";
 
@@ -38,5 +39,9 @@ export default async function QuizzesPage({ params }: QuizzesPageProps) {
     );
   }
 
-  return <QuizzesClient academySlug={academySlug} locale={locale} />;
+  // Staff sit quizzes too — even the معلمة who wrote one — under their own
+  // student row; see staffAsStudent.
+  const isStaff = isActiveTeacher(await getTeacherSession());
+
+  return <QuizzesClient academySlug={academySlug} locale={locale} isStaff={isStaff} />;
 }
