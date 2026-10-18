@@ -18,6 +18,7 @@ import {
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useMyRecord } from "@/lib/use-my-record";
+import { useTyping } from "@/lib/use-typing";
 
 /**
  * The bottom bar for everyone who is not signed in — which, in this academy,
@@ -69,6 +70,7 @@ export function PublicNav({ academySlug }: { academySlug: string }) {
   const t = useTranslations("bottomNav");
   const pathname = usePathname();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const typing = useTyping();
 
   useEffect(() => {
     if (!sheetOpen) return;
@@ -165,9 +167,9 @@ export function PublicNav({ academySlug }: { academySlug: string }) {
     )}
 
     <nav
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-border-subtle bg-surface
+      className={`fixed inset-x-0 bottom-0 z-30 border-t border-border-subtle bg-surface
                  pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_10px_rgba(14,31,25,0.05)]
-                 sm:hidden print:hidden"
+                 sm:hidden print:hidden ${typing ? "hidden" : ""}`}
     >
       <div className="mx-auto flex max-w-4xl items-start justify-around pt-2">
         <PublicTab

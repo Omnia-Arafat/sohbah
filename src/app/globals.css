@@ -367,6 +367,9 @@
     @apply absolute z-20 mt-1 w-full overflow-y-auto rounded-xl border
            border-border-subtle bg-surface shadow-md;
     max-height: 16rem;
+    /* A scroll that reaches the end of the list stays in the list instead of
+       carrying on into the page behind it. */
+    overscroll-behavior: contain;
     scrollbar-width: thin;
     scrollbar-color: var(--color-brand-300) transparent;
   }

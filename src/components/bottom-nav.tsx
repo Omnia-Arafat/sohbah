@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTyping } from "@/lib/use-typing";
 import {
   BarChart,
   BookOpen,
@@ -51,6 +52,7 @@ export function BottomNav({
   const t = useTranslations("bottomNav");
   const pathname = usePathname();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const typing = useTyping();
 
   useEffect(() => {
     if (!sheetOpen) return;
@@ -262,7 +264,7 @@ export function BottomNav({
       {/* Phones only: on a wider screen the existing header and /admin cards
           already do this job, and a bar pinned to the bottom of a desktop
           window would just be in the way. */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border-subtle bg-surface pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_10px_rgba(14,31,25,0.05)] sm:hidden print:hidden">
+      <nav className={`fixed inset-x-0 bottom-0 z-30 border-t border-border-subtle bg-surface pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_10px_rgba(14,31,25,0.05)] sm:hidden print:hidden ${typing ? "hidden" : ""}`}>
         <div className="mx-auto flex max-w-4xl items-start justify-around pt-2">
           <NavTab href={home} label={t("home")} active={isHome} Icon={House} />
           {canSupervise ? (
