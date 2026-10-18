@@ -3,10 +3,9 @@ import type { createClient } from "@/lib/supabase/server";
 /**
  * تقرير المسارات: how each student kept her ورد over a period.
  *
- * Absence is computed, never stored (PLAN_TRACKS §2.8): a required day with no
- * سرد is an absence. The required days are the five after the weekly لقاء —
- * offsets 1..5 from the cohort's start_date. The لقاء itself (offset 0) and
- * الجمعة (offset 6) are excluded, though students do send cards on them.
+ * Absence is computed, never stored (PLAN_TRACKS §2.8). Each week asks for
+ * five cards (recitation_days_per_week), sent on any of its seven days: the
+ * week is short by however many fewer arrived, once it has closed.
  *
  * A day stays open until the next لقاء («من يوم الحلقة لحد معاد الحلقة اللي
  * بعدها»), so a day in the running week with no card yet is not an absence —
@@ -21,7 +20,6 @@ import type { createClient } from "@/lib/supabase/server";
 type Supabase = Awaited<ReturnType<typeof createClient>>;
 
 const ON_TRACK = ["active", "warned", "completed", "removed", "withdrawn"];
-const REQUIRED_OFFSETS = new Set([1, 2, 3, 4, 5]);
 const DAY_MS = 86_400_000;
 
 /** The Saturday the students started sending بطاقة تتميم الورد. */
@@ -83,7 +81,7 @@ export type TrackReportWeek = {
   meetingMax: number | null;
 };
 
-type ScoreRules = { perDay: number; components: { id: string; points: number }[] };
+type ScoreRules = { perDay: number; days: number; components: { id: string; points: number }[] };
 
 export type TrackReport = {
   cohorts: TrackReportCohort[];
@@ -220,7 +218,7 @@ export async function loadTrackReport(
       .from("track_rule_sets" as never)
       .select(
         "id, track_id, cohort_id, effective_from, " +
-          "track_score_rules(points_per_recitation_day), " +
+          "track_score_rules(points_per_recitation_day, recitation_days_per_week), " +
           "track_meeting_components(id, points, is_active)",
       )
       .in("track_id" as never, [...new Set(cohorts.map((c) => c.trackId))] as never),
@@ -239,7 +237,7 @@ export async function loadTrackReport(
     track_id: string;
     cohort_id: string | null;
     effective_from: string;
-    track_score_rules: { points_per_recitation_day: number }[] | null;
+    track_score_rules: { points_per_recitation_day: number; recitation_days_per_week: number }[] | null;
     track_meeting_components: { id: string; points: number; is_active: boolean }[] | null;
   }[];
   const rulesFor = (cohortId: string, trackId: string, on: string): ScoreRules => {
@@ -257,6 +255,7 @@ export async function loadTrackReport(
       )[0];
     return {
       perDay: Number(pick?.track_score_rules?.[0]?.points_per_recitation_day ?? 5),
+      days: Number(pick?.track_score_rules?.[0]?.recitation_days_per_week ?? 5),
       components: (pick?.track_meeting_components ?? [])
         .filter((c) => c.is_active)
         .map((c) => ({ id: c.id, points: Number(c.points) })),
@@ -339,13 +338,18 @@ export async function loadTrackReport(
     let last = Math.min(toDays(range.to), today, start + duration * 7 - 1);
     if (e.left_at) last = Math.min(last, toDays(dayInTimezone(new Date(e.left_at), cohort.timezone)));
 
-    // The ورد counts from the day the cards started, or the day she joined
-    // if that was later.
-    let first = Math.max(meetingFirst, toDays(WARD_COUNTING_STARTS));
-    if (e.joined_at) first = Math.max(first, toDays(dayInTimezone(new Date(e.joined_at), cohort.timezone)));
-
     const herCards = cardsBy.get(e.id);
     const herExcused = excusedBy.get(e.id);
+
+    // The ورد counts from the day the cards started, or the day she joined if
+    // that was later — unless a card shows she was already on the track
+    // (a مشرفة may enter the days before her enrolment was approved).
+    let first = Math.max(meetingFirst, toDays(WARD_COUNTING_STARTS));
+    if (e.joined_at) {
+      let joined = toDays(dayInTimezone(new Date(e.joined_at), cohort.timezone));
+      for (const iso of herCards?.keys() ?? []) joined = Math.min(joined, toDays(iso));
+      first = Math.max(first, joined);
+    }
     const rules = rulesFor(cohort.id, cohort.trackId, fromDays(today));
     const weekOf = (day: number) => Math.floor((day - start) / 7) + 1;
     const daysBy = new Map<number, DayStatus[]>();
@@ -373,43 +377,60 @@ export async function loadTrackReport(
     let excused = 0;
     let missed = 0;
 
-    for (let day = first; day <= last; day++) {
-      const offset = (((day - start) % 7) + 7) % 7;
-      if (!REQUIRED_OFFSETS.has(offset)) continue;
-      const iso = fromDays(day);
-      const card = herCards?.get(iso);
-      const closesOn = day + (7 - offset);
-      const dayList = daysBy.get(weekOf(day)) ?? [];
-      daysBy.set(weekOf(day), dayList);
-      if (!card && closesOn > today) {
-        dayList.push("open");
-        continue;
+    // Per week: five cards are asked for, on whichever days she sends them —
+    // the meeting day and الجمعة included — and each full card is worth its
+    // points, up to five. A week still running cannot be short yet.
+    for (let week = weekOf(first); week <= weekOf(last); week++) {
+      const weekStart = start + (week - 1) * 7;
+      const from = Math.max(first, weekStart);
+      const to = Math.min(last, weekStart + 6);
+      if (from > to) continue;
+
+      let any = 0;
+      let both = 0;
+      let excusedDays = 0;
+      for (let day = from; day <= to; day++) {
+        const iso = fromDays(day);
+        const card = herCards?.get(iso);
+        if (card && (card.new || card.review)) {
+          any++;
+          if (card.new && card.review) both++;
+        } else if (herExcused?.has(iso)) {
+          excusedDays++;
+        }
       }
 
-      due++;
-      const entry = weekEntry(weekOf(day));
-      dayList.push(
-        card && card.new && card.review
-          ? "done"
-          : card && (card.new || card.review)
-            ? "partial"
-            : herExcused?.has(iso)
-              ? "excused"
-              : "missed",
-      );
-      if (card && (card.new || card.review)) {
-        done++;
-        entry.recitationMax += rules.perDay;
-        if (card.new && card.review) {
-          full++;
-          entry.recitation += rules.perDay;
-        }
-      } else if (herExcused?.has(iso)) {
-        excused++;
-      } else {
-        missed++;
-        entry.recitationMax += rules.perDay;
+      const open = weekStart + 7 > today;
+      const required = open
+        ? Math.min(rules.days, any)
+        : Math.min(rules.days, to - from + 1);
+      if (required === 0) {
+        if (open) daysBy.set(week, Array(rules.days).fill("open"));
+        continue;
       }
+      const weekDone = Math.min(required, any);
+      const weekFull = Math.min(weekDone, both);
+      const weekExcused = Math.min(required - weekDone, excusedDays);
+      const weekMissed = required - weekDone - weekExcused;
+
+      due += required;
+      done += weekDone;
+      full += weekFull;
+      excused += weekExcused;
+      missed += weekMissed;
+
+      const entry = weekEntry(week);
+      entry.recitation += weekFull * rules.perDay;
+      entry.recitationMax += (required - weekExcused) * rules.perDay;
+
+      const statuses: DayStatus[] = [
+        ...Array(weekFull).fill("done"),
+        ...Array(weekDone - weekFull).fill("partial"),
+        ...Array(weekExcused).fill("excused"),
+        ...Array(weekMissed).fill("missed"),
+      ];
+      if (open) while (statuses.length < rules.days) statuses.push("open");
+      daysBy.set(week, statuses);
     }
 
     for (let week = weekOf(meetingFirst); week <= weekOf(last); week++) {

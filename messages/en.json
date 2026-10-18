@@ -2432,11 +2432,11 @@
     "rules": {
       "title": "How the score works",
       "recitation": "Portion",
-      "recitationNote": "5 points for each day with both new and review recited, the five days after the meeting.",
+      "recitationNote": "5 points for each complete card (new and review), up to 5 cards a week, on any of its days.",
       "meeting": "Meeting",
       "meetingNote": "Past recitation 5 · New recitation 5 · Reading the new portion 5",
       "week": "Week",
-      "counting": "The meeting counts only in weeks the teacher marked it. A day counts as missed once its week closes at the next meeting; portion days count from 3 October 2026."
+      "counting": "The meeting counts only in weeks the teacher marked it. Once a week closes at the next meeting, it is short by however many of its 5 cards are missing; portion cards count from 3 October 2026."
     },
     "ranking": {
       "title": "Student ranking",
@@ -2447,7 +2447,7 @@
     },
     "columns": {
       "score": "Score",
-      "days": "Days of her latest week",
+      "days": "Cards in her latest week",
       "missed": "Missed",
       "meetings": "Meetings"
     },
@@ -2467,7 +2467,7 @@
     "pendingExcuses": "{count, plural, one{# pending excuse} other{# pending excuses}}",
     "results": {
       "empty": "No students in these cohorts during this period.",
-      "legend": "The portion counts from the day the student joined the cohort. «Meetings» = sessions she joined in her cohort's circle ÷ sessions it held."
+      "legend": "The portion counts from the day the student joined the cohort, or from her first card if that came earlier. «Meetings» = sessions she joined in her cohort's circle ÷ sessions it held."
     },
     "print": {
       "page": "Page {page} of {total}",
@@ -2478,7 +2478,7 @@
       "teacher": "Teacher",
       "students": "Students",
       "averageOf40": "Average score / 40",
-      "rules": "Weekly score: portion 5 × 5 days = 25, plus meeting items 5 each = 15. Portion days count from 3 October 2026.",
+      "rules": "Weekly score: 5 per complete card, up to 5 cards = 25, plus meeting items 5 each = 15. Portion cards count from 3 October 2026.",
       "generatedOn": "Generated {date}.",
       "teacherIs": "Teacher: {name}",
       "cohortAverage": "Cohort average / 40",
