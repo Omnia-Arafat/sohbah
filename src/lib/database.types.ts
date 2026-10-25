@@ -361,6 +361,16 @@ export type HomeworkPaperRow = {
   option_text: string | null;
 };
 
+/** One expected student of a واجب, from `homework_progress_for`. No marks. */
+export type HomeworkProgressRow = {
+  student_id: string;
+  name: string;
+  father_name: string;
+  checked_count: number;
+  question_count: number;
+  last_checked_at: string | null;
+};
+
 /** One answer checked by `check_homework_answer`. */
 export type HomeworkCheck = {
   /** Null for a written answer, which has no automatic mark. */
@@ -1114,6 +1124,10 @@ export type Database = {
           p_text: string | null;
         };
         Returns: HomeworkCheck[];
+      };
+      homework_progress_for: {
+        Args: { p_quiz_id: string };
+        Returns: HomeworkProgressRow[];
       };
       regrade_quiz: {
         Args: { p_quiz_id: string };

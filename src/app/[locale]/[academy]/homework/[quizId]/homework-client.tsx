@@ -41,7 +41,8 @@ function foldQuestions(rows: HomeworkPaperRow[]): Question[] {
 /**
  * A واجب: no clock, no attempts, no score. She answers, checks, and is shown
  * right or wrong with the correct answer; she can try a question again.
- * Nothing is recorded — the check is a read.
+ * A check records only that she looked at that question — never her answer or
+ * whether it was right — so her معلمة can see who did the واجب.
  */
 export function HomeworkClient({
   academySlug,

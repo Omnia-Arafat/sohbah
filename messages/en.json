@@ -1183,7 +1183,28 @@
       },
       "kindHints": {
         "quiz": "Timed, with attempts and a score that is recorded.",
-        "homework": "Solved at her own pace, each answer shown right or wrong straight away — no timer, no score, nothing recorded."
+        "homework": "Solved at her own pace, each answer shown right or wrong straight away — no timer, no score. The teacher only sees who has done it."
+      },
+      "whoSolved": "Who solved it",
+      "homeworkLink": {
+        "title": "Homework link",
+        "hint": "Copy the link and send it to the students — it opens the homework for them under their own name."
+      },
+      "homeworkProgress": {
+        "back": "Back to the homework",
+        "subtitle": "Who has done the homework and who hasn't — no scores.",
+        "groups": {
+          "solved": "Solved",
+          "started": "Started",
+          "notYet": "Not yet"
+        },
+        "empty": {
+          "solved": "Nobody has finished this homework yet.",
+          "started": "Nobody is part-way through.",
+          "notYet": "Every student has started this homework."
+        },
+        "partial": "{done} of {total}",
+        "rosterNote": "“Not yet” lists students who attended a circle of this homework's type in the last 60 days and haven't checked a single question."
       }
     },
     "progress": {

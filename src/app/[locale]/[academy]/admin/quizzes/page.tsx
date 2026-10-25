@@ -182,14 +182,12 @@ export default async function QuizzesPage({ params }: PageProps) {
                         </button>
                       </form>
 
-                      {!quiz.is_homework && (
-                        <Link
-                          href={`/${academySlug}/admin/quizzes/${quiz.id}/results`}
-                          className="btn-secondary px-4 py-2 text-sm"
-                        >
-                          {t("results")}
-                        </Link>
-                      )}
+                      <Link
+                        href={`/${academySlug}/admin/quizzes/${quiz.id}/results`}
+                        className="btn-secondary px-4 py-2 text-sm"
+                      >
+                        {quiz.is_homework ? t("whoSolved") : t("results")}
+                      </Link>
 
                       <form action={deleteQuiz}>
                         <input type="hidden" name="academySlug" value={academySlug} />

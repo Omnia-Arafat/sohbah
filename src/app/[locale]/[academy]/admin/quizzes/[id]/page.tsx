@@ -5,6 +5,7 @@ import { Check } from "lucide-react";
 import { BackLink } from "@/components/back-link";
 import { ConfirmButton } from "@/components/confirm-button";
 import { CopyLinkButton } from "@/components/copy-link-button";
+import { Link } from "@/i18n/navigation";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
@@ -189,6 +190,28 @@ export default async function QuizBuilderPage({ params }: PageProps) {
         </div>
       </section>
 
+      {quiz.is_homework ? (
+        <section className="card flex flex-col gap-3">
+          <div>
+            <h2 className="text-lg font-semibold">{t("homeworkLink.title")}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {quiz.is_published ? t("homeworkLink.hint") : t("links.draftHint")}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <p dir="ltr" className="min-w-0 flex-1 truncate text-start text-xs text-muted-foreground">
+              {`/${locale}/${academySlug}/homework/${quiz.id}`}
+            </p>
+            <CopyLinkButton path={`/${locale}/${academySlug}/homework/${quiz.id}`} />
+          </div>
+          <Link
+            href={`/${academySlug}/admin/quizzes/${quiz.id}/results`}
+            className="btn-secondary w-full sm:w-auto"
+          >
+            {t("whoSolved")}
+          </Link>
+        </section>
+      ) : (
       <section className="card flex flex-col gap-3">
         <div>
           <h2 className="text-lg font-semibold">{t("links.title")}</h2>
@@ -220,6 +243,7 @@ export default async function QuizBuilderPage({ params }: PageProps) {
           </ul>
         )}
       </section>
+      )}
 
       <section>
         <h2 className="mb-3 text-lg font-semibold">

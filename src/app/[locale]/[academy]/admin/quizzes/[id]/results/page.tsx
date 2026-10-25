@@ -6,10 +6,12 @@ import { getAcademyBySlug } from "@/lib/academy-dal";
 import { requireStaffSession } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { gradeAnswer } from "./actions";
+import { HomeworkProgress } from "./homework-progress";
 import { fullStudentName } from "@/lib/student-name";
 
 type PageProps = {
   params: Promise<{ locale: string; academy: string; id: string }>;
+  searchParams: Promise<{ show?: string }>;
 };
 
 export const dynamic = "force-dynamic";
@@ -20,7 +22,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return { title: t("title") };
 }
 
-export default async function QuizResultsPage({ params }: PageProps) {
+export default async function QuizResultsPage({ params, searchParams }: PageProps) {
   const { locale, academy: academySlug, id } = await params;
   setRequestLocale(locale);
 
@@ -40,6 +42,24 @@ export default async function QuizResultsPage({ params }: PageProps) {
     .maybeSingle();
 
   if (!quiz) notFound();
+
+  if (quiz.is_homework) {
+    const { show } = await searchParams;
+    const { data: progress, error } = await supabase.rpc("homework_progress_for", {
+      p_quiz_id: quiz.id,
+    });
+    if (error) console.error("homework_progress_for failed", error);
+    return (
+      <HomeworkProgress
+        academySlug={academySlug}
+        quizId={quiz.id}
+        title={quiz.title}
+        rows={progress ?? []}
+        show={show === "started" || show === "notYet" ? show : "solved"}
+        locale={locale}
+      />
+    );
+  }
 
   const { data: attempts } = await supabase
     .from("quiz_attempts")
