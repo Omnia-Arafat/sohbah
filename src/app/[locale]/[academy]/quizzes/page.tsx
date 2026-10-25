@@ -3,10 +3,11 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { SetupNotice } from "@/components/setup-notice";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
-import { QuizzesClient } from "./quizzes-client";
+import { QuizzesClient, type QuizzesTab } from "./quizzes-client";
 
 type QuizzesPageProps = {
   params: Promise<{ locale: string; academy: string }>;
+  searchParams: Promise<{ tab?: string }>;
 };
 
 export async function generateMetadata({
@@ -24,8 +25,10 @@ export async function generateMetadata({
  * quizzes are hers depends on which circles she attends, and who she is lives
  * only in her own browser.
  */
-export default async function QuizzesPage({ params }: QuizzesPageProps) {
+export default async function QuizzesPage({ params, searchParams }: QuizzesPageProps) {
   const { locale, academy: academySlug } = await params;
+  const { tab } = await searchParams;
+  const initialTab: QuizzesTab = tab === "homework" || tab === "self" ? tab : "teacher";
   setRequestLocale(locale);
 
   const t = await getTranslations("quizzes");
@@ -43,5 +46,5 @@ export default async function QuizzesPage({ params }: QuizzesPageProps) {
   // student row; see staffAsStudent.
   const isStaff = isActiveTeacher(await getTeacherSession());
 
-  return <QuizzesClient academySlug={academySlug} locale={locale} isStaff={isStaff} />;
+  return <QuizzesClient academySlug={academySlug} locale={locale} isStaff={isStaff} initialTab={initialTab} />;
 }

@@ -123,13 +123,15 @@ export default async function QuizBuilderPage({ params }: PageProps) {
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {t("questionCount", { count: String(questions.length) })}
-          {" · "}
-          {t("totalPoints", { points: String(totalPoints) })}
+          {quiz.is_homework
+            ? ` · ${t("kinds.homework")}`
+            : ` · ${t("totalPoints", { points: String(totalPoints) })}`}
           {quiz.duration_minutes
             ? ` · ${t("durationLabel", { minutes: String(quiz.duration_minutes) })}`
             : ""}
         </p>
 
+        {!quiz.is_homework && (
         <form
           action={setQuizDuration}
           // Remount after a save so the box shows the stored value.
@@ -158,6 +160,7 @@ export default async function QuizBuilderPage({ params }: PageProps) {
             {t("saveDuration")}
           </button>
         </form>
+        )}
 
         <div className="mt-4">
           <form action={setQuizPublished}>

@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { ChevronLeft, ClipboardCheck, Lock } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { BookOpenCheck, ChevronLeft, ClipboardCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import type { AcademyQuiz, MyQuizAttempt } from "@/lib/database.types";
+import type { AcademyHomework, AcademyQuiz, MyQuizAttempt } from "@/lib/database.types";
 import { getMe, meKey, setMe, subscribeMe } from "@/lib/me-store";
 import { createClient } from "@/lib/supabase/client";
 import { staffAsStudent } from "./actions";
@@ -23,13 +23,17 @@ import { staffAsStudent } from "./actions";
  * own circles, each labelled with its circle type and معلمة so the list stays
  * readable as it grows.
  */
+export type QuizzesTab = "teacher" | "homework" | "self";
+
 export function QuizzesClient({
   academySlug,
   locale,
   isStaff,
+  initialTab,
 }: {
   academySlug: string;
   locale: string;
+  initialTab: QuizzesTab;
   /** A signed-in معلمة, مشرفة or admin: offered her own student row in one tap. */
   isStaff: boolean;
 }) {
@@ -43,27 +47,36 @@ export function QuizzesClient({
     () => null,
   );
 
-  const [tab, setTab] = useState<"teacher" | "self">("teacher");
+  const [tab, setTab] = useState<QuizzesTab>(initialTab);
   const [quizzes, setQuizzes] = useState<AcademyQuiz[] | null>(null);
+  const [homework, setHomework] = useState<AcademyHomework[]>([]);
   const [results, setResults] = useState<MyQuizAttempt[]>([]);
   const [staffPending, setStaffPending] = useState(false);
   const [staffError, setStaffError] = useState<string | null>(null);
 
-  async function enterAsStaff() {
+  const enterAsStaff = useCallback(async () => {
     setStaffPending(true);
     setStaffError(null);
     const outcome = await staffAsStudent();
     setStaffPending(false);
     if (outcome.ok) setMe(key, outcome.me);
     else setStaffError(outcome.reason);
-  }
+  }, [key]);
+
+  // Signed in as staff is signed in: she is not asked to tap through again.
+  const triedStaff = useRef(false);
+  useEffect(() => {
+    if (me || !isStaff || triedStaff.current) return;
+    triedStaff.current = true;
+    void enterAsStaff();
+  }, [me, isStaff, enterAsStaff]);
 
   useEffect(() => {
     if (!me) return;
     let cancelled = false;
 
     (async () => {
-      const [open, done] = await Promise.all([
+      const [open, done, practice] = await Promise.all([
         supabase.rpc("academy_quizzes", {
           p_student_id: me.studentId,
           p_phone: me.phone,
@@ -72,12 +85,18 @@ export function QuizzesClient({
           p_student_id: me.studentId,
           p_phone: me.phone,
         }),
+        supabase.rpc("academy_homework", {
+          p_student_id: me.studentId,
+          p_phone: me.phone,
+        }),
       ]);
       if (cancelled) return;
       if (open.error) console.error("academy_quizzes failed", open.error);
       if (done.error) console.error("my_quiz_attempts failed", done.error);
+      if (practice.error) console.error("academy_homework failed", practice.error);
       setQuizzes((open.data ?? []) as AcademyQuiz[]);
       setResults((done.data ?? []) as MyQuizAttempt[]);
+      setHomework((practice.data ?? []) as AcademyHomework[]);
     })();
 
     return () => {
@@ -93,12 +112,17 @@ export function QuizzesClient({
 
       <div
         role="tablist"
-        className="grid grid-cols-2 gap-1.5 rounded-2xl bg-surface-muted p-1.5"
+        className="grid grid-cols-3 gap-1.5 rounded-2xl bg-surface-muted p-1.5"
       >
         <TabButton
           active={tab === "teacher"}
           onClick={() => setTab("teacher")}
           label={t("tabs.fromTeacher")}
+        />
+        <TabButton
+          active={tab === "homework"}
+          onClick={() => setTab("homework")}
+          label={t("tabs.homework")}
         />
         <TabButton
           active={tab === "self"}
@@ -151,6 +175,39 @@ export function QuizzesClient({
         )
       ) : quizzes === null ? (
         <p className="card text-sm text-muted-foreground">…</p>
+      ) : tab === "homework" ? (
+        homework.length === 0 ? (
+          <section className="card">
+            <p className="font-semibold">{t("homeworkEmpty")}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{t("homeworkEmptyHint")}</p>
+          </section>
+        ) : (
+          <section className="flex flex-col gap-3">
+            <p className="text-sm leading-relaxed text-muted-foreground">{t("homeworkIntro")}</p>
+            {homework.map((item) => (
+              <Link
+                key={item.quiz_id}
+                href={`/${academySlug}/homework/${item.quiz_id}`}
+                className="card flex items-center gap-3 transition-colors hover:border-brand-400"
+              >
+                <BookOpenCheck aria-hidden="true" className="h-6 w-6 shrink-0 text-brand-600 dark:text-brand-300" />
+                <div className="min-w-0 flex-grow">
+                  <p className="font-semibold">{item.title}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {[
+                      locale === "ar" ? item.type_name_ar : item.type_name_en,
+                      item.teacher_name,
+                      t("questions", { count: item.question_count }),
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                </div>
+                <ChevronLeft aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground ltr:rotate-180" />
+              </Link>
+            ))}
+          </section>
+        )
       ) : (
         <>
           {quizzes.length === 0 ? (
@@ -290,14 +347,6 @@ function QuizCard({
               })}
             </span>
           )}
-        </p>
-
-        {/* The phone is the credential for sitting it, exactly as it is for
-            صفحتي — said here so the requirement is not a surprise on the next
-            screen. */}
-        <p className="mt-3 flex items-start gap-2 rounded-xl bg-accent-100 p-3 text-xs leading-relaxed text-accent-700 dark:bg-accent-700/15 dark:text-accent-300">
-          <Lock aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
-          {t("identityNote")}
         </p>
       </div>
 

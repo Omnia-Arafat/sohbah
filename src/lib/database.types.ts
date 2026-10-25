@@ -337,6 +337,38 @@ export type AcademyQuiz = {
   attempts_used: number;
 };
 
+/** One published واجب open to her, from `academy_homework`. */
+export type AcademyHomework = {
+  quiz_id: string;
+  title: string;
+  instructions: string | null;
+  question_count: number;
+  type_name_ar: string;
+  type_name_en: string;
+  teacher_name: string | null;
+};
+
+/** A question × option of a واجب, from `homework_paper`. No answer key. */
+export type HomeworkPaperRow = {
+  quiz_title: string;
+  instructions: string | null;
+  question_id: string;
+  question_position: number;
+  kind: QuestionKind;
+  prompt: string;
+  media_url: string | null;
+  option_id: string | null;
+  option_text: string | null;
+};
+
+/** One answer checked by `check_homework_answer`. */
+export type HomeworkCheck = {
+  /** Null for a written answer, which has no automatic mark. */
+  is_correct: boolean | null;
+  correct_option_ids: string[] | null;
+  correct_text: string | null;
+};
+
 /** One row of a marked paper, from `quiz_attempt_review`: a question × option. */
 export type QuizReviewRow = {
   quiz_title: string;
@@ -644,6 +676,8 @@ export type Quiz = {
   shuffle_questions: boolean;
   show_results: ShowResults;
   is_published: boolean;
+  /** A واجب: solved at her own pace, checked per question, never scored. */
+  is_homework: boolean;
   created_by: string | null;
   created_at: string;
 };
@@ -899,7 +933,7 @@ export type Database = {
           | "id" | "created_at" | "is_published" | "pass_score" | "max_attempts"
           | "shuffle_questions" | "show_results" | "instructions" | "opens_at"
           | "closes_at" | "duration_minutes" | "curriculum_id" | "circle_id"
-          | "created_by"
+          | "created_by" | "is_homework"
         >;
         Update: Partial<Quiz>;
         Relationships: [];
@@ -1062,6 +1096,24 @@ export type Database = {
       academy_quizzes: {
         Args: { p_student_id: string; p_phone: string };
         Returns: AcademyQuiz[];
+      };
+      academy_homework: {
+        Args: { p_student_id: string; p_phone: string };
+        Returns: AcademyHomework[];
+      };
+      homework_paper: {
+        Args: { p_quiz_id: string; p_student_id: string; p_phone: string };
+        Returns: HomeworkPaperRow[];
+      };
+      check_homework_answer: {
+        Args: {
+          p_question_id: string;
+          p_student_id: string;
+          p_phone: string;
+          p_option_ids: string[] | null;
+          p_text: string | null;
+        };
+        Returns: HomeworkCheck[];
       };
       regrade_quiz: {
         Args: { p_quiz_id: string };

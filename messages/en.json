@@ -1071,7 +1071,8 @@
         "instructions": "Instructions for students (optional)",
         "duration": "Duration in minutes",
         "maxAttempts": "Attempts allowed",
-        "passScore": "Pass mark %"
+        "passScore": "Pass mark %",
+        "kind": "Type"
       },
       "placeholders": {
         "title": "Hadith 1-10 quiz",
@@ -1175,6 +1176,14 @@
         "markCorrect": "Correct",
         "markWrong": "Wrong",
         "blankAnswer": "(left blank)"
+      },
+      "kinds": {
+        "quiz": "Quiz",
+        "homework": "Homework"
+      },
+      "kindHints": {
+        "quiz": "Timed, with attempts and a score that is recorded.",
+        "homework": "Solved at her own pace, each answer shown right or wrong straight away — no timer, no score, nothing recorded."
       }
     },
     "progress": {
@@ -1678,7 +1687,8 @@
     "title": "Quizzes",
     "tabs": {
       "fromTeacher": "From teachers",
-      "selfTest": "Test yourself"
+      "selfTest": "Test yourself",
+      "homework": "Homework"
     },
     "signInPrompt": "Sign in with your name and phone first, so we know whose quizzes to show.",
     "signInCta": "Sign in",
@@ -1688,7 +1698,6 @@
     "minutes": "{count, plural, one{# minute} other{# minutes}}",
     "questions": "{count, plural, one{# question} other{# questions}}",
     "attempts": "{count, plural, one{# attempt} other{# attempts}}",
-    "identityNote": "You will need your name and phone number so we know it is you.",
     "byTeacher": "Teacher {name}",
     "start": "Start the quiz",
     "retake": "Try again",
@@ -1709,7 +1718,34 @@
       "notStaff": "Sign in with your staff account first.",
       "staffPhoneMissing": "Your account has no phone number — ask a supervisor to add it.",
       "generic": "Something went wrong. Try again."
-    }
+    },
+    "homeworkIntro": "Homework from your teachers — solve it at your own pace and see right and wrong straight away. No timer, no scores.",
+    "homeworkEmpty": "No homework right now.",
+    "homeworkEmptyHint": "When a teacher publishes homework it will appear here."
+  },
+  "homework": {
+    "title": "Homework",
+    "back": "Back to homework",
+    "intro": "Answer each question and tap “Check” to see whether you got it right.",
+    "questionsNav": "Homework questions",
+    "answerPlaceholder": "Write your answer here",
+    "check": "Check",
+    "checking": "Checking…",
+    "tryAgain": "Try again",
+    "right": "Right",
+    "wrong": "Wrong",
+    "compare": "Compare your answer",
+    "correctAnswer": "Correct answer",
+    "modelAnswer": "Model answer",
+    "noAutoCheck": "This is a written question — go over it with your teacher.",
+    "previous": "Previous",
+    "next": "Next",
+    "progress": "{done} of {total}",
+    "finished": "You have finished this homework — well done.",
+    "restart": "Start the homework again",
+    "notFound": "This homework is not available.",
+    "signInPrompt": "Sign in with your name and phone first to solve the homework.",
+    "signInCta": "Sign in"
   },
   "install": {
     "title": "Install the app",

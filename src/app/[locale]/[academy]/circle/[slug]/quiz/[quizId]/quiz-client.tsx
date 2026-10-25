@@ -11,7 +11,8 @@ import type {
 } from "@/lib/database.types";
 import { loadPaper, saveAnswer, submitAttempt } from "./actions";
 import { fullStudentName } from "@/lib/student-name";
-import { getMe, meKey, subscribeMe } from "@/lib/me-store";
+import { getMe, meKey, setMe, subscribeMe } from "@/lib/me-store";
+import { staffAsStudent } from "../../../../quizzes/actions";
 
 const MIN_QUERY = 2;
 const DEBOUNCE_MS = 250;
@@ -45,7 +46,8 @@ function foldQuestions(rows: QuizForStudentRow[]): Question[] {
       };
       byId.set(row.question_id, question);
     }
-    if (row.option_id) {
+    // A fill_blank question's options are its accepted answers, not choices.
+    if (row.option_id && row.kind !== "fill_blank") {
       question.options.push({ id: row.option_id, text: row.option_text ?? "" });
       if (row.chosen) question.chosen.push(row.option_id);
     }
@@ -59,6 +61,7 @@ export function QuizClient({
   quizId,
   title,
   instructions,
+  isStaff,
   startAction,
 }: {
   academySlug: string;
@@ -66,6 +69,7 @@ export function QuizClient({
   quizId: string;
   title: string;
   instructions: string | null;
+  isStaff: boolean;
   startAction: (formData: FormData) => Promise<
     | { status: "started"; attemptId: string; expiresAt: string | null }
     | { status: "error"; reason: string }
@@ -93,8 +97,24 @@ export function QuizClient({
     useCallback(() => getMe(key), [key]),
     () => null,
   );
-  const [notMe, setNotMe] = useState(false);
-  const remembered = me && !notMe && !student ? me : null;
+  const remembered = me && !student ? me : null;
+
+  // Staff signed in to the site are already known: their own student row is
+  // fetched for them instead of the name-and-phone gate.
+  const [staffTried, setStaffTried] = useState(false);
+  useEffect(() => {
+    if (me || !isStaff || staffTried) return;
+    let cancelled = false;
+    staffAsStudent().then((outcome) => {
+      if (cancelled) return;
+      if (outcome.ok) setMe(key, outcome.me);
+      setStaffTried(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [me, isStaff, staffTried, key]);
+  const resolvingStaff = isStaff && !me && !staffTried;
 
   const trimmed = query.trim();
 
@@ -309,18 +329,9 @@ export function QuizClient({
         <input type="hidden" name="studentId" value={remembered.studentId} />
         <input type="hidden" name="phone" value={remembered.phone} />
 
-        <div className="flex items-center justify-between gap-3">
-          <p className="font-medium">
-            {t("gate.asMe", { name: fullStudentName(remembered.name, remembered.fatherName) })}
-          </p>
-          <button
-            type="button"
-            className="shrink-0 text-sm font-medium text-brand-700 underline dark:text-brand-300"
-            onClick={() => setNotMe(true)}
-          >
-            {t("gate.change")}
-          </button>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          {t("gate.asMe", { name: fullStudentName(remembered.name, remembered.fatherName) })}
+        </p>
 
         {gateError && <p className="text-sm text-absent">{t(`errors.${gateError}`)}</p>}
 
@@ -329,6 +340,10 @@ export function QuizClient({
         </button>
       </form>
     );
+  }
+
+  if (!attemptId && resolvingStaff) {
+    return <p className="card text-sm text-muted-foreground">…</p>;
   }
 
   if (!attemptId) {
@@ -474,7 +489,7 @@ export function QuizClient({
             {index + 1}. {question.prompt}
           </p>
 
-          {question.options.length > 0 ? (
+          {question.kind === "mcq" || question.kind === "multi" || question.kind === "true_false" ? (
             <ul className="mt-3 flex flex-col gap-2">
               {question.options.map((option) => {
                 const checked = question.chosen.includes(option.id);

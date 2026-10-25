@@ -21,6 +21,7 @@ import {
   setJoined,
   subscribeJoined,
 } from "@/lib/joined-store";
+import { getMe } from "@/lib/me-store";
 import { createClient } from "@/lib/supabase/client";
 import { useLiveQueue } from "@/lib/use-live-queue";
 import { useReorderAnimation } from "@/lib/use-reorder-animation";
@@ -168,11 +169,13 @@ export function CircleClient({
     through the academy's whole roster every single time, for something she
     had already answered.
   */
-  const me = useSyncExternalStore(
+  const storedMe = useSyncExternalStore(
     subscribeJoined,
     () => getJoined(meKey(academySlug)),
     () => null,
   );
+  const [notMe, setNotMe] = useState(false);
+  const me = notMe ? null : storedMe;
 
   /*
     The gender of whoever is using this browser right now.
@@ -299,8 +302,11 @@ export function CircleClient({
     await refreshQueue();
     shouldScrollRef.current = true;
     setJoined(storageKey, { studentId: student.id, name: student.name, genderCategory: student.gender_category });
-    // Remembered for every other circle and every later day, not just here.
-    setJoined(meKey(academySlug), { studentId: student.id, name: student.name, genderCategory: student.gender_category });
+    // Remembered for every other circle and every later day — but never over
+    // a signed-in identity, whose phone the quizzes and her record need.
+    if (!getMe(meKey(academySlug))?.phone) {
+      setJoined(meKey(academySlug), { studentId: student.id, name: student.name, genderCategory: student.gender_category });
+    }
   }
 
   async function joinAsStaff() {
@@ -425,7 +431,7 @@ export function CircleClient({
         </button>
         <button
           type="button"
-          onClick={() => clearJoined(meKey(academySlug))}
+          onClick={() => setNotMe(true)}
           className="mt-2 w-full min-h-11 text-sm font-semibold text-muted-foreground underline"
         >
           {t("me.notMe", { gender })}

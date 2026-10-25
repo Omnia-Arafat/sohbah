@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BackLink } from "@/components/back-link";
+import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { startAttempt } from "./actions";
 import { QuizClient } from "./quiz-client";
@@ -44,6 +45,8 @@ export default async function TakeQuizPage({ params }: PageProps) {
   const quiz = quizzes?.find((row) => row.id === quizId);
   if (!quiz) notFound();
 
+  const isStaff = isActiveTeacher(await getTeacherSession());
+
   return (
     <div className="flex flex-col gap-6">
       <section>
@@ -65,6 +68,7 @@ export default async function TakeQuizPage({ params }: PageProps) {
         quizId={quiz.id}
         title={quiz.title}
         instructions={quiz.instructions}
+        isStaff={isStaff}
         startAction={async (formData) => {
           "use server";
           // `useActionState`'s shape is not what this needs — the client keeps

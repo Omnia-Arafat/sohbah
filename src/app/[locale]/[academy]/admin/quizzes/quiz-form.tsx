@@ -61,6 +61,7 @@ export function QuizForm({
   const [circleType, setCircleType] = useState(
     values?.circleType ?? circleTypes[0]?.slug ?? "",
   );
+  const [isHomework, setIsHomework] = useState(values?.isHomework === "1");
 
   const scopedCurricula = useMemo(
     () => curricula.filter((c) => c.circle_type === circleType),
@@ -78,6 +79,32 @@ export function QuizForm({
   return (
     <form action={formAction} className="card flex flex-col gap-4" noValidate>
       <input type="hidden" name="academySlug" value={academySlug} />
+      <input type="hidden" name="isHomework" value={isHomework ? "1" : "0"} />
+
+      <div>
+        <p className="field-label">{t("fields.kind")}</p>
+        <div role="radiogroup" className="grid grid-cols-2 gap-1.5 rounded-2xl bg-surface-muted p-1.5">
+          {([false, true] as const).map((homework) => (
+            <button
+              key={String(homework)}
+              type="button"
+              role="radio"
+              aria-checked={isHomework === homework}
+              onClick={() => setIsHomework(homework)}
+              className={`h-11 rounded-xl text-sm transition-colors ${
+                isHomework === homework
+                  ? "bg-surface font-bold text-foreground shadow-sm"
+                  : "font-semibold text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {homework ? t("kinds.homework") : t("kinds.quiz")}
+            </button>
+          ))}
+        </div>
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          {isHomework ? t("kindHints.homework") : t("kindHints.quiz")}
+        </p>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <div>
@@ -171,7 +198,7 @@ export function QuizForm({
         />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className={`grid gap-4 sm:grid-cols-3 ${isHomework ? "hidden" : ""}`}>
         <div>
           <label className="field-label" htmlFor="durationMinutes">
             {t("fields.duration")}

@@ -45,6 +45,9 @@ export function getMe(key: string): Me | null {
   try {
     const raw = window.localStorage.getItem(key);
     if (raw) value = JSON.parse(raw) as Me;
+    // An older circle page wrote a copy without her phone over this key; it
+    // cannot open anything phone-checked, so it is no identity at all.
+    if (value && !value.phone) value = null;
   } catch {
     // Private mode or blocked storage: she signs in again this visit.
   }

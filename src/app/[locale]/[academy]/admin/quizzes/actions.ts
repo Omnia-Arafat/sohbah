@@ -28,6 +28,7 @@ type QuizValues = {
   durationMinutes: string;
   maxAttempts: string;
   passScore: string;
+  isHomework: string;
 };
 
 export type QuizFormState =
@@ -49,6 +50,7 @@ function readQuiz(formData: FormData): QuizValues {
     durationMinutes: String(formData.get("durationMinutes") ?? "").trim(),
     maxAttempts: String(formData.get("maxAttempts") ?? "1").trim(),
     passScore: String(formData.get("passScore") ?? "50").trim(),
+    isHomework: String(formData.get("isHomework") ?? "0"),
   };
 }
 
@@ -66,7 +68,9 @@ export async function createQuiz(
   else if (values.title.length > MAX_TITLE) fieldErrors.title = "tooLong";
   if (!values.circleType) fieldErrors.circleType = "required";
 
-  const duration = values.durationMinutes ? Number(values.durationMinutes) : null;
+  const isHomework = values.isHomework === "1";
+  const duration =
+    !isHomework && values.durationMinutes ? Number(values.durationMinutes) : null;
   if (duration !== null && (!Number.isFinite(duration) || duration < 1 || duration > 480)) {
     fieldErrors.durationMinutes = "range";
   }
@@ -94,6 +98,7 @@ export async function createQuiz(
       max_attempts: Number(values.maxAttempts) || 1,
       pass_score: Number(values.passScore) || 50,
       created_by: session.teacher.id,
+      ...(isHomework ? { is_homework: true } : {}),
     })
     .select("id")
     .single();

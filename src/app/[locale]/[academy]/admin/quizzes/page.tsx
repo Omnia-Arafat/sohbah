@@ -135,6 +135,11 @@ export default async function QuizzesPage({ params }: PageProps) {
                         >
                           {quiz.is_published ? t("published") : t("draft")}
                         </span>
+                        {quiz.is_homework && (
+                          <span className="ms-1 rounded-full bg-accent-100 px-2 py-0.5 text-xs font-normal text-accent-700 dark:bg-accent-700/20 dark:text-accent-300">
+                            {t("kinds.homework")}
+                          </span>
+                        )}
                       </p>
                       <p className="mt-0.5 text-sm text-muted-foreground">
                         {circleTypeLabel(circleTypes, quiz.circle_type, locale)}
@@ -177,12 +182,14 @@ export default async function QuizzesPage({ params }: PageProps) {
                         </button>
                       </form>
 
-                      <Link
-                        href={`/${academySlug}/admin/quizzes/${quiz.id}/results`}
-                        className="btn-secondary px-4 py-2 text-sm"
-                      >
-                        {t("results")}
-                      </Link>
+                      {!quiz.is_homework && (
+                        <Link
+                          href={`/${academySlug}/admin/quizzes/${quiz.id}/results`}
+                          className="btn-secondary px-4 py-2 text-sm"
+                        >
+                          {t("results")}
+                        </Link>
+                      )}
 
                       <form action={deleteQuiz}>
                         <input type="hidden" name="academySlug" value={academySlug} />
