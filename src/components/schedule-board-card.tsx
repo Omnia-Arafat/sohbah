@@ -23,14 +23,12 @@ export async function ScheduleBoardCard({
   academySlug,
   locale,
   typeLabel,
-  showTeacher,
   index,
 }: {
   loaded: LoadedBoard;
   academySlug: string;
   locale: string;
   typeLabel: string;
-  showTeacher: boolean;
   /** Position on the page, used only to stagger the entrance animation. */
   index: number;
 }) {
@@ -122,30 +120,20 @@ export async function ScheduleBoardCard({
                                  transition-all hover:-translate-y-0.5 hover:border-brand-500
                                  hover:shadow-sm focus-visible:outline-2
                                  focus-visible:outline-offset-2 focus-visible:outline-brand-600"
-                      title={showTeacher ? entry.circleName : typeLabel}
+                      title={entry.circleName}
                     >
-                      {showTeacher && (
-                        <>
-                          <span
-                            aria-hidden="true"
-                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full
-                                       bg-brand-100 font-display text-sm font-bold text-brand-700
-                                       dark:bg-brand-800 dark:text-brand-100"
-                          >
-                            {entry.teacherName.trim().charAt(0)}
-                          </span>
-                          <span className="font-medium group-hover:text-brand-700 dark:group-hover:text-brand-300">
-                            {entry.teacherName}
-                          </span>
-                        </>
-                      )}
                       <span
-                        className={`flex items-center gap-1 ${
-                          showTeacher
-                            ? "text-xs text-muted-foreground"
-                            : "font-medium group-hover:text-brand-700 dark:group-hover:text-brand-300"
-                        }`}
+                        aria-hidden="true"
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full
+                                   bg-brand-100 font-display text-sm font-bold text-brand-700
+                                   dark:bg-brand-800 dark:text-brand-100"
                       >
+                        {entry.teacherName.trim().charAt(0)}
+                      </span>
+                      <span className="font-medium group-hover:text-brand-700 dark:group-hover:text-brand-300">
+                        {entry.teacherName}
+                      </span>
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock className="h-3.5 w-3.5" aria-hidden="true" />
                         {formatTime(entry.startTime, locale)}
                       </span>

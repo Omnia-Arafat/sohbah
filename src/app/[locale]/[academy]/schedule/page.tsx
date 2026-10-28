@@ -85,7 +85,6 @@ export default async function SchedulePage({ params }: PageProps) {
                 loaded.board.circle_type,
                 locale,
               )}
-              showTeacher={viewer.kind === "staff"}
               index={index}
             />
           ))}

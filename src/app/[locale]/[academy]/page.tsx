@@ -250,6 +250,7 @@ export default async function AcademyHome({ params, searchParams }: AcademyHomeP
           <article className="overflow-hidden rounded-2xl border-2 border-brand-300 bg-surface shadow-sm dark:border-brand-700">
             <header className="flex items-center justify-between gap-3 bg-brand-50 px-4 py-3 dark:bg-brand-950/50">
               <CircleWhen
+                teacherName={next.teacherName}
                 typeLabel={circleTypeLabel(
                   circleTypes,
                   typeByCircle.get(next.circleId) ?? "",
@@ -347,6 +348,7 @@ export default async function AcademyHome({ params, searchParams }: AcademyHomeP
                 >
                   <span className="min-w-0 flex-grow">
                     <CircleWhen
+                      teacherName={entry.teacherName}
                       typeLabel={circleTypeLabel(
                         circleTypes,
                         typeByCircle.get(entry.circleId) ?? "",
@@ -461,6 +463,7 @@ function LiveCircleCard({
     >
       <header className="flex items-center justify-between gap-3 bg-accent-100 px-4 py-3 dark:bg-accent-700/20">
         <CircleWhen
+          teacherName={circle.teacher_name}
           typeLabel={typeLabel}
           days={days}
           time={formatTime(circle.start_time, locale)}

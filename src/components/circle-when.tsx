@@ -1,6 +1,7 @@
 import { CalendarDays, Clock } from "lucide-react";
 
 export function CircleWhen({
+  teacherName,
   typeLabel,
   days,
   time,
@@ -9,6 +10,8 @@ export function CircleWhen({
   size = "md",
   titleAs: Title = "p",
 }: {
+  /** The معلمة's name as the title, with the circle type beneath it. */
+  teacherName?: string;
   typeLabel: string;
   days: string[];
   time: string;
@@ -29,8 +32,19 @@ export function CircleWhen({
           size === "lg" ? "text-2xl sm:text-3xl" : "text-lg"
         }`}
       >
-        {typeLabel}
+        {teacherName || typeLabel}
       </Title>
+      {teacherName && typeLabel && (
+        <p
+          className={`truncate text-xs ${
+            tone === "accent"
+              ? "text-accent-700 dark:text-accent-300"
+              : "text-brand-700 dark:text-brand-300"
+          }`}
+        >
+          {typeLabel}
+        </p>
+      )}
       <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
         {days.length > 0 && (
           <span

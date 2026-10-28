@@ -213,6 +213,7 @@ export function MyCircles({
               className="flex items-center justify-between gap-3 px-5 py-3 transition-colors hover:bg-surface-muted"
             >
               <CircleWhen
+                teacherName={circle.teacher_name}
                 typeLabel={typeLabels[circle.circle_type] ?? circle.circle_type}
                 days={(slots[circle.circle_id]?.daysOfWeek ?? []).map((day) =>
                   tSchedule(`days.${day}`),

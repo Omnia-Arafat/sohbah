@@ -47,12 +47,7 @@ export async function generateMetadata({
   if (!mayViewerSee(viewer, circle.gender_category)) {
     return { title: t("notFoundPage.title") };
   }
-  if (viewer.kind === "staff") return { title: circle.name };
-  const supabase = await createClient();
-  const circleTypes = await loadCircleTypes(supabase, circle.academy_id, {
-    activeOnly: false,
-  });
-  return { title: circleTypeLabel(circleTypes, circle.type, locale) };
+  return { title: circle.name };
 }
 
 export default async function CirclePage({ params }: CirclePageProps) {
@@ -127,6 +122,7 @@ export default async function CirclePage({ params }: CirclePageProps) {
           </>
         ) : (
           <CircleWhen
+            teacherName={circle.name}
             typeLabel={circleTypeLabel(circleTypes, circle.type, locale)}
             days={(slots.get(circle.id)?.daysOfWeek ?? []).map((day) =>
               tSchedule(`days.${day}`),
