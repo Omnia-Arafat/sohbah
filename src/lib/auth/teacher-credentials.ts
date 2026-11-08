@@ -1,4 +1,5 @@
 import { randomInt } from "node:crypto";
+import { COUNTRIES } from "@/lib/phone";
 
 /**
  * Teachers sign in with a phone number and a password they chose. Supabase Auth
@@ -14,6 +15,45 @@ import { randomInt } from "node:crypto";
 export function normalizePhone(phone: string): string | null {
   const digits = phone.replace(/^00/, "").replace(/\D/g, "");
   return digits.length > 0 ? digits : null;
+}
+
+/**
+ * Other keys the same phone line may have been registered under.
+ *
+ * The key is whatever digits were typed at registration, so one line exists in
+ * several shapes across the staff table: "0538346008", "966538346008",
+ * "0966538346008" (a '0' typed before the country code). Someone who signs in
+ * with a different shape from the one she registered with is the same person,
+ * so the sign-in looks for her under these too. The password still decides —
+ * this only finds which account to check it against.
+ *
+ * The typed key itself is not included.
+ */
+export function phoneKeyCandidates(phoneKey: string): string[] {
+  const core = phoneKey.replace(/^0+/, "");
+  if (!core) return [];
+
+  const out = new Set<string>([core, `0${core}`]);
+
+  // Starts with a country code: add the national forms.
+  for (const country of COUNTRIES) {
+    if (!core.startsWith(country.dial)) continue;
+    const national = core.slice(country.dial.length);
+    if (!country.mobile.test(national)) continue;
+    out.add(national);
+    out.add(`0${national}`);
+    out.add(`0${country.dial}${national}`);
+  }
+
+  // A national number: add the international forms for every country it fits.
+  for (const country of COUNTRIES) {
+    if (!country.mobile.test(core)) continue;
+    out.add(`${country.dial}${core}`);
+    out.add(`0${country.dial}${core}`);
+  }
+
+  out.delete(phoneKey);
+  return [...out];
 }
 
 /**

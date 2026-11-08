@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
-import { credentialEmail, normalizePhone } from "@/lib/auth/teacher-credentials";
+import {
+  credentialEmail,
+  normalizePhone,
+  phoneKeyCandidates,
+} from "@/lib/auth/teacher-credentials";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import type { TeacherLoginState, TeacherLoginValues } from "./teacher-state";
@@ -67,21 +71,48 @@ export async function teacherSignIn(
       rather than guessing: being vague is recoverable, being confidently wrong
       about which field to fix is not.
     */
-    const { data: registered, error: lookupError } = await supabase.rpc(
-      "staff_phone_registered",
-      { p_phone_key: phoneKey, p_academy_slug: academySlug },
-    );
+    const isRegistered = async (key: string) => {
+      const { data, error } = await supabase.rpc("staff_phone_registered", {
+        p_phone_key: key,
+        p_academy_slug: academySlug,
+      });
+      if (error) throw error;
+      return Boolean(data);
+    };
 
-    if (lookupError) {
+    let reason: "wrongPassword" | "phoneNotFound" = "phoneNotFound";
+    let signedIn = false;
+    try {
+      if (await isRegistered(phoneKey)) {
+        reason = "wrongPassword";
+      } else {
+        /*
+          Not under the shape she typed — she may have registered the same line
+          another way ("+966…" now, "0966…" or "05…" then). Try the password
+          against whichever of those exists.
+        */
+        const candidates = phoneKeyCandidates(phoneKey);
+        const found = await Promise.all(candidates.map(isRegistered));
+        const registeredKeys = candidates.filter((_, i) => found[i]);
+
+        for (const key of registeredKeys) {
+          reason = "wrongPassword";
+          const { error } = await supabase.auth.signInWithPassword({
+            email: credentialEmail(key, academySlug),
+            password: values.password,
+          });
+          if (!error) {
+            signedIn = true;
+            break;
+          }
+        }
+      }
+    } catch (lookupError) {
       console.error("staff_phone_registered failed", lookupError);
       return { status: "failed", values, reason: "invalidCredentials" };
     }
 
-    return {
-      status: "failed",
-      values,
-      reason: registered ? "wrongPassword" : "phoneNotFound",
-    };
+    if (!signedIn) return { status: "failed", values, reason };
   }
 
   // Signed in, but approval is separate. RLS lets them read their own row.
