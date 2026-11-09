@@ -8,7 +8,7 @@ import { supabaseUrl } from "./config";
  * A Supabase client holding the service-role key.
  *
  * DANGER: this key bypasses Row Level Security completely. Every policy in the
- * schema is invisible to it. It exists for exactly four jobs that cannot be done
+ * schema is invisible to it. It exists for exactly five jobs that cannot be done
  * any other way:
  *
  *   1. creating a teacher's sign-in account already confirmed, so nobody waits
@@ -18,7 +18,9 @@ import { supabaseUrl } from "./config";
  *      men's and women's pages can be kept apart (see lib/viewer.ts), and
  *   4. calling `academy_schedule` and `academy_live_circles`, which return
  *      both sides and are closed to everyone else; the caller filters the
- *      rows to the viewer's side before rendering them.
+ *      rows to the viewer's side before rendering them, and
+ *   5. finding and fixing a staff account's sign-in address when her number
+ *      was edited after the account was made (see lib/auth/staff-account.ts).
  *
  * The `server-only` import above is the guard: if this module is ever pulled
  * into a Client Component, the build fails rather than shipping the key to the

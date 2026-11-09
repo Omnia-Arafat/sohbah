@@ -8,6 +8,7 @@ import {
   normalizePhone,
   phoneKeyCandidates,
 } from "@/lib/auth/teacher-credentials";
+import { linkedLoginEmails } from "@/lib/auth/staff-account";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import type { TeacherLoginState, TeacherLoginValues } from "./teacher-state";
@@ -80,39 +81,53 @@ export async function teacherSignIn(
       return Boolean(data);
     };
 
-    let reason: "wrongPassword" | "phoneNotFound" = "phoneNotFound";
-    let signedIn = false;
+    let registeredKeys: string[];
     try {
       if (await isRegistered(phoneKey)) {
-        reason = "wrongPassword";
+        registeredKeys = [phoneKey];
       } else {
         /*
           Not under the shape she typed — she may have registered the same line
-          another way ("+966…" now, "0966…" or "05…" then). Try the password
-          against whichever of those exists.
+          another way ("+966…" now, "0966…" or "05…" then).
         */
         const candidates = phoneKeyCandidates(phoneKey);
         const found = await Promise.all(candidates.map(isRegistered));
-        const registeredKeys = candidates.filter((_, i) => found[i]);
-
-        for (const key of registeredKeys) {
-          reason = "wrongPassword";
-          const { error } = await supabase.auth.signInWithPassword({
-            email: credentialEmail(key, academySlug),
-            password: values.password,
-          });
-          if (!error) {
-            signedIn = true;
-            break;
-          }
-        }
+        registeredKeys = candidates.filter((_, i) => found[i]);
       }
     } catch (lookupError) {
       console.error("staff_phone_registered failed", lookupError);
       return { status: "failed", values, reason: "invalidCredentials" };
     }
 
-    if (!signedIn) return { status: "failed", values, reason };
+    if (registeredKeys.length === 0) {
+      return { status: "failed", values, reason: "phoneNotFound" };
+    }
+
+    /*
+      Try the password against the account that really sits on that number:
+      the address built from the stored key, and the address the account
+      actually has — they differ when her number was edited after the account
+      was made (see lib/auth/staff-account.ts).
+    */
+    const emails = new Set(registeredKeys.map((key) => credentialEmail(key, academySlug)));
+    for (const email of await linkedLoginEmails(registeredKeys, academySlug)) {
+      emails.add(email);
+    }
+    emails.delete(credentialEmail(phoneKey, academySlug)); // already tried above
+
+    let signedIn = false;
+    for (const email of emails) {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password: values.password,
+      });
+      if (!error) {
+        signedIn = true;
+        break;
+      }
+    }
+
+    if (!signedIn) return { status: "failed", values, reason: "wrongPassword" };
   }
 
   // Signed in, but approval is separate. RLS lets them read their own row.

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { StaffRole } from "@/lib/database.types";
 import { createAdminClient, isServiceRoleConfigured } from "@/lib/supabase/admin";
 import { generateTemporaryPassword } from "@/lib/auth/teacher-credentials";
+import { syncLoginEmail } from "@/lib/auth/staff-account";
 
 type Context = {
   teacherId: string;
@@ -192,6 +193,18 @@ export async function updateTeacher(
     return { status: "error", message: "saveFailed" };
   }
 
+  // A new number must move the sign-in address with it, or she can no longer
+  // sign in with the number now on her row.
+  const { data: saved } = await supabase
+    .from("teachers")
+    .select("auth_user_id, phone_key")
+    .eq("id", context.teacherId)
+    .eq("academy_id", auth.academy.id)
+    .maybeSingle();
+  if (saved?.auth_user_id && saved.phone_key) {
+    await syncLoginEmail(saved.auth_user_id, saved.phone_key, context.academySlug);
+  }
+
   refresh(context);
   return { status: "idle" };
 }
@@ -227,7 +240,7 @@ export async function resetTeacherPassword(
   const supabase = await createClient();
   const { data: teacher } = await supabase
     .from("teachers")
-    .select("auth_user_id")
+    .select("auth_user_id, phone_key")
     .eq("id", context.teacherId)
     .eq("academy_id", auth.academy.id)
     .maybeSingle();
@@ -247,6 +260,12 @@ export async function resetTeacherPassword(
   if (error) {
     console.error("password reset failed", error);
     return { status: "error", message: "saveFailed" };
+  }
+
+  // A reset is what an admin reaches for when sign-in fails, so it also puts
+  // the sign-in address back in step with the number on her row.
+  if (teacher.phone_key) {
+    await syncLoginEmail(teacher.auth_user_id, teacher.phone_key, context.academySlug);
   }
 
   return { status: "done", password };
