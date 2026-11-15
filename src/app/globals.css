@@ -9,22 +9,23 @@
 ----------------------------------------------------------------------------- */
 
 :root {
-  --background: #f6f9f7;
+  /* Cream ground, from the warm paper of the printed weekly schedule. */
+  --background: #fbf7ec;
   --surface: #ffffff;
-  --surface-muted: #edf2ef;
-  --foreground: #0e1f19;
-  --muted-foreground: #5a6e66;
-  --border: #dbe5e0;
+  --surface-muted: #f4f0e4;
+  --foreground: #1f2a1c;
+  --muted-foreground: #55624f;
+  --border: #e8e2d2;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #08130f;
-    --surface: #0f1e18;
-    --surface-muted: #152720;
-    --foreground: #e6efea;
-    --muted-foreground: #93a9a0;
-    --border: #21352c;
+    --background: #0e140c;
+    --surface: #161e13;
+    --surface-muted: #1e2919;
+    --foreground: #eef2e6;
+    --muted-foreground: #a7b59c;
+    --border: #2c3a26;
   }
 }
 
@@ -35,10 +36,10 @@
   :root {
     --background: #ffffff;
     --surface: #ffffff;
-    --surface-muted: #f6f9f7;
-    --foreground: #0e1f19;
-    --muted-foreground: #5a6e66;
-    --border: #dbe5e0;
+    --surface-muted: #f4f0e4;
+    --foreground: #1f2a1c;
+    --muted-foreground: #55624f;
+    --border: #e8e2d2;
   }
 
   @page {
@@ -114,19 +115,41 @@
    inline SVG attributes, and Tailwind's default tree-shaking would otherwise
    drop the ones no class happens to use. */
 @theme static {
-  /* Sidr green — primary. Named after the lote tree; the colour of the
-     manuscript tradition this platform serves. */
-  --color-brand-50: #edf7f2;
-  --color-brand-100: #d3ece0;
-  --color-brand-200: #a8d9c2;
-  --color-brand-300: #75c0a0;
-  --color-brand-400: #45a57f;
-  --color-brand-500: #2a8a66;
-  --color-brand-600: #1e6e51;
-  --color-brand-700: #1a5842;
-  --color-brand-800: #164636;
-  --color-brand-900: #12382c;
-  --color-brand-950: #0a231b;
+  /* Leaf green — primary. Taken from the leaf crown of the Sohbah logo
+     (public/assets/logos/sohbah-logo.webp). */
+  --color-brand-50: #f3f9ea;
+  --color-brand-100: #e4f1d0;
+  --color-brand-200: #c9e3a3;
+  --color-brand-300: #a6d076;
+  --color-brand-400: #7dba4e;
+  --color-brand-500: #4ca03a;
+  --color-brand-600: #2f7d32;
+  --color-brand-700: #276a2a;
+  --color-brand-800: #215523;
+  --color-brand-900: #1b451d;
+  --color-brand-950: #0f2a11;
+
+  /* Lime: the young leaves of the Sohbah logo. Fills and highlights only,
+     never text on white, where it fails contrast. */
+  --color-lime-100: #eef6d8;
+  --color-lime-200: #ddebbf;
+  --color-lime-300: #c9e27a;
+  --color-lime-400: #b3d65a;
+  --color-lime-500: #9bc93b;
+
+  /* Maroon: the So7bah wordmark. The teacher meeting, and anything that
+     belongs to one cohort rather than the whole track. */
+  --color-maroon-50: #fdf6f8;
+  --color-maroon-100: #f7e6eb;
+  --color-maroon-200: #e7c3cf;
+  --color-maroon-500: #9a2b4c;
+  --color-maroon-600: #7a1e3a;
+  --color-maroon-700: #5a1229;
+
+  /* Sand: Friday, rest and catching up. */
+  --color-sand-100: #fbf3e6;
+  --color-sand-200: #f3e3cb;
+  --color-sand-700: #6b431d;
 
   /* Dhahab gold — accent only: the student whose turn it is, and nothing else.
      Scarcity is what makes it read as "now". */
@@ -139,7 +162,7 @@
   --color-accent-700: #7e5a24;
 
   /* Status */
-  --color-present: #2a8a66;
+  --color-present: #3e9a3a;
   --color-absent: #c0453b;
   --color-reciting: #c4913a;
 }

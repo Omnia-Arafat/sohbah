@@ -486,6 +486,13 @@ export function TrackClient({
       )}
 
       <Link
+        href={`/${academySlug}/me/track/weeks${trackQuery(week.enrollment_id, trackCount)}`}
+        className="btn-secondary min-h-12 w-full"
+      >
+        جداول الأسابيع وتنزيلها
+      </Link>
+
+      <Link
         href={`/${academySlug}/me/track/excuse${query}`}
         className="min-h-11 text-center text-sm font-semibold text-muted-foreground underline"
       >

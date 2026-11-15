@@ -15,6 +15,7 @@ import { FridayCard } from "@/components/friday-card";
 import { ChallengesCard } from "@/components/challenges-card";
 import { staffSideFilter } from "@/lib/viewer";
 import { StaffStudentSide } from "@/components/staff-student-side";
+import { ScheduleQuickCard } from "@/components/schedule-quick-card";
 
 type DashboardPageProps = {
   params: Promise<{ locale: string; academy: string }>;
@@ -108,6 +109,11 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
           {t("newCircle")}
         </Link>
       </section>
+
+      {/* This week's schedule of her cohorts, one tap to print or save. */}
+      {academy && (
+        <ScheduleQuickCard academyId={academy.id} academySlug={academySlug} teacher={session.teacher} />
+      )}
 
       {/* Same reasoning: the admin area and sign out both sit in the bottom
           bar's "المزيد" sheet on a phone, so this card would be a second copy

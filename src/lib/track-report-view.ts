@@ -122,9 +122,9 @@ export function buildTrackReportView(report: TrackReport): TrackReportView {
  */
 export function scoreTone(total: number, max: number) {
   const r = max > 0 ? total / max : 0;
-  if (r >= 1) return { bg: "#12382C", fg: "#F1D9A0" };
+  if (r >= 1) return { bg: "#1b451d", fg: "#F1D9A0" };
   if (r >= 0.8) return { bg: "#2F7D5B", fg: "#FFFFFF" };
-  if (r >= 0.6) return { bg: "#A8D9C2", fg: "#12382C" };
+  if (r >= 0.6) return { bg: "#c9e3a3", fg: "#1b451d" };
   if (r >= 0.4) return { bg: "#EFE4C2", fg: "#5C4316" };
   return { bg: "#F4D9D6", fg: "#7A2433" };
 }

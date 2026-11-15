@@ -20,9 +20,9 @@ import { useMe, useMyRecord } from "@/lib/use-my-record";
   lightness or in outline, so it does not rest on hue alone.
 */
 const RING: Record<JuzState, { fill: string; stroke: string; dash?: string }> = {
-  solid: { fill: "#75c0a0", stroke: "none" },
-  fading: { fill: "rgba(117,192,160,0.28)", stroke: "#75c0a0", dash: "4 3" },
-  learning: { fill: "rgba(255,255,255,0.04)", stroke: "#d3ece0" },
+  solid: { fill: "#a6d076", stroke: "none" },
+  fading: { fill: "rgba(117,192,160,0.28)", stroke: "#a6d076", dash: "4 3" },
+  learning: { fill: "rgba(255,255,255,0.04)", stroke: "#e4f1d0" },
   untouched: { fill: "rgba(255,255,255,0.10)", stroke: "none" },
 };
 

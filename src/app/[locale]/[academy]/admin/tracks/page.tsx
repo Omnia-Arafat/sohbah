@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Route, TriangleAlert, Users } from "lucide-react";
+import { Route, TriangleAlert, Users, CalendarRange } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { BackLink } from "@/components/back-link";
 import { TrackSelfBanner } from "@/components/staff-student-side";
@@ -77,6 +77,10 @@ export default async function TracksPage({ params }: PageProps) {
             {t("subtitle", { weeks: 40 })}
           </p>
         </div>
+        <Link href={`/${academySlug}/admin/tracks/schedules`} className="btn-primary shrink-0">
+          <CalendarRange className="size-5" aria-hidden="true" />
+          الجداول الأسبوعية
+        </Link>
       </section>
 
       {tracks === null ? (

@@ -128,9 +128,9 @@ export function CohortFocus({ cohorts }: { cohorts: CohortView[] }) {
       <div className="flex flex-wrap gap-x-4 gap-y-2 border-t border-border-subtle px-4 py-3 text-xs text-muted-foreground sm:px-5">
         {(
           [
-            ["#12382C", t("legend.full")],
+            ["#1b451d", t("legend.full")],
             ["#2F7D5B", t("legend.high")],
-            ["#A8D9C2", t("legend.mid")],
+            ["#c9e3a3", t("legend.mid")],
             ["#EFE4C2", t("legend.low")],
             ["#F4D9D6", t("legend.poor")],
           ] as const

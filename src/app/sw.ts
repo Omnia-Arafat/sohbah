@@ -82,12 +82,12 @@ function offlinePage(): Response {
 <title>لا يوجد اتصال</title>
 <style>
   body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
-         background:#f6f9f7; color:#0e1f19; font-family:system-ui,sans-serif; padding:24px; }
+         background:#fbf7ec; color:#1f2a1c; font-family:system-ui,sans-serif; padding:24px; }
   main { max-width:22rem; text-align:center; }
   h1 { font-size:1.25rem; margin:0 0 .5rem; }
-  p { margin:0 0 1.25rem; font-size:.9rem; color:#5a6e66; line-height:1.8; }
+  p { margin:0 0 1.25rem; font-size:.9rem; color:#55624f; line-height:1.8; }
   button { min-height:44px; padding:0 22px; border:0; border-radius:12px;
-           background:#1e6e51; color:#fff; font:inherit; font-weight:700; cursor:pointer; }
+           background:#2f7d32; color:#fff; font:inherit; font-weight:700; cursor:pointer; }
 </style>
 </head>
 <body>

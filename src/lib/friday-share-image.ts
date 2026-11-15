@@ -63,7 +63,7 @@ export async function renderShareImage(input: ShareImageInput): Promise<HTMLCanv
   ctx.textBaseline = "alphabetic";
 
   // Ground and frame.
-  ctx.fillStyle = "#edf2ef";
+  ctx.fillStyle = "#f4f0e4";
   ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = "#fbfdfc";
   ctx.strokeStyle = "#cfe0d8";
@@ -75,11 +75,11 @@ export async function renderShareImage(input: ShareImageInput): Promise<HTMLCanv
 
   // Top line: the academy, and whose week this is.
   ctx.font = `700 40px ${sans}`;
-  ctx.fillStyle = "#1a5842";
+  ctx.fillStyle = "#276a2a";
   ctx.textAlign = "right";
   ctx.fillText(input.labels.academy, W - 110, 140);
   ctx.textAlign = "left";
-  ctx.fillStyle = "#5a6e66";
+  ctx.fillStyle = "#55624f";
   ctx.font = `600 40px ${sans}`;
   ctx.fillText(input.labels.myWeek, 110, 140);
   ctx.textAlign = "center";
@@ -93,15 +93,15 @@ export async function renderShareImage(input: ShareImageInput): Promise<HTMLCanv
   ctx.drawImage(img, (W - badgeW) / 2, 200, badgeW, badgeH);
 
   // Name.
-  ctx.fillStyle = "#0e1f19";
+  ctx.fillStyle = "#1f2a1c";
   ctx.font = `700 88px ${display}`;
   ctx.fillText(input.name, W / 2, 680, W - 200);
 
   // The count.
-  ctx.fillStyle = "#1a5842";
+  ctx.fillStyle = "#276a2a";
   ctx.font = `700 200px ${display}`;
   ctx.fillText(input.digits(input.count), W / 2, 900);
-  ctx.fillStyle = "#0e1f19";
+  ctx.fillStyle = "#1f2a1c";
   ctx.font = `700 50px ${sans}`;
   ctx.fillText(input.labels.salawat, W / 2, 980);
 
@@ -110,19 +110,19 @@ export async function renderShareImage(input: ShareImageInput): Promise<HTMLCanv
     ctx.font = `700 46px ${sans}`;
     const text = input.labels.kahf;
     const width = ctx.measureText(text).width + 100;
-    ctx.fillStyle = "#edf7f2";
+    ctx.fillStyle = "#f3f9ea";
     ctx.beginPath();
     ctx.roundRect((W - width) / 2, 1040, width, 96, 48);
     ctx.fill();
-    ctx.fillStyle = "#1a5842";
+    ctx.fillStyle = "#276a2a";
     ctx.fillText(text, W / 2, 1104);
   }
 
   // Closing line and date.
-  ctx.fillStyle = "#1a5842";
+  ctx.fillStyle = "#276a2a";
   ctx.font = `400 50px ${display}`;
   ctx.fillText(input.labels.closing, W / 2, 1320);
-  ctx.fillStyle = "#5a6e66";
+  ctx.fillStyle = "#55624f";
   ctx.font = `400 36px ${sans}`;
   ctx.fillText(input.labels.date, W / 2, 1390);
 

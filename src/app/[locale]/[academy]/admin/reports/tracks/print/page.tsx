@@ -22,17 +22,17 @@ const C = {
   ink: "#14231C",
   muted: "#3F5248",
   rule: "#D5DFD8",
-  green900: "#12382C",
-  green700: "#1E6E51",
-  green50: "#EDF7F2",
-  green100: "#D3ECE0",
+  green900: "#1b451d",
+  green700: "#2f7d32",
+  green50: "#f3f9ea",
+  green100: "#e4f1d0",
   gold: "#C4913A",
   goldSoft: "#F1D9A0",
   goldBg: "#FBF4E4",
   goldInk: "#5C4316",
   maroon: "#7A2433",
   maroonBg: "#FBEDEB",
-  stripe: "#F6F9F7",
+  stripe: "#fbf7ec",
 };
 
 export async function generateMetadata({
@@ -500,9 +500,9 @@ function Pill({ danger, children }: { danger: boolean; children: React.ReactNode
 
 function Legend({ t }: { t: (key: string) => string }) {
   const items: [string, string][] = [
-    ["#12382C", t("focus.legend.full")],
+    ["#1b451d", t("focus.legend.full")],
     ["#2F7D5B", t("focus.legend.high")],
-    ["#A8D9C2", t("focus.legend.mid")],
+    ["#c9e3a3", t("focus.legend.mid")],
     ["#EFE4C2", t("focus.legend.low")],
     ["#F4D9D6", t("focus.legend.poor")],
   ];

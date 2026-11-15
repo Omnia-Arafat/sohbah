@@ -488,14 +488,14 @@ const DRAW: Record<Family, (s: Stage) => Primitive[]> = {
   // تملآن ما بين السماء والأرض — the night fills with light.
   sky(s) {
     const out: Primitive[] = [
-      rect(6, 6, 52, 52, 14, "#12382c"),
-      path("M6 44 Q22 36 38 42 T58 40 L58 50 Q58 58 50 58 L14 58 Q6 58 6 50 Z", "#1e6e51"),
+      rect(6, 6, 52, 52, 14, "#1b451d"),
+      path("M6 44 Q22 36 38 42 T58 40 L58 50 Q58 58 50 58 L14 58 Q6 58 6 50 Z", "#2f7d32"),
     ];
     const stars = [[16, 16], [28, 12], [20, 28], [34, 24], [12, 36], [26, 34], [40, 32], [50, 34], [14, 22], [38, 12], [30, 30], [22, 20], [46, 26], [52, 12]];
     stars
       .slice(0, [1, 4, 8, 14][s - 1])
       .forEach(([x, y], i) => out.push(path(star(x, y, i % 3 ? 2 : 2.8), i % 2 ? "#ffffff" : "#f3d27a")));
-    if (s === 3) out.push(circ(44, 18, 6, GOLD), circ(46.6, 16.4, 5.2, "#12382c"));
+    if (s === 3) out.push(circ(44, 18, 6, GOLD), circ(46.6, 16.4, 5.2, "#1b451d"));
     if (s === 4) out.push(circ(44, 18, 11, GOLD, { op: 0.22 }), circ(44, 18, 7, "#f3d27a"));
     return out;
   },

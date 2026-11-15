@@ -35,7 +35,7 @@ type Tone = { fill: string; edge: string; ink: string };
 const TONES: Record<number, Tone> = {
   50: { fill: "#a9d56b", edge: "#5e8f22", ink: "#1f3d0c" },
   100: { fill: "#2f8a2f", edge: "#1f661f", ink: "#ffffff" },
-  200: { fill: "#1e6e51", edge: "#12382c", ink: "#ffffff" },
+  200: { fill: "#2f7d32", edge: "#1b451d", ink: "#ffffff" },
   300: { fill: "#0f7481", edge: "#0a5560", ink: "#ffffff" },
   400: { fill: "#1f5fa8", edge: "#15467f", ink: "#ffffff" },
   500: { fill: "#7a1f3d", edge: "#561429", ink: "#ffffff" },

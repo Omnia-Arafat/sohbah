@@ -37,6 +37,7 @@ type NavItem = {
   /** A second path that also lights this row, e.g. a track's own ورد page. */
   alsoPrefix?: string;
   adminOnly?: boolean;
+  supervisorOnly?: boolean;
 };
 
 /**
@@ -53,6 +54,7 @@ export function SideNav({
   academyColor,
   logoPath,
   isAdmin,
+  canSupervise,
   teacherName,
   roleLabel,
   signOutAction,
@@ -62,6 +64,7 @@ export function SideNav({
   academyColor: string;
   logoPath: string | null;
   isAdmin: boolean;
+  canSupervise: boolean;
   teacherName: string;
   roleLabel: string;
   signOutAction: () => void;
@@ -89,10 +92,10 @@ export function SideNav({
 
   const supervision: NavItem[] = [
     { href: `/${academySlug}/admin/circles`, label: t("circles"), Icon: Users, prefix: true },
-    // Directly under the circles, because that is what a مسار is nearest to —
-    // and admin-only, since accepting or removing a student from one is a
-    // مشرفة's decision (see approve_track_enrollment in the tracks migration).
-    { href: `/${academySlug}/admin/tracks`, label: t("tracks"), Icon: Route, prefix: true, adminOnly: true },
+    // Directly under the circles, because that is what a مسار is nearest to.
+    // Every page under /admin/tracks admits a مشرفة (canSupervise), so the
+    // link does too: hiding it left her reaching tracks only through alerts.
+    { href: `/${academySlug}/admin/tracks`, label: t("tracks"), Icon: Route, prefix: true, supervisorOnly: true },
     { href: `/${academySlug}/admin/students`, label: t("students"), Icon: GraduationCap, prefix: true },
     // Open to every معلمة rather than admin-only: she is the one who prepares
     // the lesson she is about to teach.
@@ -113,7 +116,7 @@ export function SideNav({
     // she is the one who notices circles missing from the schedule.
     { href: `/${academySlug}/admin/schedules`, label: t("schedules"), Icon: CalendarDays, prefix: true, adminOnly: false },
     { href: `/${academySlug}/admin`, label: t("adminHome"), Icon: LayoutGrid },
-  ].filter((item) => !item.adminOnly || isAdmin);
+  ].filter((item) => (!item.adminOnly || isAdmin) && (!item.supervisorOnly || canSupervise));
 
   function isActive(item: NavItem) {
     if (item.alsoPrefix && pathname.startsWith(item.alsoPrefix)) return true;

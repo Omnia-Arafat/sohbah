@@ -28,11 +28,11 @@ export type TrackCardInput = {
 const W = 1080;
 const H = 1350;
 
-const GROUND = "#12382c";
+const GROUND = "#1b451d";
 const GOLD = "#d6ab53";
 const PANEL = "#fbf6ea";
-const INK = "#12382c";
-const MUTED = "#5a6e66";
+const INK = "#1b451d";
+const MUTED = "#55624f";
 
 /** Shrinks a font until the text fits, so a long name never runs off the card. */
 function fit(ctx: CanvasRenderingContext2D, text: string, weight: number, size: number, family: string, max: number) {
@@ -122,7 +122,7 @@ export async function renderTrackCard(input: TrackCardInput): Promise<HTMLCanvas
   ctx.strokeStyle = "#c4913a";
   ctx.lineWidth = 3;
   ctx.stroke();
-  drawCheck(ctx, W / 2, 262, 56, "#1e6e51", 7);
+  drawCheck(ctx, W / 2, 262, 56, "#2f7d32", 7);
 
   // Heading, day, date and time.
   ctx.fillStyle = INK;
@@ -136,7 +136,7 @@ export async function renderTrackCard(input: TrackCardInput): Promise<HTMLCanvas
   ctx.fillText(input.when, W / 2, 510);
 
   // The track and its chips.
-  ctx.fillStyle = "#1e6e51";
+  ctx.fillStyle = "#2f7d32";
   fit(ctx, input.track, 700, 44, display, 720);
   ctx.fillText(input.track, W / 2, 572);
 
@@ -158,12 +158,12 @@ export async function renderTrackCard(input: TrackCardInput): Promise<HTMLCanvas
     const gold = chip.tone === "gold";
     ctx.beginPath();
     ctx.roundRect(x - width, 604, width, 46, 23);
-    ctx.fillStyle = gold ? "#fbf6ea" : "#edf7f2";
+    ctx.fillStyle = gold ? "#fbf6ea" : "#f3f9ea";
     ctx.fill();
-    ctx.strokeStyle = gold ? "#e3c37c" : "#a8d9c2";
+    ctx.strokeStyle = gold ? "#e3c37c" : "#c9e3a3";
     ctx.lineWidth = 1.5;
     ctx.stroke();
-    ctx.fillStyle = gold ? "#7e5a24" : "#1a5842";
+    ctx.fillStyle = gold ? "#7e5a24" : "#276a2a";
     ctx.font = `700 ${chipSize}px ${sans}`;
     ctx.fillText(chip.text, x - width / 2, 636);
     x -= width + 12;
@@ -190,7 +190,7 @@ export async function renderTrackCard(input: TrackCardInput): Promise<HTMLCanvas
     ctx.roundRect(boxRight - boxWidth, 722, boxWidth, 108, 22);
     ctx.fillStyle = "#ffffff";
     ctx.fill();
-    ctx.strokeStyle = "#dbe5e0";
+    ctx.strokeStyle = "#e8e2d2";
     ctx.lineWidth = 1.5;
     ctx.stroke();
     ctx.fillStyle = MUTED;
@@ -208,7 +208,7 @@ export async function renderTrackCard(input: TrackCardInput): Promise<HTMLCanvas
     const circleX = right - 64 - 19;
     ctx.beginPath();
     ctx.arc(circleX, y, 19, 0, Math.PI * 2);
-    ctx.fillStyle = "#1e6e51";
+    ctx.fillStyle = "#2f7d32";
     ctx.fill();
     drawCheck(ctx, circleX, y, 22, "#ffffff", 4);
     ctx.fillStyle = INK;

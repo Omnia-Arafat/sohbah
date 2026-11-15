@@ -100,7 +100,7 @@ export function WeekBand({
 
       <div className="flex flex-col gap-2 px-3 pb-3 sm:flex-row-reverse">
         <Link
-          href={`/${academySlug}/admin/tracks/${trackId}/weeks/${focused.weekNumber}`}
+          href={`/${academySlug}/admin/tracks/schedules?track=${trackId}&week=${focused.weekNumber}`}
           className="btn-primary flex-grow text-center"
         >
           {t("openWeek")}

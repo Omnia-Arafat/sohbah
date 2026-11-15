@@ -27,8 +27,8 @@ type LocaleLayoutProps = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f6f9f7" },
-    { media: "(prefers-color-scheme: dark)", color: "#08130f" },
+    { media: "(prefers-color-scheme: light)", color: "#fbf7ec" },
+    { media: "(prefers-color-scheme: dark)", color: "#0e140c" },
   ],
 };
 
@@ -80,7 +80,7 @@ export default async function LocaleLayout({
       className={`${cairo.variable} ${amiri.variable} h-full antialiased`}
     >
       <head>
-        <meta name="theme-color" content="#4A5568" />
+        <meta name="theme-color" content="#2f7d32" />
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
         {/*
