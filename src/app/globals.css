@@ -248,6 +248,27 @@
            hover:bg-absent hover:text-white;
   }
 
+  /*
+   * A select with its own chevron, set in from the field's edge. The native
+   * arrow sits flush against the border, worse in RTL where it lands on the
+   * left stroke. !important because the px-* utility on the same element
+   * would otherwise win over a component class.
+   */
+  .field-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2355624f' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: 1rem;
+    background-position: left 0.85rem center;
+    padding-inline-start: 0.85rem !important;
+    padding-inline-end: 2.4rem !important;
+    text-overflow: ellipsis;
+  }
+
+  [dir="ltr"] .field-select {
+    background-position: right 0.85rem center;
+  }
+
   .field-label {
     @apply mb-1.5 block text-sm font-medium text-foreground;
   }

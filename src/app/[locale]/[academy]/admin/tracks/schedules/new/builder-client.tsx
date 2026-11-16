@@ -161,7 +161,7 @@ export function BuilderClient({
             <label className="flex flex-col gap-1.5 text-sm font-bold">
               سورة الأسبوع
               <select
-                className={input}
+                className={`field-select ${input}`}
                 value={weekSurah}
                 onChange={(e) => setWeekSurahAll(Number(e.target.value))}
               >
@@ -184,11 +184,11 @@ export function BuilderClient({
               <Users className="size-5" aria-hidden="true" />
               لقاء المعلمة
             </span>
-            <div className="flex flex-wrap gap-3">
-              <label className="flex flex-col gap-1 text-xs font-bold text-maroon-600">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-[11rem_12rem_minmax(0,1fr)]">
+              <label className="flex min-w-0 flex-col gap-1 text-xs font-bold text-maroon-600">
                 يوم اللقاء
                 <select
-                  className="h-11 rounded-xl border-[1.5px] border-maroon-200 bg-surface px-2 font-bold text-maroon-600"
+                  className="field-select h-11 w-full rounded-xl border-[1.5px] border-maroon-200 bg-surface font-bold text-maroon-600"
                   value={weekday ?? ""}
                   onChange={(e) => { setSaved(null); setWeekday(e.target.value === "" ? null : Number(e.target.value)); }}
                 >
@@ -198,16 +198,16 @@ export function BuilderClient({
                   ))}
                 </select>
               </label>
-              <label className="flex flex-col gap-1 text-xs font-bold text-maroon-600">
+              <label className="flex min-w-0 flex-col gap-1 text-xs font-bold text-maroon-600">
                 الساعة
                 <input
-                  className="h-11 w-44 rounded-xl border-[1.5px] border-maroon-200 bg-surface px-3 font-semibold"
+                  className="h-11 w-full min-w-0 rounded-xl border-[1.5px] border-maroon-200 bg-surface px-3 font-semibold"
                   value={time}
                   placeholder="٨ م بتوقيت القاهرة"
                   onChange={(e) => { setSaved(null); setTime(e.target.value); }}
                 />
               </label>
-              <label className="flex min-w-60 flex-1 flex-col gap-1 text-xs font-bold text-maroon-600">
+              <label className="col-span-2 flex min-w-0 flex-col gap-1 text-xs font-bold text-maroon-600 sm:col-span-1">
                 ماذا يحدث في اللقاء
                 <input
                   className="h-11 rounded-xl border-[1.5px] border-maroon-200 bg-surface px-3 font-semibold"
@@ -223,8 +223,8 @@ export function BuilderClient({
           {/* الأيام */}
           {days.slice(1, 6).map((d, i) => (
             <div key={d.dayIndex} className="flex flex-col gap-2 rounded-2xl border border-lime-200 bg-brand-50 p-3">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="flex w-28 flex-none items-center gap-2 font-extrabold text-brand-800">
+              <div className="flex items-center gap-3">
+                <span className="flex flex-none items-center gap-2 font-extrabold text-brand-800">
                   <span
                     className="flex size-7 items-center justify-center rounded-[3px_50%_3px_50%] text-sm font-black"
                     style={{ background: DAY_LEAF[i], color: i >= 3 ? "#fff" : "#1f2a1c" }}
@@ -233,9 +233,9 @@ export function BuilderClient({
                   </span>
                   {DAY_SHORT[i + 1]}
                 </span>
-                <AyahRange day={d} weekSurah={weekSurah} onSurah={(n) => setDaySurah(d.dayIndex, n)} onRange={(f, v) => setRange(d.dayIndex, f, v)} tone="green" label="حفظ من آية" />
                 <span className="ms-auto font-display text-lg font-bold text-brand-700">{rangeText(d)}</span>
               </div>
+              <AyahRange day={d} weekSurah={weekSurah} onSurah={(n) => setDaySurah(d.dayIndex, n)} onRange={(f, v) => setRange(d.dayIndex, f, v)} tone="green" label="حفظ من آية" />
               <input
                 className="h-10 rounded-xl border border-lime-200 bg-surface px-3 text-sm font-semibold"
                 value={d.review}
@@ -295,7 +295,7 @@ export function BuilderClient({
                   <label className="flex flex-col gap-1.5 text-xs font-extrabold">
                     المسار
                     <select
-                      className={input}
+                      className={`field-select ${input}`}
                       value={t.trackId}
                       onChange={(e) => patchTarget(i, { trackId: e.target.value, cohort: "base" })}
                     >
@@ -459,24 +459,24 @@ function AyahRange({
   const box = tone === "maroon" ? "border-maroon-200" : "border-lime-200";
   const text = tone === "maroon" ? "text-maroon-600" : "text-muted-foreground";
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-[12rem_auto_auto] sm:items-center sm:justify-start">
       <select
         aria-label="السورة"
         value={surah}
         onChange={(e) => onSurah(Number(e.target.value))}
-        className={`h-11 max-w-40 rounded-xl border-[1.5px] ${box} bg-surface px-2 text-sm font-bold`}
+        className={`field-select col-span-2 h-11 w-full rounded-xl border-[1.5px] ${box} bg-surface text-sm font-bold sm:col-span-1`}
       >
         {SURAHS.map((s) => (
           <option key={s.number} value={s.number}>{s.name}</option>
         ))}
       </select>
-      <label className={`flex items-center gap-1.5 text-xs font-bold ${text}`}>
-        {label}
-        <input type="number" min={1} max={max} value={day.fromAyah ?? ""} onChange={(e) => onRange("fromAyah", e.target.value)} className={`h-11 w-16 rounded-xl border-[1.5px] ${box} bg-surface text-center text-base font-black`} />
+      <label className={`flex min-w-0 items-center gap-1.5 text-xs font-bold ${text}`}>
+        <span className="shrink-0">{label}</span>
+        <input type="number" min={1} max={max} value={day.fromAyah ?? ""} onChange={(e) => onRange("fromAyah", e.target.value)} className={`h-11 w-full min-w-0 rounded-xl border-[1.5px] ${box} bg-surface text-center text-base font-black sm:w-16`} />
       </label>
-      <label className={`flex items-center gap-1.5 text-xs font-bold ${text}`}>
-        إلى
-        <input type="number" min={1} max={max} value={day.toAyah ?? ""} onChange={(e) => onRange("toAyah", e.target.value)} className={`h-11 w-16 rounded-xl border-[1.5px] ${box} bg-surface text-center text-base font-black`} />
+      <label className={`flex min-w-0 items-center gap-1.5 text-xs font-bold ${text}`}>
+        <span className="shrink-0">إلى</span>
+        <input type="number" min={1} max={max} value={day.toAyah ?? ""} onChange={(e) => onRange("toAyah", e.target.value)} className={`h-11 w-full min-w-0 rounded-xl border-[1.5px] ${box} bg-surface text-center text-base font-black sm:w-16`} />
       </label>
     </div>
   );

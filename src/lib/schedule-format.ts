@@ -103,7 +103,10 @@ export function surahName(n: number | null): string {
 /** «(١ : ١١)» within one surah; «المائدة ١ – الأنعام ٥» across two. */
 export function rangeText(d: ScheduleDay): string {
   if (!hasRange(d)) return "";
-  if (d.fromSurah === d.toSurah) return `(${arNum(d.fromAyah!)} : ${arNum(d.toAyah!)})`;
+  // Read left to right, as the printed schedules write it: «(١ : ١١)» with the
+  // first ayah on the left. The LRI…PDI isolate keeps it that way inside
+  // Arabic text, where the bidi algorithm would otherwise flip it to (١١ : ١).
+  if (d.fromSurah === d.toSurah) return `⁦(${arNum(d.fromAyah!)} : ${arNum(d.toAyah!)})⁩`;
   return `(${surahName(d.fromSurah)} ${arNum(d.fromAyah!)} – ${surahName(d.toSurah)} ${arNum(d.toAyah!)})`;
 }
 
