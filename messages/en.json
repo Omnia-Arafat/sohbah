@@ -795,7 +795,7 @@
         "nameRequired": "Name is required.",
         "tooLong": "That is too long.",
         "phoneRequired": "A phone number is required.",
-        "phoneInvalid": "Enter a full phone number.",
+        "phoneInvalid": "That number is not valid for this country. Check the digits and the country code.",
         "phoneTaken": "Another teacher in this academy already uses this number.",
         "genderRequired": "Choose a section.",
         "unauthorized": "You are not authorized to do this.",
@@ -803,7 +803,8 @@
         "roleRequired": "Choose a role.",
         "cannotChangeOwnRole": "You cannot change your own role.",
         "noAccount": "This person has no sign-in yet, so there is nothing to reset.",
-        "notConfigured": "Password resets are not configured on the server."
+        "notConfigured": "Password resets are not configured on the server.",
+        "phoneCountryRequired": "Choose a country code."
       },
       "active": "Active",
       "inactive": "Deactivated",
@@ -1380,7 +1381,7 @@
     "errors": {
       "nameRequired": "Your name is required.",
       "phoneRequired": "A WhatsApp number is required.",
-      "phoneInvalid": "Enter a full phone number.",
+      "phoneInvalid": "That number is not valid for this country. Check the digits and the country code.",
       "phoneTaken": "An account with this number already exists.",
       "nameTaken": "An account with this name already exists. Sign in with it, or contact the administration.",
       "roleRequired": "Choose what you are applying as.",
@@ -1389,7 +1390,8 @@
       "notConfigured": "The database is not connected yet.",
       "passwordRequired": "A password is required.",
       "passwordTooShort": "Use at least 8 characters.",
-      "genderRequired": "Please choose a gender."
+      "genderRequired": "Please choose a gender.",
+      "phoneCountryRequired": "Choose a country code."
     },
     "genders": {
       "female": "Woman",

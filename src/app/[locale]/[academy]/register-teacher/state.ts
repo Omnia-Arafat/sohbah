@@ -7,6 +7,7 @@
 export type TeacherApplicationValues = {
   name: string;
   phone: string;
+  phoneCountry: string;
   role: string;
   gender: string;
   password: string;

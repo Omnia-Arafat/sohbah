@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { toE164, validatePhone } from "@/lib/phone";
 import { getAcademyBySlug } from "@/lib/academy-dal";
 import { isAdmin, requireTeacherSession } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
@@ -122,7 +123,13 @@ export type UpdateTeacherState =
   | { status: "error"; message: string }
   | {
       status: "invalid";
-      values: { name: string; phone: string; gender: string; role: string };
+      values: {
+        name: string;
+        phone: string;
+        phoneCountry: string;
+        gender: string;
+        role: string;
+      };
       fieldErrors: Record<string, string>;
     };
 
@@ -137,20 +144,25 @@ export async function updateTeacher(
 ): Promise<UpdateTeacherState> {
   const context = readContext(formData);
   const name = String(formData.get("name") ?? "").trim();
-  const phone = String(formData.get("phone") ?? "").trim();
+  const phoneRaw = String(formData.get("phone") ?? "").trim();
+  const phoneCountry = String(formData.get("phoneCountry") ?? "").trim();
   const gender = String(formData.get("gender") ?? "");
   const role = String(formData.get("role") ?? "");
-  const values = { name, phone, gender, role };
+  const values = { name, phone: phoneRaw, phoneCountry, gender, role };
 
   const fieldErrors: Record<string, string> = {};
   if (!name) fieldErrors.name = "nameRequired";
   else if (name.length > 120) fieldErrors.name = "tooLong";
 
-  if (!phone) fieldErrors.phone = "phoneRequired";
-  else if (phone.length > 32) fieldErrors.phone = "tooLong";
-  else if (phone.replace(/^00/, "").replace(/\D/g, "").length < 7) {
-    fieldErrors.phone = "phoneInvalid";
+  if (!phoneRaw) fieldErrors.phone = "phoneRequired";
+  else if (phoneRaw.length > 32) fieldErrors.phone = "tooLong";
+  else {
+    const phoneError = validatePhone(phoneCountry, phoneRaw);
+    if (phoneError) fieldErrors.phone = phoneError;
   }
+
+  // Stored as E.164, the same as students, so one line is one phone_key.
+  const phone = toE164(phoneCountry, phoneRaw) ?? "";
 
   if (gender !== "male" && gender !== "female") {
     fieldErrors.gender = "genderRequired";

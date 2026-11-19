@@ -5,6 +5,7 @@ import { useFormStatus } from "react-dom";
 import { useTranslations } from "next-intl";
 import { BookOpen, ShieldCheck } from "lucide-react";
 import { PasswordField } from "@/components/password-field";
+import { PhoneField } from "@/components/phone-field";
 import { applyAsTeacher } from "./actions";
 import {
   initialTeacherApplicationState,
@@ -164,32 +165,12 @@ export function TeacherApplicationForm({
         )}
       </fieldset>
 
-      <div>
-        <label className="field-label" htmlFor="phone">
-          {t("fields.phone")}
-        </label>
-        <input
-          id="phone"
-          name="phone"
-          type="tel"
-          inputMode="tel"
-          dir="ltr"
-          className="input text-start"
-          defaultValue={values?.phone}
-          autoComplete="tel"
-          aria-invalid={Boolean(fieldErrors.phone)}
-          aria-describedby={fieldErrors.phone ? "phone-error" : "phone-hint"}
-        />
-        {fieldErrors.phone ? (
-          <p id="phone-error" className="mt-1.5 text-sm text-absent">
-            {t(`errors.${fieldErrors.phone}`)}
-          </p>
-        ) : (
-          <p id="phone-hint" className="mt-1.5 text-sm text-muted-foreground">
-            {t("fields.phoneHint")}
-          </p>
-        )}
-      </div>
+      <PhoneField
+        label={t("fields.phone")}
+        error={fieldErrors.phone ? t(`errors.${fieldErrors.phone}`) : undefined}
+        defaultCountry={values?.phoneCountry}
+        defaultValue={values?.phone}
+      />
 
       <div>
         <label className="field-label" htmlFor="password">

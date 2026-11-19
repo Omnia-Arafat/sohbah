@@ -6,6 +6,7 @@ import {
   credentialEmail,
   normalizePhone,
 } from "@/lib/auth/teacher-credentials";
+import { toE164, validatePhone } from "@/lib/phone";
 import { createAdminClient, isServiceRoleConfigured } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
@@ -15,13 +16,13 @@ import type {
 } from "./state";
 
 const MAX_NAME = 120;
-const MIN_PHONE_DIGITS = 7;
 
 function readValues(formData: FormData): TeacherApplicationValues {
   const read = (key: string) => String(formData.get(key) ?? "").trim();
   return {
     name: read("name"),
     phone: read("phone"),
+    phoneCountry: read("phoneCountry"),
     role: read("role"),
     gender: read("gender"),
     // Not trimmed: leading and trailing spaces are legitimate password
@@ -56,10 +57,13 @@ export async function applyAsTeacher(
   if (!values.name) fieldErrors.name = "nameRequired";
   else if (values.name.length > MAX_NAME) fieldErrors.name = "tooLong";
 
+  // Same picker and per-country rule as the student form, so a number is
+  // stored as E.164 instead of whatever shape was typed.
   if (!values.phone) fieldErrors.phone = "phoneRequired";
   else if (values.phone.length > 32) fieldErrors.phone = "tooLong";
-  else if ((normalizePhone(values.phone) ?? "").length < MIN_PHONE_DIGITS) {
-    fieldErrors.phone = "phoneInvalid";
+  else {
+    const phoneError = validatePhone(values.phoneCountry, values.phone);
+    if (phoneError) fieldErrors.phone = phoneError;
   }
 
   // Which side she works on: a teacher sees only her own gender's circles
@@ -92,6 +96,11 @@ export async function applyAsTeacher(
     return { status: "failed", values, reason: "generic" };
   }
 
+  const phone = toE164(values.phoneCountry, values.phone);
+  if (!phone) {
+    return { status: "invalid", values, fieldErrors: { phone: "phoneInvalid" } };
+  }
+
   const supabase = await createClient();
 
   // The teacher row first: it validates the input and owns the "one account per
@@ -99,7 +108,7 @@ export async function applyAsTeacher(
   const { error } = await supabase.rpc("register_teacher", {
     p_academy_id: academyId,
     p_name: values.name,
-    p_phone: values.phone,
+    p_phone: phone,
     p_role: values.role as ApplicantRole,
     p_gender: values.gender as "male" | "female",
   });
@@ -108,6 +117,11 @@ export async function applyAsTeacher(
     if (error.message.includes("phone_taken")) {
       return { status: "invalid", values, fieldErrors: { phone: "phoneTaken" } };
     }
+    // The database wants at least 9 digits; say so on the field rather than as
+    // a generic failure (an 8-digit Gulf number typed without its code).
+    if (error.message.includes("invalid_phone")) {
+      return { status: "invalid", values, fieldErrors: { phone: "phoneInvalid" } };
+    }
     if (error.message.includes("name_taken")) {
       return { status: "invalid", values, fieldErrors: { name: "nameTaken" } };
     }
@@ -115,7 +129,7 @@ export async function applyAsTeacher(
     return { status: "failed", values, reason: "generic" };
   }
 
-  const phoneKey = normalizePhone(values.phone)!;
+  const phoneKey = normalizePhone(phone)!;
   const admin = createAdminClient();
 
   const { data: created, error: authError } = await admin.auth.admin.createUser({
