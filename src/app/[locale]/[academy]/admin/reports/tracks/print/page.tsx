@@ -80,8 +80,41 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
   const trackName = trackId ? tracks.find(([id]) => id === trackId)?.[1] : null;
 
   const rowById = new Map(report.rows.map((r) => [r.enrollmentId, r]));
-  const totalPages = 1 + view.cohorts.length;
   const pct = (avg: number | null) => (avg === null ? 0 : Math.round((avg / 40) * 100));
+  // One دفعة needs no separate summary page: its numbers go on top of its own page.
+  const single = view.cohorts.length === 1;
+  const totalPages = (single ? 0 : 1) + view.cohorts.length;
+  const kpis = (
+    <div className="grid grid-cols-4 gap-2">
+      <Kpi label={t("kpis.average")} bg={C.green50} fg={C.green700}>
+        {view.average === null ? "—" : num.format(view.average)}
+        <small className="ms-1 text-xs font-semibold" style={{ color: C.muted }}>
+          / {num.format(40)}
+        </small>
+        <Bar value={pct(view.average)} />
+      </Kpi>
+      <Kpi label={t("kpis.done")} bg={C.green50} fg={C.green900}>
+        {num.format(view.done)}
+        <small className="ms-1 text-xs font-semibold" style={{ color: C.muted }}>
+          {t("kpis.of", { due: num.format(view.due) })}
+        </small>
+      </Kpi>
+      <Kpi label={t("kpis.missed")} bg={C.maroonBg} fg={C.maroon}>
+        {num.format(view.missed)}
+      </Kpi>
+      <Kpi label={tp("noCards")} bg={C.goldBg} fg={C.goldInk}>
+        {num.format(view.noCards)}
+      </Kpi>
+    </div>
+  );
+  const rulesNote = (
+    <div
+      className="mt-3 rounded-lg px-3 py-2 text-[11px] leading-relaxed"
+      style={{ background: C.goldBg, color: C.goldInk, border: `1px solid #EAD7A8` }}
+    >
+      {tp("rules")} {tp("generatedOn", { date: generatedOn })}
+    </div>
+  );
 
   return (
     <div className="track-print mx-auto flex max-w-[794px] flex-col print:max-w-none" style={{ color: C.ink }}>
@@ -89,7 +122,7 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
         .track-print, .track-print * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         @media print {
           @page { size: A4; margin: 10mm; }
-          .track-sheet { box-shadow: none !important; border: 0 !important; border-radius: 0 !important; margin: 0 !important; min-height: 277mm !important; }
+          .track-sheet { box-shadow: none !important; border: 0 !important; border-radius: 0 !important; margin: 0 !important; }
         }
       `}</style>
 
@@ -97,6 +130,7 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
         <PrintButton label={tReports("print.downloadButton")} />
       </div>
 
+      {!single && (
       <Sheet pageLabel={tp("page", { page: num.format(1), total: num.format(totalPages) })} footer={academyName}>
         <Band>
           <div className="flex items-start justify-between gap-6">
@@ -104,7 +138,7 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
               <p className="text-xs font-bold" style={{ color: C.goldSoft }}>
                 {academyName}
               </p>
-              <h1 className="font-display mt-1 text-[36px] font-bold leading-tight text-white">{t("title")}</h1>
+              <h1 className="font-display mt-0.5 text-[28px] font-bold leading-tight text-white">{t("title")}</h1>
               <p className="mt-1 text-sm" style={{ color: C.green100 }}>
                 {rangeLabel} · {trackName ?? t("filters.allTracks")} ·{" "}
                 {tp("cohortCount", { count: view.cohorts.length })}
@@ -117,30 +151,10 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
           </div>
         </Band>
 
-        <div className="px-8 pt-6">
-          <div className="grid grid-cols-4 gap-2.5">
-            <Kpi label={t("kpis.average")} bg={C.green50} fg={C.green700}>
-              {view.average === null ? "—" : num.format(view.average)}
-              <small className="ms-1 text-sm font-semibold" style={{ color: C.muted }}>
-                / {num.format(40)}
-              </small>
-              <Bar value={pct(view.average)} />
-            </Kpi>
-            <Kpi label={t("kpis.done")} bg={C.green50} fg={C.green900}>
-              {num.format(view.done)}
-              <small className="ms-1 text-sm font-semibold" style={{ color: C.muted }}>
-                {t("kpis.of", { due: num.format(view.due) })}
-              </small>
-            </Kpi>
-            <Kpi label={t("kpis.missed")} bg={C.maroonBg} fg={C.maroon}>
-              {num.format(view.missed)}
-            </Kpi>
-            <Kpi label={tp("noCards")} bg={C.goldBg} fg={C.goldInk}>
-              {num.format(view.noCards)}
-            </Kpi>
-          </div>
+        <div className="px-6 pt-4">
+          {kpis}
 
-          <h2 className="font-display mt-6 mb-2 text-xl font-bold" style={{ color: C.green900 }}>
+          <h2 className="font-display mt-4 mb-2 text-lg font-bold" style={{ color: C.green900 }}>
             {tp("cohorts")}
           </h2>
           {view.cohorts.length === 0 ? (
@@ -201,14 +215,10 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
 
           <Legend t={t} />
 
-          <div
-            className="mt-5 rounded-lg px-4 py-3 text-xs leading-relaxed"
-            style={{ background: C.goldBg, color: C.goldInk, border: `1px solid #EAD7A8` }}
-          >
-            {tp("rules")} {tp("generatedOn", { date: generatedOn })}
-          </div>
+          {rulesNote}
         </div>
       </Sheet>
+      )}
 
       {view.cohorts.map((c, ci) => {
         const weeks = c.weeks.slice(-WEEK_COLUMNS);
@@ -237,17 +247,18 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
         return (
           <Sheet
             key={c.id}
-            breakBefore
-            pageLabel={tp("page", { page: num.format(ci + 2), total: num.format(totalPages) })}
+            breakBefore={!single}
+            pageLabel={tp("page", { page: num.format(ci + (single ? 1 : 2)), total: num.format(totalPages) })}
             footer={`${academyName} · ${t("title")}`}
           >
             <Band>
               <div className="flex items-center justify-between gap-6">
                 <div className="min-w-0">
                   <p className="text-xs font-bold" style={{ color: C.goldSoft }}>
+                    {single ? `${academyName} · ` : ""}
                     {t("title")} · {rangeLabel}
                   </p>
-                  <h1 className="font-display mt-1 text-[30px] font-bold leading-tight text-white">
+                  <h1 className="font-display mt-0.5 text-[24px] font-bold leading-tight text-white">
                     {c.trackName} · {c.name}
                   </h1>
                   <p className="mt-1 text-[13px]" style={{ color: C.green100 }}>
@@ -272,7 +283,8 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
               </div>
             </Band>
 
-            <div className="px-8 pt-5">
+            <div className="px-6 pt-4">
+              {single && <div className="mb-3">{kpis}</div>}
               <table className="w-full border-collapse text-[12px]">
                 <thead>
                   <tr className="align-bottom" style={{ background: C.green900, color: "#FFFFFF" }}>
@@ -355,9 +367,9 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
 
               <Legend t={t} />
 
-              <div className="mt-5 grid grid-cols-2 gap-3.5">
-                <div className="rounded-xl px-4 py-3" style={{ background: C.maroonBg, border: `1px solid #EBC3BD` }}>
-                  <h2 className="font-display mb-1.5 text-lg font-bold" style={{ color: C.maroon }}>
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <div className="rounded-xl px-3 py-2" style={{ background: C.maroonBg, border: `1px solid #EBC3BD` }}>
+                  <h2 className="font-display mb-1 text-base font-bold" style={{ color: C.maroon }}>
                     {tp("followUp")}
                   </h2>
                   {followUp.length === 0 ? (
@@ -365,7 +377,7 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
                       {tp("nobody")}
                     </p>
                   ) : (
-                    <ul className="text-[12.5px] leading-[1.8]">
+                    <ul className="text-[12px] leading-[1.7]">
                       {followUp.map((r) => (
                         <li key={r.enrollmentId}>
                           <b>{r.studentName}</b> —{" "}
@@ -378,8 +390,8 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
                     </ul>
                   )}
                 </div>
-                <div className="rounded-xl px-4 py-3" style={{ background: C.goldBg, border: `1px solid #EAD7A8` }}>
-                  <h2 className="font-display mb-1.5 text-lg font-bold" style={{ color: C.goldInk }}>
+                <div className="rounded-xl px-3 py-2" style={{ background: C.goldBg, border: `1px solid #EAD7A8` }}>
+                  <h2 className="font-display mb-1 text-base font-bold" style={{ color: C.goldInk }}>
                     {tp("shining")}
                   </h2>
                   {shining.length === 0 ? (
@@ -387,7 +399,7 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
                       {tp("noFullWeeks")}
                     </p>
                   ) : (
-                    <ul className="text-[12.5px] leading-[1.8]">
+                    <ul className="text-[12px] leading-[1.7]">
                       {shining.map((s) => (
                         <li key={s.id}>
                           <b>{s.name}</b> —{" "}
@@ -401,9 +413,10 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
                   )}
                 </div>
               </div>
+              {single && rulesNote}
             </div>
 
-            <div className="mt-auto grid grid-cols-2 gap-10 px-8 pt-8 text-xs" style={{ color: C.muted }}>
+            <div className="grid grid-cols-2 gap-10 px-6 pt-6 text-xs" style={{ color: C.muted }}>
               <div>
                 <div className="h-8 border-b" style={{ borderColor: "#8A9A91" }} />
                 <div className="mt-1.5">{tp("teacherSignature")}</div>
@@ -434,12 +447,12 @@ function Sheet({
 }) {
   return (
     <section
-      className="track-sheet mb-6 flex min-h-[1090px] flex-col overflow-hidden rounded-xl border border-border-subtle bg-white shadow-sm"
+      className="track-sheet mb-6 flex flex-col overflow-hidden rounded-xl border border-border-subtle bg-white shadow-sm"
       style={{ breakBefore: breakBefore ? "page" : undefined }}
     >
       <div className="flex flex-1 flex-col">{children}</div>
       <div
-        className="mt-6 flex justify-between px-8 py-2.5 text-[11px] font-semibold"
+        className="mt-4 flex justify-between px-6 py-2 text-[11px] font-semibold"
         style={{ background: C.green900, color: C.green100 }}
       >
         <span>{footer}</span>
@@ -453,7 +466,7 @@ function Sheet({
 function Band({ children }: { children: React.ReactNode }) {
   return (
     <div>
-      <div className="px-8 py-6" style={{ background: C.green900 }}>
+      <div className="px-6 py-4" style={{ background: C.green900 }}>
         {children}
       </div>
       <div className="h-1.5" style={{ background: C.gold }} />
@@ -473,11 +486,11 @@ function Kpi({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl px-3.5 py-3" style={{ background: bg }}>
+    <div className="rounded-xl px-3 py-2" style={{ background: bg }}>
       <div className="text-xs font-semibold" style={{ color: C.muted }}>
         {label}
       </div>
-      <div className="mt-0.5 text-[26px] font-extrabold leading-tight tabular-nums" style={{ color: fg }}>
+      <div className="text-[20px] font-extrabold leading-tight tabular-nums" style={{ color: fg }}>
         {children}
       </div>
     </div>
@@ -486,7 +499,7 @@ function Kpi({
 
 function Bar({ value }: { value: number }) {
   return (
-    <div className="mt-2 h-2 overflow-hidden rounded-full" style={{ background: C.green100 }}>
+    <div className="mt-1 h-1.5 overflow-hidden rounded-full" style={{ background: C.green100 }}>
       <div className="h-full rounded-full" style={{ width: `${value}%`, background: C.green700 }} />
     </div>
   );
