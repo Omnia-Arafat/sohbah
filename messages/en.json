@@ -2483,7 +2483,7 @@
       "done": "Portion days completed",
       "doneNote": "Since 3 October, when the portion cards started",
       "of": "of {due}",
-      "missed": "Days missed",
+      "missed": "Missing recitation days",
       "noCards": "{count, plural, one{# student with no card} other{# students with no card}}",
       "fullWeeks": "Full weeks",
       "pending": "{count, plural, one{# excuse awaiting a decision} other{# excuses awaiting a decision}}"
@@ -2523,18 +2523,23 @@
       "noWeeks": "No weeks counted for her in this period.",
       "full": "full",
       "unmarked": "not marked",
-      "excused": "Excused"
+      "excused": "Excused",
+      "legend": "“Recitation”: days with a card ÷ days required (5 a week). “Missed meetings”: meetings she did not attend; an excuse still counts and is marked “excused”. “Meeting”: attended ÷ held. Squares: the five recitation days of the latest finished week — filled is complete, light is incomplete, red-outlined is missing, dotted is not due yet (only before the first week ends)."
     },
     "columns": {
       "score": "Score",
-      "days": "Cards in her latest week",
-      "missed": "Missed",
-      "meetings": "Meetings"
+      "days": "Recitation days",
+      "missed": "Missing recitation days",
+      "meetings": "Meetings",
+      "absent": "Missed meetings",
+      "absentExcused": "Missed · {count} excused",
+      "recitation": "Recitation",
+      "daysOfWeek": "Recitation days · week {week}"
     },
     "days": {
       "done": "full recitation",
-      "partial": "partial recitation",
-      "missed": "missed",
+      "partial": "Incomplete recitation",
+      "missed": "Missing recitation day",
       "excused": "excused",
       "open": "not closed yet"
     },
@@ -2565,8 +2570,8 @@
       "olderWeeks": "{count, plural, one{# older week is} other{# older weeks are}} counted in the totals but not shown as columns.",
       "followUp": "Needs follow-up",
       "nobody": "Nobody.",
-      "noCardsFor": "no cards, {count} days missed",
-      "missedDays": "{count} days missed",
+      "noCardsFor": "No cards, {count} missing recitation days",
+      "missedDays": "{count} missing recitation days",
       "shining": "Full-marks students",
       "noFullWeeks": "No scores counted yet.",
       "fullIn": "40 / 40 in week {weeks}",

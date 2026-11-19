@@ -224,6 +224,7 @@ export default async function TrackReportPage({ params, searchParams }: TrackRep
           <span className="text-sm text-muted-foreground">
             {t("ranking.count", { count: report.rows.length })}
           </span>
+          <p className="w-full text-xs leading-relaxed text-muted-foreground">{t("ranking.legend")}</p>
         </div>
 
         {report.rows.length === 0 ? (
@@ -283,12 +284,23 @@ export default async function TrackReportPage({ params, searchParams }: TrackRep
                         </span>
                       </span>
                       {row.recentDays.length > 0 && (
-                        <span className="flex items-center gap-1" title={t("columns.days")}>
-                          {row.recentDays.map((status, i) => (
-                            <span key={i} className={`h-[18px] w-[18px] rounded-[5px] ${DAY_STYLE[status]}`}>
-                              <span className="sr-only">{t(`days.${status}`)}</span>
-                            </span>
-                          ))}
+                        <span className="flex flex-col items-center gap-1" title={t("columns.days")}>
+                          <span className="flex items-center gap-1">
+                            {row.recentDays.map((status, i) => (
+                              <span
+                                key={i}
+                                title={t(`days.${status}`)}
+                                className={`h-[18px] w-[18px] rounded-[5px] ${DAY_STYLE[status]}`}
+                              >
+                                <span className="sr-only">{t(`days.${status}`)}</span>
+                              </span>
+                            ))}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground">
+                            {row.recentWeek === null
+                              ? t("columns.days")
+                              : t("columns.daysOfWeek", { week: num.format(row.recentWeek) })}
+                          </span>
                         </span>
                       )}
                       <span className="flex gap-4 tabular-nums">
@@ -298,9 +310,25 @@ export default async function TrackReportPage({ params, searchParams }: TrackRep
                               row.missed > 0 ? "text-[#7A2433] dark:text-[#E8A39B]" : "text-muted-foreground"
                             }`}
                           >
-                            {num.format(row.missed)}
+                            {row.due - row.excused > 0
+                              ? `${num.format(row.done)} / ${num.format(row.due - row.excused)}`
+                              : "—"}
                           </span>
-                          <span className="block text-[11px] text-muted-foreground">{t("columns.missed")}</span>
+                          <span className="block text-[11px] text-muted-foreground">{t("columns.recitation")}</span>
+                        </span>
+                        <span className="text-center">
+                          <span
+                            className={`block font-extrabold ${
+                              (row.meetingsMissed ?? 0) > 0 ? "text-[#7A2433] dark:text-[#E8A39B]" : "text-muted-foreground"
+                            }`}
+                          >
+                            {row.meetingsMissed === null ? "—" : num.format(row.meetingsMissed)}
+                          </span>
+                          <span className="block text-[11px] text-muted-foreground">
+                            {row.meetingsExcused > 0
+                              ? t("columns.absentExcused", { count: num.format(row.meetingsExcused) })
+                              : t("columns.absent")}
+                          </span>
                         </span>
                         <span className="text-center">
                           <span className="block font-extrabold">

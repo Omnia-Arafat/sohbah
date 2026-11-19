@@ -55,14 +55,19 @@ export type TrackReportRow = {
   meetings: number;
   /** Sessions that circle held while she was on the track; null when the cohort has no circle. */
   meetingsHeld: number | null;
+  /** لقاءات the circle held that she did not come to, excused ones included; null without a circle. */
+  meetingsMissed: number | null;
+  /** Of those, the ones the معلمة marked an عذر for. */
+  meetingsExcused: number;
   /** done / (due − excused), 0..100; null when nothing was due. */
   commitment: number | null;
   /** The weekly score: سرد days plus the لقاء's بنود, summed over the period. */
   points: number;
   maxPoints: number;
   weeks: TrackReportWeek[];
-  /** The five required days of her latest week in the period, in order. */
+  /** The five required days of her latest closed week in the period (the running one if none has closed). */
   recentDays: DayStatus[];
+  recentWeek: number | null;
 };
 
 export type DayStatus = "done" | "partial" | "missed" | "excused" | "open";
@@ -472,7 +477,8 @@ export async function loadTrackReport(
     }
 
     const weekList = [...weeks.values()].sort((a, b) => a.week - b.week);
-    const latestDays = [...daysBy.keys()].sort((a, b) => b - a)[0];
+    const shownWeeks = [...daysBy.keys()].sort((a, b) => b - a);
+    const latestDays = shownWeeks.find((w) => start + w * 7 <= today) ?? shownWeeks[0];
     const points = weekList.reduce((n, w) => n + w.recitation + (w.meeting ?? 0), 0);
     const maxPoints = weekList.reduce((n, w) => n + w.recitationMax + (w.meetingMax ?? 0), 0);
 
@@ -483,9 +489,13 @@ export async function loadTrackReport(
     };
     const circleId = cohort.circle_id;
     const held = circleId ? [...(heldBy.get(circleId) ?? [])].filter(inWindow).length : null;
-    const sessions = circleId
-      ? [...(joinedBy.get(`${circleId}:${e.student_id}`) ?? [])].filter(inWindow).length
-      : 0;
+    const joinedDays = circleId ? (joinedBy.get(`${circleId}:${e.student_id}`) ?? new Set<string>()) : new Set<string>();
+    const sessions = [...joinedDays].filter(inWindow).length;
+    const missedDays = circleId
+      ? [...(heldBy.get(circleId) ?? [])].filter((d) => inWindow(d) && !joinedDays.has(d))
+      : [];
+    const excusedDay = (d: string) =>
+      (scoresBy.get(`${e.id}:${weekOf(toDays(d))}`) ?? []).some((m) => m.excused);
 
     return {
       enrollmentId: e.id,
@@ -501,11 +511,14 @@ export async function loadTrackReport(
       pendingExcuses: pendingBy.get(e.id) ?? 0,
       meetings: sessions,
       meetingsHeld: held,
+      meetingsMissed: circleId ? missedDays.length : null,
+      meetingsExcused: missedDays.filter(excusedDay).length,
       commitment: counted > 0 ? Math.round((done / counted) * 100) : null,
       points,
       maxPoints,
       weeks: weekList,
       recentDays: latestDays === undefined ? [] : daysBy.get(latestDays)!,
+      recentWeek: latestDays ?? null,
     };
   });
 
