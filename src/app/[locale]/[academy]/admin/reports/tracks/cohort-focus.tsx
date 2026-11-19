@@ -95,8 +95,8 @@ export function CohortFocus({ cohorts }: { cohorts: CohortView[] }) {
                 {row.cells.map((cell, i) => {
                   if (!cell || cell.max === 0) {
                     return (
-                      <td key={i} className="px-2 py-1.5 text-center text-muted-foreground">
-                        —
+                      <td key={i} className="px-2 py-1.5 text-center text-muted-foreground" title={cell?.excuse || undefined}>
+                        {cell?.excuse != null ? t("excused") : "—"}
                       </td>
                     );
                   }
@@ -113,6 +113,11 @@ export function CohortFocus({ cohorts }: { cohorts: CohortView[] }) {
                       >
                         {num.format(cell.total)} / {num.format(cell.max)}
                       </span>
+                      {cell.excuse != null && (
+                        <span className="mt-0.5 block text-[10px] font-semibold text-muted-foreground" title={cell.excuse || undefined}>
+                          {t("excused")}
+                        </span>
+                      )}
                     </td>
                   );
                 })}

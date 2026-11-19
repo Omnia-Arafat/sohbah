@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { FileDown } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import { BackLink } from "@/components/back-link";
 import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
 import { TeacherAccountNotice } from "@/components/teacher-account-notice";
@@ -71,9 +73,27 @@ export default async function CohortDayPage({ params }: PageProps) {
         {t("back")}
       </BackLink>
 
-      <div>
-        <h1 className="font-display text-2xl font-bold sm:text-3xl">{t("title")}</h1>
-        <p className="mt-1.5 text-sm text-muted-foreground">{t("subtitle")}</p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl font-bold sm:text-3xl">{t("title")}</h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">{t("subtitle")}</p>
+        </div>
+        {/* The cohort's whole run so far, as the printable track report. */}
+        {cohort && (
+          <Link
+            href={`/${academySlug}/admin/reports/tracks/print?${new URLSearchParams({
+              mode: "custom",
+              from: cohort.startDate,
+              to: today(),
+              track: id,
+              cohort: cohortId,
+            }).toString()}`}
+            className="btn-secondary inline-flex min-h-11 items-center gap-2 px-4 text-sm"
+          >
+            <FileDown className="h-4 w-4" aria-hidden="true" />
+            {t("downloadReport")}
+          </Link>
+        )}
       </div>
 
       <DayBoard

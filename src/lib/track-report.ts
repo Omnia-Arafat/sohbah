@@ -76,9 +76,11 @@ export type TrackReportWeek = {
   open: boolean;
   recitation: number;
   recitationMax: number;
-  /** null when the معلمة has not marked this week's لقاء for the cohort. */
+  /** null until the معلمة marks the cohort at the next لقاء, which grades this week. */
   meeting: number | null;
   meetingMax: number | null;
+  /** Set when she had an عذر for the grading لقاء: its reason, or "" when none was written. */
+  meetingExcuse: string | null;
 };
 
 type ScoreRules = { perDay: number; days: number; components: { id: string; points: number }[] };
@@ -125,6 +127,18 @@ function toDays(iso: string): number {
 
 function fromDays(days: number): string {
   return new Date(days * DAY_MS).toISOString().slice(0, 10);
+}
+
+/** The لقاء marks, with the عذر reason once RUN_STEPS_MEETING_EXCUSE_REASON.sql is applied. */
+async function loadMeetingScores(supabase: Supabase, enrollmentIds: string[]) {
+  const read = (columns: string) =>
+    supabase
+      .from("track_meeting_scores" as never)
+      .select(columns)
+      .in("enrollment_id" as never, enrollmentIds as never);
+  const withReason = await read("enrollment_id, week_number, component_id, points_awarded, excused, excuse_reason");
+  if (!withReason.error) return withReason;
+  return read("enrollment_id, week_number, component_id, points_awarded, excused");
 }
 
 /** Every cohort the academy has run, for the filter — newest track first. */
@@ -210,10 +224,7 @@ export async function loadTrackReport(
       .in("circle_id", circleIds)
       .gte("session_date", range.from)
       .lte("session_date", range.to),
-    supabase
-      .from("track_meeting_scores" as never)
-      .select("enrollment_id, week_number, component_id, points_awarded, excused")
-      .in("enrollment_id" as never, enrollmentIds as never),
+    loadMeetingScores(supabase, enrollmentIds),
     supabase
       .from("track_rule_sets" as never)
       .select(
@@ -265,13 +276,17 @@ export async function loadTrackReport(
   // A week's لقاء counts once the معلمة has marked anyone in the cohort for it.
   const enrollmentCohort = new Map(enrollments.map((e) => [e.id, e.cohort_id]));
   const markedWeeks = new Set<string>();
-  const scoresBy = new Map<string, { component_id: string; points_awarded: number; excused: boolean }[]>();
+  const scoresBy = new Map<
+    string,
+    { component_id: string; points_awarded: number; excused: boolean; excuse_reason?: string | null }[]
+  >();
   for (const row of (meetingScores.data ?? []) as unknown as {
     enrollment_id: string;
     week_number: number;
     component_id: string;
     points_awarded: number;
     excused: boolean;
+    excuse_reason?: string | null;
   }[]) {
     markedWeeks.add(`${enrollmentCohort.get(row.enrollment_id)}:${row.week_number}`);
     const key = `${row.enrollment_id}:${row.week_number}`;
@@ -366,6 +381,7 @@ export async function loadTrackReport(
           recitationMax: 0,
           meeting: null,
           meetingMax: null,
+          meetingExcuse: null,
         };
         weeks.set(week, entry);
       }
@@ -433,13 +449,22 @@ export async function loadTrackReport(
       daysBy.set(week, statuses);
     }
 
+    // The لقاء tests the week that has just ended: marks given at the meeting
+    // that opens week N+1 (stored under N+1, the meeting's own week) are week
+    // N's grade. The cohort's first meeting has no week before it, so its
+    // marks count for nothing.
     for (let week = weekOf(meetingFirst); week <= weekOf(last); week++) {
-      const meetingDay = start + (week - 1) * 7;
-      if (meetingDay < meetingFirst || meetingDay > last) continue;
-      if (!markedWeeks.has(`${cohort.id}:${week}`)) continue;
-      const marks = scoresBy.get(`${e.id}:${week}`) ?? [];
+      const weekStart = start + (week - 1) * 7;
+      if (weekStart < meetingFirst || weekStart > last) continue;
+      const meetingWeek = week + 1;
+      if (!markedWeeks.has(`${cohort.id}:${meetingWeek}`)) continue;
+      const marks = scoresBy.get(`${e.id}:${meetingWeek}`) ?? [];
       const excusedIds = new Set(marks.filter((m) => m.excused).map((m) => m.component_id));
       const entry = weekEntry(week);
+      const excusedMarks = marks.filter((m) => m.excused);
+      entry.meetingExcuse = excusedMarks.length
+        ? (excusedMarks.find((m) => m.excuse_reason)?.excuse_reason ?? "")
+        : null;
       entry.meeting = marks.reduce((n, m) => n + Number(m.points_awarded), 0);
       entry.meetingMax = rules.components
         .filter((c) => !excusedIds.has(c.id))

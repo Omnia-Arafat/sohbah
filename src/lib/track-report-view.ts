@@ -7,6 +7,8 @@ export type ScoreCell = {
   open: boolean;
   /** The لقاء was marked, so the week can reach its full 40. */
   meetingMarked: boolean;
+  /** Her عذر for the لقاء that graded this week: the reason, or "" without one. */
+  excuse: string | null;
 };
 
 export type CohortView = {
@@ -97,7 +99,7 @@ export function buildTrackReportView(report: TrackReport): TrackReportView {
             const w = r.weeks.find((x) => x.week === week);
             if (!w) return null;
             const { total, max } = weekTotal(w);
-            return { week, total, max, open: w.open, meetingMarked: w.meeting !== null };
+            return { week, total, max, open: w.open, meetingMarked: w.meeting !== null, excuse: w.meetingExcuse };
           }),
         })),
       };

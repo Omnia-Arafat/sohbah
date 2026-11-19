@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Pencil } from "lucide-react";
+import { FileDown, Pencil } from "lucide-react";
 import { canEditAnyCircle, canSupervise } from "@/lib/auth/roles";
 import { fullStudentName } from "@/lib/student-name";
 import { Link } from "@/i18n/navigation";
@@ -80,7 +80,8 @@ async function loadTrackCohorts(
     const day = 86_400_000;
     const since = Math.floor((Date.parse(`${today}T00:00:00Z`) - Date.parse(`${row.start_date}T00:00:00Z`)) / day);
     if (since < 0) return [];
-    const week = Math.min(Math.floor(since / 7) + 1, row.tracks?.duration_weeks ?? 40);
+    // One past the last week: the closing meeting is where the last week is graded.
+    const week = Math.min(Math.floor(since / 7) + 1, (row.tracks?.duration_weeks ?? 40) + 1);
     const meetingDate = new Date(Date.parse(`${row.start_date}T00:00:00Z`) + (week - 1) * 7 * day)
       .toISOString()
       .slice(0, 10);
@@ -116,6 +117,7 @@ export default async function TeacherSessionPage({ params }: SessionPageProps) {
   setRequestLocale(locale);
 
   const t = await getTranslations("session");
+  const tReport = await getTranslations("sessionReport");
   const tCircle = await getTranslations("circle");
   const tDashboard = await getTranslations("dashboard");
   const tLesson = await getTranslations("session.lesson");
@@ -338,6 +340,20 @@ export default async function TeacherSessionPage({ params }: SessionPageProps) {
           <p className="card text-muted-foreground">{t("errors.generic")}</p>
         )}
       </section>
+
+      {/* After the session: the day's attendance, to print or keep as PDF. */}
+      {info && (
+        <Link
+          href={`/${academySlug}/print/session?circle=${circle.id}&date=${info.session_date}`}
+          className="card flex items-center gap-3 transition hover:border-brand-300"
+        >
+          <FileDown className="h-5 w-5 shrink-0 text-brand-700 dark:text-brand-300" aria-hidden="true" />
+          <span className="min-w-0">
+            <span className="block font-semibold">{tReport("open")}</span>
+            <span className="block text-xs text-muted-foreground">{tReport("openHint")}</span>
+          </span>
+        </Link>
+      )}
 
       {trackCohorts.map((cohort) => (
         <section key={cohort.id} className="card">

@@ -342,7 +342,11 @@ export default async function TrackReportPage({ params, searchParams }: TrackRep
                               <div className="mt-0.5 flex justify-between text-muted-foreground">
                                 <span>{t("rules.meeting")}</span>
                                 <span className="tabular-nums">
-                                  {w.meeting === null
+                                  {w.meetingExcuse != null
+                                    ? w.meetingExcuse
+                                      ? `${t("ranking.excused")}: ${w.meetingExcuse}`
+                                      : t("ranking.excused")
+                                    : w.meeting === null
                                     ? t("ranking.unmarked")
                                     : `${num.format(w.meeting)} / ${num.format(w.meetingMax ?? 0)}`}
                                 </span>

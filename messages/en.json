@@ -2265,8 +2265,11 @@
     "you": "you",
     "saveFailed": "The change was not saved — please try again.",
     "meetingScores": {
-      "title": "Week {week} meeting scores",
-      "hintEdit": "Tick each item the student did at the meeting — 5 points each, {max} in all. Saves straight away.",
+      "title": "Week {week} scores",
+      "titleFirst": "First meeting scores",
+      "countsFor": "Marked at the {date} meeting; they count for week {week}, the week that just ended.",
+      "firstMeeting": "The {date} meeting is the cohort's first, so there is no earlier week for its marks to count for.",
+      "hintEdit": "Tick each item the student did at the meeting — 5 points each, {max} in all. Saves straight away. If a student is excused, tap “Excuse” and write why; the meeting items are not counted against her.",
       "hintRead": "The weekly meeting items, {max} in all.",
       "student": "Student",
       "total": "Total",
@@ -2274,8 +2277,17 @@
       "empty": "No students in this cohort.",
       "saveFailed": "The score was not saved — please try again.",
       "doneLabel": "{item}: done",
-      "missingLabel": "{item}: not done"
-    }
+      "missingLabel": "{item}: not done",
+      "excuse": "Excuse",
+      "excused": "Excused",
+      "removeExcuse": "Remove excuse",
+      "reasonIs": "Reason: {reason}",
+      "reasonPlaceholder": "Reason (optional)",
+      "reasonLabel": "Reason {name} is excused",
+      "saveExcuse": "Save excuse",
+      "cancel": "Cancel"
+    },
+    "downloadReport": "Download cohort report"
   },
   "excuse": {
     "title": "I had an excuse",
@@ -2493,14 +2505,15 @@
         "low": "16–23",
         "poor": "Under 16",
         "open": "Week not closed"
-      }
+      },
+      "excused": "Excused"
     },
     "rules": {
       "title": "How the score works",
       "recitation": "Portion",
       "recitationNote": "5 points for each complete card (new and review), up to 5 cards a week, on any of its days.",
       "meeting": "Meeting",
-      "meetingNote": "Past recitation 5 · New recitation 5 · Reading the new portion 5",
+      "meetingNote": "Past recitation 5 · New recitation 5 · Reading the new portion 5 — marked at the next week's meeting and counted for the week before it.",
       "week": "Week",
       "counting": "The meeting counts only in weeks the teacher marked it. Once a week closes at the next meeting, it is short by however many of its 5 cards are missing; portion cards count from 3 October 2026."
     },
@@ -2509,7 +2522,8 @@
       "count": "{count, plural, one{# student} other{# students}} · by score",
       "noWeeks": "No weeks counted for her in this period.",
       "full": "full",
-      "unmarked": "not marked"
+      "unmarked": "not marked",
+      "excused": "Excused"
     },
     "columns": {
       "score": "Score",
@@ -2560,5 +2574,31 @@
       "supervisorSignature": "Supervisor's signature",
       "scoreLine": "{points} of {max}"
     }
+  },
+  "sessionReport": {
+    "title": "Session report",
+    "back": "Back to the circle",
+    "download": "Print or save as PDF",
+    "howToSave": "To download, choose “Save as PDF” in the print dialog",
+    "came": "{count, plural, =0{No students came} one{# student came} other{# students came}}",
+    "recitedCount": "Recited: {count}",
+    "notRecitedCount": "Did not recite: {count}",
+    "absentCount": "Absent from the cohort: {count}",
+    "empty": "No attendance recorded for this circle on this day.",
+    "student": "Student",
+    "joined": "Joined",
+    "status": "Status",
+    "marks": "Meeting marks",
+    "statuses": {
+      "recited": "Recited",
+      "notRecited": "Came, did not recite",
+      "absent": "Absent"
+    },
+    "marksNote": "Meeting marks given on this day; the track report counts them for the week before.",
+    "generatedOn": "Generated {date}.",
+    "open": "Session report",
+    "openHint": "Today’s attendance and recitation, to print or save as PDF.",
+    "excused": "Excused",
+    "excusedFor": "Excused: {reason}"
   }
 }

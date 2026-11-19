@@ -306,7 +306,7 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
                         if (!cell || cell.max === 0) {
                           return (
                             <td key={i} className="px-1 py-1.5 text-center" style={{ color: C.muted }}>
-                              —
+                              {cell?.excuse != null ? t("focus.excused") : "—"}
                             </td>
                           );
                         }
@@ -323,6 +323,11 @@ export default async function TrackReportPrintPage({ params, searchParams }: Pri
                             >
                               {num.format(cell.total)}/{num.format(cell.max)}
                             </span>
+                            {cell.excuse != null && (
+                              <span className="block text-[9px] font-semibold" style={{ color: C.muted }}>
+                                {cell.excuse ? `${t("focus.excused")}: ${cell.excuse}` : t("focus.excused")}
+                              </span>
+                            )}
                           </td>
                         );
                       })}
