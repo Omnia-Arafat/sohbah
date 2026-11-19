@@ -137,7 +137,6 @@ export default async function SchedulePage({ params }: PageProps) {
         </ScheduleTabs>
       )}
 
-      <p className="text-center text-sm text-muted-foreground">{t("footnote")}</p>
     </div>
   );
 }

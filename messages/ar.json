@@ -1409,6 +1409,7 @@
     "newTrackSchedule": "جدول أسبوعي جديد",
     "trackSchedules": "جداول المسارات",
     "circlesTimetable": "مواعيد الحلقات",
+    "dayColumn": "اليوم",
     "circlesCount": "{count} حلقة",
     "days": {
       "0": "الأحد",

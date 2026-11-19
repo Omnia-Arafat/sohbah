@@ -1,8 +1,9 @@
+import Image from "next/image";
 import { Clock } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { LoadedBoard } from "@/lib/schedule-boards";
-import { arNum } from "@/lib/schedule-format";
+import { DAY_LEAF, arNum } from "@/lib/schedule-format";
 
 /**
  * Formats a stored HH:MM wall-clock time the way the reader's language writes
@@ -19,14 +20,20 @@ function formatTime(startTime: string, locale: string): string {
   }).format(date);
 }
 
-/** The leaf the track schedules mark things with, from the Sohbah logo. */
-const LEAF = "rounded-[3px_50%_3px_50%]";
+const LEAF = "M7 1C12 5 12 13 7 17C2 13 2 5 7 1Z";
+/** Friday in the board's 0 = Sunday numbering: the sand row, as on the sheet. */
+const FRIDAY = 5;
 
 /**
- * One circle timetable (a schedule board), drawn in the same language as the
- * weekly track schedules: a leaf-marked header, one rounded row per day and
- * lime chips for the circles. Today's row is the one filled in, the way the
- * current week is on «جداول المسارات».
+ * One circle timetable (a schedule board) in the layout chosen on the design
+ * canvas for the weekly schedules, «هـ — غصن في إطار» (see schedule-sheet.tsx):
+ * a double green frame, the title underlined in lime, the green «اليوم» band,
+ * a vine down the side with a leaf for each day, maroon day names in their
+ * own column, rows alternating pale lime and white, and Friday in sand.
+ *
+ * Unlike the sheet it is not an A4 page: it grows with the board's days and
+ * reads at phone width without a box to scroll. Today's row takes the
+ * maroon of the sheet's meeting row, so it stands out the same way.
  */
 export async function ScheduleBoardCard({
   loaded,
@@ -55,96 +62,164 @@ export async function ScheduleBoardCard({
     simply titled after its own type (what the one-tap "create a board for
     this type" button produces) would print the same words twice.
   */
-  const eyebrow = [
-    title.trim() !== typeLabel.trim() ? typeLabel : null,
-    board.gender_category ? tDashboard(`gender.${board.gender_category}`) : null,
-  ].filter(Boolean);
+  const showType = title.trim() !== typeLabel.trim();
+  const gender = board.gender_category ? tDashboard(`gender.${board.gender_category}`) : null;
 
   return (
     <section
       id={`board-${board.id}`}
-      className="motion-board card flex scroll-mt-4 flex-col gap-4"
+      className="motion-board scroll-mt-4 rounded-[22px] border-[3px] border-[#2f7d32] bg-white p-1.5 text-[#1f2a1c]"
       style={{ animationDelay: `${index * 90}ms` }}
     >
-      <header className="flex flex-wrap items-center gap-3">
-        <span aria-hidden="true" className={`h-6 w-5 flex-none bg-brand-500 ${LEAF}`} />
-        <div className="flex min-w-40 flex-1 flex-col">
-          {eyebrow.length > 0 && (
-            <span className="text-xs font-bold text-muted-foreground">{eyebrow.join(" · ")}</span>
+      <div className="relative flex flex-col gap-4 overflow-hidden rounded-2xl border-[1.5px] border-[#9bc93b] px-3 pb-4 pt-5 sm:px-6">
+        {/* The leaf sprig in the frame's corner. */}
+        <svg aria-hidden="true" viewBox="0 0 70 70" className="pointer-events-none absolute -top-1 end-[-4px] size-12 sm:size-16">
+          <g transform="translate(22 30) rotate(-40)"><path d="M0 -20C9 -13 9 4 0 12C-9 4 -9 -13 0 -20Z" fill="#9bc93b" /></g>
+          <g transform="translate(36 18) rotate(-75)"><path d="M0 -15C7 -10 7 3 0 9C-7 3 -7 -10 0 -15Z" fill="#4ca03a" /></g>
+        </svg>
+
+        <header className="flex items-center gap-3 sm:gap-4">
+          {academySlug === "sohbah" && (
+            <Image
+              src="/assets/logos/sohbah-logo.webp"
+              alt=""
+              width={160}
+              height={160}
+              className="size-14 flex-none object-contain sm:size-20"
+            />
           )}
-          <h2 className="text-xl font-black sm:text-2xl">{title}</h2>
-        </div>
-        <span className="rounded-full bg-lime-100 px-3 py-1 text-xs font-extrabold text-brand-700 dark:bg-brand-900 dark:text-lime-200">
-          {t("circlesCount", { count: locale === "ar" ? arNum(total) : total })}
-        </span>
-      </header>
+          <div className="flex flex-1 flex-col items-center gap-1 text-center">
+            <h2 className="text-xl font-black leading-snug text-[#2f7d32] underline decoration-[#c9e27a] decoration-4 underline-offset-8 sm:text-2xl">
+              {title}
+            </h2>
+            {(showType || gender) && (
+              <div className="mt-1.5 flex flex-wrap items-center justify-center gap-2 text-sm font-black">
+                {showType && <span className="text-[#7a1e3a]">{typeLabel}</span>}
+                {showType && gender && (
+                  <svg aria-hidden="true" viewBox="0 0 14 18" className="h-3 w-2.5">
+                    <path d={LEAF} fill="#9bc93b" />
+                  </svg>
+                )}
+                {gender && <span className="text-[#2f5e1e]">{gender}</span>}
+              </div>
+            )}
+            <span className="text-base font-black">
+              {t("circlesCount", { count: locale === "ar" ? arNum(total) : total })}
+            </span>
+          </div>
+        </header>
 
-      {note && <p className="text-sm font-semibold text-muted-foreground">{note}</p>}
+        {note && <p className="text-center text-sm font-bold text-[#55624f]">{note}</p>}
 
-      {days.length === 0 ? (
-        <div className="rounded-2xl border-2 border-dashed border-lime-200 px-5 py-8 text-center font-bold text-muted-foreground dark:border-brand-800">
-          {t("boardEmpty")}
+        <div className="ms-11 flex overflow-hidden rounded-[14px] border-2 border-[#2f7d32] sm:ms-14">
+          <span className="w-20 flex-none bg-[#2f7d32] px-2 py-2 text-center text-base font-black text-white sm:w-36 sm:text-lg">
+            {t("dayColumn")}
+          </span>
+          <span className="flex-1 bg-[#4ca03a] px-2 py-2 text-center text-base font-black text-white sm:text-lg">
+            {t("circlesTimetable")}
+          </span>
         </div>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {days.map(({ day, entries }) => {
-            const isToday = day === todayIndex;
-            return (
-              <li
-                key={day}
-                aria-current={isToday ? "date" : undefined}
-                className={`flex flex-col gap-2.5 rounded-2xl px-3 py-3 sm:flex-row sm:items-center sm:gap-4 ${
-                  isToday
-                    ? "border-2 border-brand-500 bg-lime-100 dark:bg-brand-900"
-                    : "border border-lime-200 bg-brand-50 dark:border-brand-800 dark:bg-brand-900/40"
-                }`}
-              >
-                <div className="flex shrink-0 items-center gap-2 sm:w-36">
-                  <span
-                    aria-hidden="true"
-                    className={`size-4 flex-none ${LEAF} ${isToday ? "bg-brand-600" : "bg-lime-400"}`}
-                  />
-                  <span className="text-base font-black">{t(`days.${day}`)}</span>
-                  {isToday && (
-                    <span className="rounded-full bg-brand-600 px-2.5 py-0.5 text-xs font-extrabold text-white">
-                      {t("today")}
+
+        {days.length === 0 ? (
+          <div className="ms-11 rounded-2xl border-2 border-dashed border-[#c9e3a3] px-5 py-8 text-center font-extrabold text-[#55624f] sm:ms-14">
+            {t("boardEmpty")}
+          </div>
+        ) : (
+          <ul className="relative flex flex-col gap-2.5 ps-11 sm:ps-14">
+            {/* The vine the day leaves hang from. */}
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 36 700"
+              preserveAspectRatio="none"
+              className="pointer-events-none absolute start-1 top-[-14px] h-[calc(100%+14px)] w-7 sm:w-9"
+            >
+              <path
+                d="M18 0 C30 80 6 160 18 240 C30 320 6 400 18 480 C30 560 6 630 18 700"
+                fill="none"
+                stroke="#9bc93b"
+                strokeWidth="4"
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+
+            {days.map(({ day, entries }, i) => {
+              const isToday = day === todayIndex;
+              const isFriday = day === FRIDAY && !isToday;
+              const row = isToday
+                ? "border-[#e7c3cf] bg-[#fdf6f8]"
+                : isFriday
+                  ? "border-[#e8d3b0] bg-[#fbf3e6]"
+                  : `border-[#cfe3a0] ${i % 2 ? "bg-white" : "bg-[#f7fbee]"}`;
+              const divider = isToday ? "border-[#e7c3cf]" : isFriday ? "border-[#e8d3b0]" : "border-[#cfe3a0]";
+              const leafFill = isToday ? "#7a1e3a" : DAY_LEAF[i % DAY_LEAF.length];
+              const leafText = isToday || i % DAY_LEAF.length >= 3 ? "#ffffff" : "#1f2a1c";
+
+              return (
+                <li
+                  key={day}
+                  aria-current={isToday ? "date" : undefined}
+                  className={`relative flex rounded-[14px] border-[1.5px] ${row}`}
+                >
+                  {isFriday ? (
+                    <span
+                      aria-hidden="true"
+                      className="absolute top-1/2 -mt-3 size-6 rounded-full border-[3px] border-[#c9a26b] bg-white start-[-38px] sm:start-[-46px]"
+                    />
+                  ) : (
+                    <span
+                      aria-hidden="true"
+                      className="absolute top-1/2 -mt-[18px] flex h-9 w-8 items-center justify-center start-[-42px] sm:start-[-50px]"
+                    >
+                      <svg viewBox="0 0 14 18" className="absolute inset-0 size-full">
+                        <path d={LEAF} fill={leafFill} />
+                      </svg>
+                      <span className="relative text-xs font-black" style={{ color: leafText }}>
+                        {arNum(i + 1)}
+                      </span>
                     </span>
                   )}
-                </div>
 
-                <div className="flex flex-1 flex-wrap gap-2">
-                  {entries.map((entry) => (
-                    <Link
-                      key={entry.circleId}
-                      href={`/${academySlug}/circle/${entry.registrationSlug}`}
-                      className="group inline-flex min-h-11 items-center gap-2 rounded-xl border-[1.5px]
-                                 border-lime-200 bg-surface px-2.5 py-1.5 text-sm transition-all
-                                 hover:-translate-y-0.5 hover:border-brand-500 hover:shadow-sm
-                                 focus-visible:outline-2 focus-visible:outline-offset-2
-                                 focus-visible:outline-brand-600 dark:border-brand-800"
-                      title={entry.circleName}
-                    >
-                      <span
-                        aria-hidden="true"
-                        className={`flex size-7 flex-none items-center justify-center bg-lime-300 text-xs font-black text-brand-900 ${LEAF}`}
+                  <div
+                    className={`flex w-20 flex-none flex-col items-center justify-center gap-1 border-e-[1.5px] px-1 py-2 text-center sm:w-36 ${divider}`}
+                  >
+                    <span className="text-base font-black text-[#7a1e3a] sm:text-xl">{t(`days.${day}`)}</span>
+                    {isToday && (
+                      <span className="rounded-full bg-[#7a1e3a] px-2.5 py-0.5 text-xs font-extrabold text-white">
+                        {t("today")}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-1 flex-wrap items-center justify-center gap-2 p-2.5">
+                    {entries.map((entry) => (
+                      <Link
+                        key={entry.circleId}
+                        href={`/${academySlug}/circle/${entry.registrationSlug}`}
+                        title={entry.circleName}
+                        className="inline-flex min-h-11 items-center gap-2 rounded-xl border-[1.5px] border-[#cfe3a0]
+                                   bg-white px-3 py-1.5 text-sm transition-colors hover:border-[#4ca03a]
+                                   focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2f7d32]"
                       >
-                        {entry.teacherName.trim().charAt(0)}
-                      </span>
-                      <span className="font-bold group-hover:text-brand-700 dark:group-hover:text-lime-200">
-                        {entry.teacherName}
-                      </span>
-                      <span className="flex items-center gap-1 font-display text-sm font-bold text-brand-700 dark:text-lime-200">
-                        <Clock className="size-3.5" aria-hidden="true" />
-                        {formatTime(entry.startTime, locale)}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+                        <span className="font-extrabold">{entry.teacherName}</span>
+                        <span className="flex items-center gap-1 font-display text-base font-bold text-[#2f7d32]">
+                          <Clock className="size-3.5" aria-hidden="true" />
+                          {formatTime(entry.startTime, locale)}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        <footer className="flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold text-[#3d4a38]">
+          <span>{t("footnote")}</span>
+          {academySlug === "sohbah" && <span className="font-black text-[#7a1e3a]">صُحبة · So7bah</span>}
+        </footer>
+      </div>
     </section>
   );
 }

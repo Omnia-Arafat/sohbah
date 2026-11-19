@@ -1409,6 +1409,7 @@
     "newTrackSchedule": "New weekly schedule",
     "trackSchedules": "Track schedules",
     "circlesTimetable": "Circle times",
+    "dayColumn": "Day",
     "circlesCount": "{count, plural, one {# circle} other {# circles}}",
     "days": {
       "0": "Sunday",
