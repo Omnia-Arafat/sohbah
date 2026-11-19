@@ -5,8 +5,8 @@ import { useId, useRef, useState } from "react";
 export type ScheduleTab = {
   id: string;
   label: string;
-  /** Circles on that board — the number that makes a tab worth tapping. */
-  count: number;
+  /** Under the name: how many circles the board holds, already worded. */
+  sub: string;
 };
 
 /**
@@ -60,9 +60,10 @@ export function ScheduleTabs({
         role="tablist"
         aria-orientation="horizontal"
         onKeyDown={onKeyDown}
-        // Scrolls sideways rather than wrapping onto three lines when an
-        // academy runs many circle types.
-        className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
+        // A grid, as on «جداول المسارات», rather than a strip that scrolls
+        // sideways: no box inside the page to scroll on a phone, and every
+        // board is in view at once.
+        className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5"
       >
         {tabs.map((tab, index) => {
           const selected = index === active;
@@ -79,22 +80,17 @@ export function ScheduleTabs({
               aria-controls={`${baseId}-panel-${index}`}
               tabIndex={selected ? 0 : -1}
               onClick={() => setActive(index)}
-              className={`flex shrink-0 items-center gap-2 rounded-xl border px-4 py-2.5 text-sm
-                          font-medium transition-colors ${
-                            selected
-                              ? "border-brand-600 bg-brand-600 text-white"
-                              : "border-border bg-surface text-foreground hover:border-brand-400"
-                          }`}
+              className={`flex min-h-16 flex-col justify-center gap-1 rounded-2xl px-4 py-3 text-start transition-colors ${
+                selected
+                  ? "bg-brand-600 text-white"
+                  : "border-[1.5px] border-border-subtle bg-surface hover:border-brand-400"
+              }`}
             >
-              {tab.label}
+              <span className="text-base font-black leading-snug">{tab.label}</span>
               <span
-                className={`rounded-full px-1.5 py-0.5 text-xs ${
-                  selected
-                    ? "bg-white/20 text-white"
-                    : "bg-surface-subtle text-muted-foreground"
-                }`}
+                className={`text-xs font-bold ${selected ? "text-lime-100" : "text-muted-foreground"}`}
               >
-                {tab.count}
+                {tab.sub}
               </span>
             </button>
           );

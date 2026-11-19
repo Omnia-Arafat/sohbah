@@ -1405,6 +1405,11 @@
     "boardEmpty": "No active circles in this table yet.",
     "today": "Today",
     "footnote": "Times follow each circle's own timezone.",
+    "eyebrow": "Sohbah schedules",
+    "newTrackSchedule": "New weekly schedule",
+    "trackSchedules": "Track schedules",
+    "circlesTimetable": "Circle times",
+    "circlesCount": "{count, plural, one {# circle} other {# circles}}",
     "days": {
       "0": "Sunday",
       "1": "Monday",

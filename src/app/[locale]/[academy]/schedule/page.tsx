@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { CalendarDays } from "lucide-react";
+import { CalendarRange, Plus } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ScheduleBoardCard } from "@/components/schedule-board-card";
+import { ScheduleQuickCard } from "@/components/schedule-quick-card";
 import { ScheduleTabs } from "@/components/schedule-tabs";
+import { Link } from "@/i18n/navigation";
+import { getTeacherSession, isActiveTeacher } from "@/lib/auth/dal";
+import { canSupervise } from "@/lib/auth/roles";
 import { getAcademyBySlug } from "@/lib/academy-dal";
+import { arNum } from "@/lib/schedule-format";
 import { circleTypeLabel, loadCircleTypes } from "@/lib/circle-types";
 import { loadBoardsWithCircles, loadScheduleBoards } from "@/lib/schedule-boards";
 import { getViewer } from "@/lib/viewer";
@@ -44,18 +49,59 @@ export default async function SchedulePage({ params }: PageProps) {
   const viewer = await getViewer(academy.id);
   const loadedBoards = await loadBoardsWithCircles(academy.id, boards, viewer);
 
+  // Staff get the weekly track schedules here as well; a مشرفة or admin can
+  // also write one without going through المسارات first. A plain معلمة does
+  // not get the builder: the page and its save action are for supervisors.
+  const session = await getTeacherSession();
+  const staff = session && isActiveTeacher(session) ? session.teacher : null;
+  const canWrite = staff ? canSupervise(staff) : false;
+  const here = `/${academySlug}/schedule`;
+  const circlesCount = (n: number) =>
+    t("circlesCount", { count: locale === "ar" ? arNum(n) : n });
+
   return (
     <div className="flex flex-col gap-6">
-      <section>
-        <h1 className="font-display flex items-center gap-2 text-2xl font-bold sm:text-3xl">
-          <CalendarDays className="h-7 w-7 text-brand-600" aria-hidden="true" />
-          {t("title")}
-        </h1>
-        <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
-      </section>
+      <header className="flex flex-wrap items-center gap-3">
+        <div className="flex min-w-56 flex-1 flex-col">
+          <span className="text-sm font-semibold text-muted-foreground">{t("eyebrow")}</span>
+          <h1 className="text-2xl font-black sm:text-3xl">{t("title")}</h1>
+          <p className="mt-1 text-sm font-semibold text-muted-foreground">{t("subtitle")}</p>
+        </div>
+        {canWrite && (
+          <div className="flex w-full flex-wrap gap-2.5 sm:w-auto">
+            <Link
+              href={`/${academySlug}/admin/tracks/schedules/new`}
+              className="btn-primary flex-1 sm:flex-none"
+            >
+              <Plus className="size-5" aria-hidden="true" />
+              {t("newTrackSchedule")}
+            </Link>
+            <Link
+              href={`/${academySlug}/admin/tracks/schedules`}
+              className="btn-secondary flex-1 sm:flex-none"
+            >
+              <CalendarRange className="size-5" aria-hidden="true" />
+              {t("trackSchedules")}
+            </Link>
+          </div>
+        )}
+      </header>
+
+      {staff && (
+        <ScheduleQuickCard
+          academyId={academy.id}
+          academySlug={academySlug}
+          teacher={staff}
+          backHref={here}
+        />
+      )}
+
+      {loadedBoards.length > 0 && staff && (
+        <h2 className="-mb-2 text-lg font-black">{t("circlesTimetable")}</h2>
+      )}
 
       {loadedBoards.length === 0 ? (
-        <p className="card text-center text-muted-foreground">{t("noBoards")}</p>
+        <p className="card text-center font-bold text-muted-foreground">{t("noBoards")}</p>
       ) : (
         /*
           One board at a time, chosen from a tab strip, rather than all of them
@@ -71,7 +117,7 @@ export default async function SchedulePage({ params }: PageProps) {
           tabs={loadedBoards.map((loaded) => ({
             id: loaded.board.id,
             label: locale === "ar" ? loaded.board.title_ar : loaded.board.title_en,
-            count: loaded.days.reduce((sum, day) => sum + day.entries.length, 0),
+            sub: circlesCount(loaded.days.reduce((sum, day) => sum + day.entries.length, 0)),
           }))}
         >
           {loadedBoards.map((loaded, index) => (

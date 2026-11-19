@@ -1405,6 +1405,11 @@
     "boardEmpty": "لا توجد حلقات نشطة في هذا الجدول بعد.",
     "today": "اليوم",
     "footnote": "المواعيد بتوقيت كل حلقة كما هو مسجّل.",
+    "eyebrow": "جداول الصحبة",
+    "newTrackSchedule": "جدول أسبوعي جديد",
+    "trackSchedules": "جداول المسارات",
+    "circlesTimetable": "مواعيد الحلقات",
+    "circlesCount": "{count} حلقة",
     "days": {
       "0": "الأحد",
       "1": "الإثنين",

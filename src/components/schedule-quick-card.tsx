@@ -19,10 +19,13 @@ export async function ScheduleQuickCard({
   academyId,
   academySlug,
   teacher,
+  backHref,
 }: {
   academyId: string;
   academySlug: string;
   teacher: Teacher;
+  /** Where the printed sheet's back link returns to; the home page by default. */
+  backHref?: string;
 }) {
   const tracks = await getScheduleCatalog(academyId);
   if (tracks.length === 0) return null;
@@ -55,7 +58,7 @@ export async function ScheduleQuickCard({
   }
   if (cohorts.length === 0) return null;
 
-  const back = `/${academySlug}/dashboard`;
+  const back = backHref ?? `/${academySlug}/dashboard`;
   const quick = cohorts.slice(0, 4);
 
   return (
