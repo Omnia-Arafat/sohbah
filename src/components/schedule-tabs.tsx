@@ -63,7 +63,7 @@ export function ScheduleTabs({
         // A grid, as on «جداول المسارات», rather than a strip that scrolls
         // sideways: no box inside the page to scroll on a phone, and every
         // board is in view at once.
-        className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5"
+        className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-2.5 lg:grid-cols-5"
       >
         {tabs.map((tab, index) => {
           const selected = index === active;
@@ -80,13 +80,13 @@ export function ScheduleTabs({
               aria-controls={`${baseId}-panel-${index}`}
               tabIndex={selected ? 0 : -1}
               onClick={() => setActive(index)}
-              className={`flex min-h-16 flex-col justify-center gap-1 rounded-2xl px-4 py-3 text-start transition-colors ${
+              className={`flex min-h-12 flex-col justify-center gap-0.5 rounded-2xl px-3 py-2 text-start sm:min-h-16 sm:gap-1 sm:px-4 sm:py-3 transition-colors ${
                 selected
                   ? "bg-brand-600 text-white"
                   : "border-[1.5px] border-border-subtle bg-surface hover:border-brand-400"
               }`}
             >
-              <span className="text-base font-black leading-snug">{tab.label}</span>
+              <span className="text-sm font-black leading-snug sm:text-base">{tab.label}</span>
               <span
                 className={`text-xs font-bold ${selected ? "text-lime-100" : "text-muted-foreground"}`}
               >

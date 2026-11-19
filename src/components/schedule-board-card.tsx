@@ -68,10 +68,10 @@ export async function ScheduleBoardCard({
   return (
     <section
       id={`board-${board.id}`}
-      className="motion-board scroll-mt-4 rounded-[22px] border-[3px] border-[#2f7d32] bg-white p-1.5 text-[#1f2a1c]"
+      className="motion-board scroll-mt-4 rounded-[22px] border-[3px] border-[#2f7d32] bg-white p-1.5 text-[#1f2a1c] max-sm:rounded-[18px] max-sm:border-2 max-sm:p-1"
       style={{ animationDelay: `${index * 90}ms` }}
     >
-      <div className="relative flex flex-col gap-4 overflow-hidden rounded-2xl border-[1.5px] border-[#9bc93b] px-3 pb-4 pt-5 sm:px-6">
+      <div className="relative flex flex-col gap-4 overflow-hidden rounded-2xl border-[1.5px] border-[#9bc93b] px-3 pb-4 pt-5 max-sm:gap-3 max-sm:rounded-[14px] max-sm:px-2 max-sm:pb-3 max-sm:pt-3 sm:px-6">
         {/* The leaf sprig in the frame's corner. */}
         <svg aria-hidden="true" viewBox="0 0 70 70" className="pointer-events-none absolute -top-1 end-[-4px] size-12 sm:size-16">
           <g transform="translate(22 30) rotate(-40)"><path d="M0 -20C9 -13 9 4 0 12C-9 4 -9 -13 0 -20Z" fill="#9bc93b" /></g>
@@ -85,11 +85,11 @@ export async function ScheduleBoardCard({
               alt=""
               width={160}
               height={160}
-              className="size-14 flex-none object-contain sm:size-20"
+              className="size-11 flex-none object-contain sm:size-20"
             />
           )}
           <div className="flex flex-1 flex-col items-center gap-1 text-center">
-            <h2 className="text-xl font-black leading-snug text-[#2f7d32] underline decoration-[#c9e27a] decoration-4 underline-offset-8 sm:text-2xl">
+            <h2 className="text-lg font-black leading-snug text-[#2f7d32] underline decoration-[#c9e27a] decoration-4 underline-offset-8 sm:text-2xl">
               {title}
             </h2>
             {(showType || gender) && (
@@ -103,7 +103,7 @@ export async function ScheduleBoardCard({
                 {gender && <span className="text-[#2f5e1e]">{gender}</span>}
               </div>
             )}
-            <span className="text-base font-black">
+            <span className="text-sm font-black sm:text-base">
               {t("circlesCount", { count: locale === "ar" ? arNum(total) : total })}
             </span>
           </div>
@@ -111,7 +111,7 @@ export async function ScheduleBoardCard({
 
         {note && <p className="text-center text-sm font-bold text-[#55624f]">{note}</p>}
 
-        <div className="ms-11 flex overflow-hidden rounded-[14px] border-2 border-[#2f7d32] sm:ms-14">
+        <div className="ms-11 flex overflow-hidden rounded-[14px] border-2 border-[#2f7d32] max-sm:hidden sm:ms-14">
           <span className="w-20 flex-none bg-[#2f7d32] px-2 py-2 text-center text-base font-black text-white sm:w-36 sm:text-lg">
             {t("dayColumn")}
           </span>
@@ -121,17 +121,17 @@ export async function ScheduleBoardCard({
         </div>
 
         {days.length === 0 ? (
-          <div className="ms-11 rounded-2xl border-2 border-dashed border-[#c9e3a3] px-5 py-8 text-center font-extrabold text-[#55624f] sm:ms-14">
+          <div className="rounded-2xl border-2 border-dashed border-[#c9e3a3] px-5 py-8 text-center font-extrabold text-[#55624f] sm:ms-14">
             {t("boardEmpty")}
           </div>
         ) : (
-          <ul className="relative flex flex-col gap-2.5 ps-11 sm:ps-14">
+          <ul className="relative flex flex-col gap-2 sm:gap-2.5 sm:ps-14">
             {/* The vine the day leaves hang from. */}
             <svg
               aria-hidden="true"
               viewBox="0 0 36 700"
               preserveAspectRatio="none"
-              className="pointer-events-none absolute start-1 top-[-14px] h-[calc(100%+14px)] w-7 sm:w-9"
+              className="pointer-events-none absolute start-1 top-[-14px] h-[calc(100%+14px)] w-9 max-sm:hidden"
             >
               <path
                 d="M18 0 C30 80 6 160 18 240 C30 320 6 400 18 480 C30 560 6 630 18 700"
@@ -159,17 +159,17 @@ export async function ScheduleBoardCard({
                 <li
                   key={day}
                   aria-current={isToday ? "date" : undefined}
-                  className={`relative flex rounded-[14px] border-[1.5px] ${row}`}
+                  className={`relative flex rounded-[14px] border-[1.5px] max-sm:flex-col ${row}`}
                 >
                   {isFriday ? (
                     <span
                       aria-hidden="true"
-                      className="absolute top-1/2 -mt-3 size-6 rounded-full border-[3px] border-[#c9a26b] bg-white start-[-38px] sm:start-[-46px]"
+                      className="absolute top-1/2 -mt-3 size-6 rounded-full border-[3px] border-[#c9a26b] bg-white start-[-46px] max-sm:hidden"
                     />
                   ) : (
                     <span
                       aria-hidden="true"
-                      className="absolute top-1/2 -mt-[18px] flex h-9 w-8 items-center justify-center start-[-42px] sm:start-[-50px]"
+                      className="absolute top-1/2 -mt-[18px] flex h-9 w-8 items-center justify-center start-[-50px] max-sm:hidden"
                     >
                       <svg viewBox="0 0 14 18" className="absolute inset-0 size-full">
                         <path d={LEAF} fill={leafFill} />
@@ -181,8 +181,12 @@ export async function ScheduleBoardCard({
                   )}
 
                   <div
-                    className={`flex w-20 flex-none flex-col items-center justify-center gap-1 border-e-[1.5px] px-1 py-2 text-center sm:w-36 ${divider}`}
+                    className={`flex flex-none items-center gap-2 max-sm:border-b-[1.5px] max-sm:px-3 max-sm:py-1.5 sm:w-36 sm:flex-col sm:justify-center sm:gap-1 sm:border-e-[1.5px] sm:px-1 sm:py-2 sm:text-center ${divider}`}
                   >
+                    {/* On a phone the vine is gone and the day sits above its circles, so its leaf comes inline. */}
+                    <svg aria-hidden="true" viewBox="0 0 14 18" className="h-4 w-3.5 flex-none sm:hidden">
+                      <path d={LEAF} fill={isFriday ? "#c9a26b" : leafFill} />
+                    </svg>
                     <span className="text-base font-black text-[#7a1e3a] sm:text-xl">{t(`days.${day}`)}</span>
                     {isToday && (
                       <span className="rounded-full bg-[#7a1e3a] px-2.5 py-0.5 text-xs font-extrabold text-white">
@@ -191,13 +195,13 @@ export async function ScheduleBoardCard({
                     )}
                   </div>
 
-                  <div className="flex flex-1 flex-wrap items-center justify-center gap-2 p-2.5">
+                  <div className="flex flex-1 flex-wrap items-center justify-center gap-2 p-2.5 max-sm:flex-col max-sm:items-stretch max-sm:gap-1.5 max-sm:p-2">
                     {entries.map((entry) => (
                       <Link
                         key={entry.circleId}
                         href={`/${academySlug}/circle/${entry.registrationSlug}`}
                         title={entry.circleName}
-                        className="inline-flex min-h-11 items-center gap-2 rounded-xl border-[1.5px] border-[#cfe3a0]
+                        className="inline-flex min-h-11 items-center gap-2 rounded-xl max-sm:justify-between max-sm:px-2.5 border-[1.5px] border-[#cfe3a0]
                                    bg-white px-3 py-1.5 text-sm transition-colors hover:border-[#4ca03a]
                                    focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2f7d32]"
                       >

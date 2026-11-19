@@ -60,25 +60,31 @@ export default async function SchedulePage({ params }: PageProps) {
     t("circlesCount", { count: locale === "ar" ? arNum(n) : n });
 
   return (
-    <div className="flex flex-col gap-6">
+    /*
+      On a phone the timetable comes straight after the title: the label above
+      it and the line under it are hidden, the two buttons share one short
+      row, and «جدول الأسبوع» moves below the timetable (order-last), so the
+      circles are not three screens down. The desktop keeps its order.
+    */
+    <div className="flex flex-col gap-4 sm:gap-6">
       <header className="flex flex-wrap items-center gap-3">
-        <div className="flex min-w-56 flex-1 flex-col">
-          <span className="text-sm font-semibold text-muted-foreground">{t("eyebrow")}</span>
+        <div className="flex flex-1 flex-col sm:min-w-56">
+          <span className="text-sm font-semibold text-muted-foreground max-sm:hidden">{t("eyebrow")}</span>
           <h1 className="text-2xl font-black sm:text-3xl">{t("title")}</h1>
-          <p className="mt-1 text-sm font-semibold text-muted-foreground">{t("subtitle")}</p>
+          <p className="mt-1 text-sm font-semibold text-muted-foreground max-sm:hidden">{t("subtitle")}</p>
         </div>
         {canWrite && (
-          <div className="flex w-full flex-wrap gap-2.5 sm:w-auto">
+          <div className="flex w-full gap-2 sm:w-auto sm:gap-2.5">
             <Link
               href={`/${academySlug}/admin/tracks/schedules/new`}
-              className="btn-primary flex-1 sm:flex-none"
+              className="btn-primary flex-1 whitespace-nowrap max-sm:min-h-11 max-sm:px-3 max-sm:py-2 max-sm:text-sm sm:flex-none"
             >
               <Plus className="size-5" aria-hidden="true" />
               {t("newTrackSchedule")}
             </Link>
             <Link
               href={`/${academySlug}/admin/tracks/schedules`}
-              className="btn-secondary flex-1 sm:flex-none"
+              className="btn-secondary flex-1 whitespace-nowrap max-sm:min-h-11 max-sm:px-3 max-sm:py-2 max-sm:text-sm sm:flex-none"
             >
               <CalendarRange className="size-5" aria-hidden="true" />
               {t("trackSchedules")}
@@ -88,16 +94,18 @@ export default async function SchedulePage({ params }: PageProps) {
       </header>
 
       {staff && (
-        <ScheduleQuickCard
-          academyId={academy.id}
-          academySlug={academySlug}
-          teacher={staff}
-          backHref={here}
-        />
+        <div className="max-sm:order-last">
+          <ScheduleQuickCard
+            academyId={academy.id}
+            academySlug={academySlug}
+            teacher={staff}
+            backHref={here}
+          />
+        </div>
       )}
 
       {loadedBoards.length > 0 && staff && (
-        <h2 className="-mb-2 text-lg font-black">{t("circlesTimetable")}</h2>
+        <h2 className="-mb-2 text-lg font-black max-sm:hidden">{t("circlesTimetable")}</h2>
       )}
 
       {loadedBoards.length === 0 ? (
